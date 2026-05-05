@@ -34,6 +34,13 @@ void Sensor::setReliability(bool reliability)
     this->isReliable = reliability;
 }
 
+int Sensor::calculateDistance(double userLatitude, double userLongitude) const
+{
+    double latDiff = userLatitude - this->lattitude;
+    double lonDiff = userLongitude - this->longitude;
+    return static_cast<int>(sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111000); 
+}
+
 //------------------------------------------------- Surcharge d'opérateurs
 Sensor & Sensor::operator = (const Sensor & unSensor)
 // Algorithme :

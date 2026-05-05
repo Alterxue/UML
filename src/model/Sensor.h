@@ -40,6 +40,8 @@ public:
 
     void setReliability(bool reliability);
 
+    int calculateDistance(double userLatitude, double userLongitude) const;
+
 
 //------------------------------------------------- Surcharge d'opérateurs
     Sensor & operator = ( const Sensor & unSensor );
@@ -62,7 +64,7 @@ public:
     // Contrat :
     //
 
-    virtual ~Sensor ( );
+    virtual ~Sensor ();
     // Mode d'emploi :
     //
     // Contrat :
