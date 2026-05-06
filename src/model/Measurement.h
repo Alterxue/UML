@@ -33,14 +33,14 @@ public:
 //----------------------------------------------------- Méthodes publiques
 
 //-------------------------------------------- Constructeurs - destructeur
-    Measurement(int annee, int mois, int jour, int heure, int minute, int seconde, Sensor& a_sensor, Attribute& an_attribute, double a_value);
+    Measurement(int annee, int mois, int jour, int heure, int minute, int seconde, Sensor* a_sensor, Attribute* an_attribute, double a_value);
 
 //------------------------------------------------------------------ PRIVE
 protected:
 //----------------------------------------------------- Attributs protégés
     std::chrono::system_clock::time_point measureDate;
-    Sensor& sensor;
-    Attribute& attribute;
+    Sensor* sensor;
+    Attribute* attribute;
     double value;
 };
 
