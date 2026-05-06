@@ -14,6 +14,9 @@
 
 //--------------------------------------------------- Interfaces utilisées
 #include <string>
+#include <vector>
+
+#include "Measurement.h"
 
 //------------------------------------------------------------- Constantes
 
@@ -78,6 +81,7 @@ protected:
     double lattitude;
     double longitude;
     bool isReliable;
+    vector<Measurement> measurements;
 
 //----------------------------------------------------- Attributs protégés
 

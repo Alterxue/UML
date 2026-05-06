@@ -16,6 +16,8 @@
 using namespace std;
 
 //------------------------------------------------------ Include personnel
+#include <cmath>
+
 #include "Sensor.h"
 
 //------------------------------------------------------------- Constantes
