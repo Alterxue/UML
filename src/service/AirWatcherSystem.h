@@ -1,29 +1,80 @@
-#ifndef AIRWATCHERSYSTEM_H
-    #define AIRWATCHERSYSTEM_H
+/*************************************************************************
+                           AirWatcherSystem  -  description
+                             -------------------
+    début                : $DATE$
+    copyright            : (C) $YEAR$ par $AUTHOR$
+    e-mail               : $EMAIL$
+*************************************************************************/
 
-    #include <string>
+//---------- Interface de la classe <AirWatcherSystem> (fichier AirWatcherSystem.h) ----------------
+#if ! defined ( AIRWATCHERSYSTEM_H)
+#define AIRWATCHERSYSTEM_H
 
-    #include "DataService.h"
-    #include "StatisticsService.h"
-    #include "SecurityService.h"
-    #include "../model/User.h"
+//--------------------------------------------------- Interfaces utilisées
+#include <string>
 
-    class AirWatcher 
-    {
-        public:
-            //----------------------------------------------------- Méthodes publiques
-            AirWatcher getInstance();
-            bool login(std::string userID, std::string password);
-            void logout();
+#include "DataService.h"
+#include "StatisticsService.h"
+#include "SecurityService.h"
+#include "../model/User.h"
+#include "../model/Role.h"
 
-            //-------------------------------------------- Constructeurs - destructeur
-            AirWatcher();
-            ~AirWatcher(); 
+//------------------------------------------------------------- Constantes
 
-        protected:
-            User currentUser;
-            StatisticsService statsService;
-            SecurityService securityService;
-            DataServcie dataService;
-    };
-#endif
+//------------------------------------------------------------------ Types
+
+//------------------------------------------------------------------------
+// Rôle de la classe <AirWatcherSystem>
+// 
+//
+//------------------------------------------------------------------------
+
+class AirWatcherSystem
+{
+//----------------------------------------------------------------- PUBLIC
+public:
+//----------------------------------------------------- Méthodes publiques
+    static AirWatcherSystem& getInstance();
+    // Mode d'emploi :
+    //
+    // Contrat :
+    //
+
+    bool login(const std::string& id, const Role role);
+    // Mode d'emploi :
+    //
+    // Contrat :
+    //
+
+    void logout();
+    // Mode d'emploi :
+    //
+    // Contrat :
+    //
+
+//-------------------------------------------- Constructeurs - destructeur
+    AirWatcherSystem();
+    // Mode d'emploi :
+    //
+    // Contrat :
+    //
+    
+    ~AirWatcherSystem(); 
+    // Mode d'emploi :
+    //
+    // Contrat :
+    //
+ 
+//------------------------------------------------------------------ PRIVE
+
+protected:
+//----------------------------------------------------- Attributs protégés
+    User currentUser;
+    StatisticsService statsService;
+    SecurityService securityService;
+    DataService dataService;
+};
+
+
+#endif 
+
