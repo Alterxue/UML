@@ -36,7 +36,7 @@ using namespace std::chrono;
 
 //-------------------------------------------- Constructeurs - destructeur
 Measurement::Measurement(int annee, int mois, int jour, int heure, int minute, int seconde, Sensor* a_sensor, Attribute* an_attribute, double a_value): sensor(a_sensor), attribute(an_attribute), value(a_value)
-// Algorithme
+// Algorithme :
 // On vient créer une date calendrier
 // On va la convertir en nombre de jours (sys_days)
 // On va ajouter ensuite les heures minutes secondes puis créer le time_point final précis à la seconde
@@ -57,4 +57,8 @@ Measurement::Measurement(int annee, int mois, int jour, int heure, int minute, i
     #ifdef MAP
         cout << "Appel au constructeur de <Measurement>" << endl;
     #endif
-}
+} //----- Fin de Measurement
+
+//------------------------------------------------------------------ PRIVE
+
+//----------------------------------------------------- Méthodes protégées
