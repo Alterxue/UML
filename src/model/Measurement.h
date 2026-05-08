@@ -13,8 +13,9 @@
 //--------------------------------------------------- Interfaces utilisées
 #include <chrono>
 
-#include "Sensor.h"
 #include "Attribute.h"
+
+class Sensor;
 
 //------------------------------------------------------------- Constantes
 

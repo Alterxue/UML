@@ -18,6 +18,7 @@ using namespace std;
 
 //------------------------------------------------------ Include personnel
 #include "Measurement.h"
+#include "Sensor.h"
 
 //------------------------------------------------------------- Constantes
 
