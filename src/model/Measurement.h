@@ -32,6 +32,8 @@ class Measurement
 public:
 //----------------------------------------------------- Méthodes publiques
 
+//------------------------------------------------- Surcharge d'opérateurs
+
 //-------------------------------------------- Constructeurs - destructeur
     Measurement(int annee, int mois, int jour, int heure, int minute, int seconde, Sensor* a_sensor, Attribute* an_attribute, double a_value);
 

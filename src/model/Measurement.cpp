@@ -31,7 +31,6 @@ using namespace std::chrono;
 //{
 //} //----- Fin de Méthode
 
-
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
