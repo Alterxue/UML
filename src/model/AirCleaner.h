@@ -10,12 +10,13 @@
 #if ! defined ( AIRCLEANER_H )
 #define AIRCLEANER_H
 
-
-
 //--------------------------------------------------- Interfaces utilisées
-#include "Sensor.h"
 #include <string>
 #include <chrono>
+
+#include "Sensor.h"
+#include "TimeRange.h"
+#include "Provider.h"
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types
@@ -23,8 +24,8 @@ using DateTime = std::chrono::system_clock::time_point;
 
 //------------------------------------------------------------------------
 // Rôle de la classe <AirCleaner>
-//
-//
+// Représente un AirCleaner avec son ID, son fournisseur, sa position
+// et sa durée de fonctionnement
 //------------------------------------------------------------------------
 
 class AirCleaner
@@ -39,9 +40,14 @@ public:
     // Contrat :
     //
 
-    bool isActive(DateTime time) const;
+    bool isActive(DateTime date) const;
+    // Mode d'emploi :
+    // Indique si l'AirCleaner était actif à la date donnée
 
-    std::string getProviderID() const;
+    Provider* getProviderID() const;
+    // Mode d'emploi : 
+    // Renvoie le Provider de ce Aircleaner
+    
 //------------------------------------------------- Surcharge d'opérateurs
     AirCleaner & operator = ( const AirCleaner & unAirCleaner );
     // Mode d'emploi :
@@ -49,19 +55,14 @@ public:
     // Contrat :
     //
 
-
 //-------------------------------------------- Constructeurs - destructeur
-    AirCleaner(std::string cleanerID, std::string providerID, double lattitude, double longitude, DateTime startTime, DateTime stopTime);
+    AirCleaner(std::string a_cleanerID, Provider* a_provider, double a_lattitude, double a_longitude, DateTime a_startTime, DateTime a_stopTime);
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
+    // Constructeur du AirCleaner à partir des paramètres
 
-    virtual ~AirCleaner ( );
+    ~AirCleaner ( );
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
+    // Destructeur du AirCleaner
 
 //------------------------------------------------------------------ PRIVE
 
@@ -70,12 +71,10 @@ protected:
 
 //----------------------------------------------------- Attributs protégés
     std::string cleanerID;
-    std::string providerID;
+    Provider* provider;
     double lattitude;
     double longitude;
-    DateTime startTime;
-    DateTime stopTime;
-
+    TimeRange workingPeriod;
 };
 
 //-------------------------------- Autres définitions dépendantes de <User>

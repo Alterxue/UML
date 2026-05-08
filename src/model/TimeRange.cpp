@@ -13,7 +13,6 @@
 //-------------------------------------------------------- Include système
 using namespace std;
 #include <iostream>
-#include <string>
 #include <chrono>
 
 //------------------------------------------------------ Include personnel
@@ -30,20 +29,20 @@ using namespace std;
 //{
 //} //----- Fin de Méthode
 
-bool TimeRange::contains(const chrono::system_clock::time_point date)
+bool TimeRange::contains(const DateTime date) const
 {
     return (start<=date && date<=end);
 } //----- Fin de contains
 
-chrono::seconds TimeRange::getDuration()
+Seconds TimeRange::getDuration() const
 {
-    return chrono::duration_cast<chrono::seconds>(end - start);
+    return chrono::duration_cast<Seconds>(end - start);
 } //----- Fin de getDuration
 
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
-TimeRange::TimeRange(const chrono::system_clock::time_point a_start, const chrono::system_clock::time_point a_end): start(a_start), end(a_end)
+TimeRange::TimeRange(const DateTime a_start, const DateTime a_end): start(a_start), end(a_end)
 {
     #ifdef MAP
         cout << "Appel au constructeur de <Attribute>" << endl;

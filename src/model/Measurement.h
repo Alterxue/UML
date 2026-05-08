@@ -19,11 +19,12 @@
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types
+using DateTime = std::chrono::system_clock::time_point;
 
 //------------------------------------------------------------------------
 // Rôle de la classe <Measurement>
-//
-//
+// Représente une mesure avec sa date, le capteur qui l'a capté,
+// le type de la mesure et sa valeur
 //------------------------------------------------------------------------
 
 class Measurement
@@ -35,12 +36,12 @@ public:
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
-    Measurement(int annee, int mois, int jour, int heure, int minute, int seconde, Sensor* a_sensor, Attribute* an_attribute, double a_value);
+    Measurement(DateTime a_measureDate, Sensor* a_sensor, Attribute* an_attribute, double a_value);
 
 //------------------------------------------------------------------ PRIVE
 protected:
 //----------------------------------------------------- Attributs protégés
-    std::chrono::system_clock::time_point measureDate;
+    DateTime measureDate;
     Sensor* sensor;
     Attribute* attribute;
     double value;

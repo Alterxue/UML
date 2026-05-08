@@ -16,6 +16,8 @@
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types
+using DateTime = std::chrono::system_clock::time_point;
+using Seconds = std::chrono::seconds;
 
 //------------------------------------------------------------------------
 // Rôle de la classe <TimeRange> : 
@@ -28,11 +30,11 @@ class TimeRange
 //----------------------------------------------------------------- PUBLIC
 public:
 //----------------------------------------------------- Méthodes publiques
-    bool contains(const std::chrono::system_clock::time_point date);
+    bool contains(const DateTime date) const;
     // Mode d'emploi : 
     // Indique si la date rentrée se trouve entre le début et la fin
 
-    std::chrono::seconds getDuration();
+    Seconds getDuration() const;
     // Mode d'emploi :
     // Retourne la durée (en s) entre le début et la fin précis à la seconde
 
@@ -40,7 +42,7 @@ public:
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
-    TimeRange(const std::chrono::system_clock::time_point a_start, const std::chrono::system_clock::time_point a_end);
+    TimeRange(const DateTime a_start, const DateTime a_end);
     // Mode d'emploi :
     // Constructeur du TimeRange avec une date de début et de fin
 
@@ -51,8 +53,8 @@ public:
 //------------------------------------------------------------------ PRIVE
 protected:
 //----------------------------------------------------- Attributs protégés
-    std::chrono::system_clock::time_point start;
-    std::chrono::system_clock::time_point end;
+    DateTime start;
+    DateTime end;
 };
 
 #endif // TIMERANGE_H

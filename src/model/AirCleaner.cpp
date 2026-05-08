@@ -11,9 +11,10 @@
 //---------------------------------------------------------------- INCLUDE
 
 //-------------------------------------------------------- Include système
+using namespace std;
 #include <iostream>
 #include <string>
-using namespace std;
+
 
 //------------------------------------------------------ Include personnel
 #include "AirCleaner.h"
@@ -23,11 +24,15 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-
-string AirCleaner::getProviderID() const
+bool AirCleaner::isActive(const DateTime date) const
 {
-    return providerID;
+    return workingPeriod.contains(date);
 }
+
+Provider* AirCleaner::getProviderID() const
+{
+    return provider;
+} //----- Fin de getProviderID
 
 //------------------------------------------------- Surcharge d'opérateurs
 AirCleaner & AirCleaner::operator = (const AirCleaner & unAirCleaner)
@@ -38,19 +43,19 @@ AirCleaner & AirCleaner::operator = (const AirCleaner & unAirCleaner)
 
 
 //-------------------------------------------- Constructeurs - destructeur
-
-AirCleaner::AirCleaner(string cleanerID, string providerID, double lattitude, double longitude, DateTime startTime, DateTime stopTime)
-    : cleanerID(cleanerID), providerID(providerID), lattitude(lattitude), longitude(longitude), startTime(startTime), stopTime(stopTime)
+AirCleaner::AirCleaner(string a_cleanerID, Provider* a_provider, double a_lattitude, double a_longitude, DateTime a_startTime, DateTime a_stopTime)
+: cleanerID(a_cleanerID), provider(a_provider), lattitude(a_lattitude), longitude(a_longitude), workingPeriod(TimeRange(a_startTime, a_stopTime))
 {
-}
+    #ifdef MAP
+        cout << "Appel au constructeur de <AirCleaner>" << endl;
+    #endif
+} //----- Fin de AirCleaner
 
 AirCleaner::~AirCleaner ()
-// Algorithme :
-//
 {
-#ifdef MAP
-    cout << "Appel au destructeur de <AirCleaner>" << endl;
-#endif
+    #ifdef MAP
+        cout << "Appel au destructeur de <AirCleaner>" << endl;
+    #endif
 } //----- Fin de ~AirCleaner
 
 
