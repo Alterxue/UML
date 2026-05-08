@@ -40,7 +40,7 @@ public:
     // Contrat :
     //
 
-    bool isActive(DateTime date) const;
+    bool isActive(const DateTime date) const;
     // Mode d'emploi :
     // Indique si l'AirCleaner était actif à la date donnée
 
