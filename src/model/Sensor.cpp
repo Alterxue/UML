@@ -11,13 +11,12 @@
 //---------------------------------------------------------------- INCLUDE
 
 //-------------------------------------------------------- Include système
+using namespace std;
 #include <iostream>
 #include <string>
-using namespace std;
-
-//------------------------------------------------------ Include personnel
 #include <cmath>
 
+//------------------------------------------------------ Include personnel
 #include "Sensor.h"
 
 //------------------------------------------------------------- Constantes
@@ -25,31 +24,34 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-
 string Sensor::getSensorID() const
 {
     return this->sensorID;
-}
+} //----- Fin de getSensorID
 
 void Sensor::setReliability(bool reliability)
 {
     this->isReliable = reliability;
-}
+} //----- Fin de setReliability
+
+void Sensor::setOwner(User* a_owner)
+{
+    owner = a_owner;
+} //----- Fin de setOwner
+
+void Sensor::addMeasurement(const Measurement& measure)
+{
+    measurements.push_back(measure);
+} //----- Fin de addMeasurement
 
 int Sensor::calculateDistance(double userLatitude, double userLongitude) const
 {
     double latDiff = userLatitude - this->lattitude;
     double lonDiff = userLongitude - this->longitude;
     return static_cast<int>(sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111000); 
-}
+} //----- FIn de calculateDistance
 
 //------------------------------------------------- Surcharge d'opérateurs
-Sensor & Sensor::operator = (const Sensor & unSensor)
-// Algorithme :
-//
-{
-} //----- Fin de operator =
-
 
 //-------------------------------------------- Constructeurs - destructeur
 Sensor::Sensor (const Sensor & unSensor)
@@ -62,8 +64,15 @@ Sensor::Sensor (const Sensor & unSensor)
 } //----- Fin de Sensor (constructeur de copie)
 
 
-
-Sensor::Sensor(string sensorID, string lattitude, string longitude, bool isReliable) : sensorID(sensorID), lattitude(stod(lattitude)), longitude(stod(longitude)), isReliable(isReliable){}
+Sensor::Sensor(string a_sensorID, double a_lattitude, double a_longitude) : sensorID(a_sensorID), lattitude(a_lattitude), longitude(a_longitude)
+// Algorithme
+{
+    owner = nullptr;
+    isReliable = true;
+    #ifdef MAP
+        cout << "Appel au constructeur de <Sensor>" << endl;
+    #endif
+} //----- Fin de Sensor
 
 
 Sensor::~Sensor ()

@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "Measurement.h"
+#include "User.h"
 
 //------------------------------------------------------------- Constantes
 
@@ -39,39 +40,38 @@ public:
     //
     // Contrat :
     //
+
     std::string getSensorID() const;
+    // Mode d'emploi :
+    // Retourne l'ID du capteur
 
     void setReliability(bool reliability);
+    // Mode d'emploi : 
+    // Permet de marquer le capteur comme fiable ou non
+
+    void setOwner(User* a_owner);
+    // Mode d'emploi :
+    // Affecte le PrivateUser au capteur
+
+    void addMeasurement(const Measurement& measure);
+    // Mode d'emploi :
+    // Ajoute la maseaure à la liste des mesures du capteur
 
     int calculateDistance(double userLatitude, double userLongitude) const;
+    // Mode d'emploi : 
+    // Calcule la distance du capteur à une position donnée
 
 
 //------------------------------------------------- Surcharge d'opérateurs
-    Sensor & operator = ( const Sensor & unSensor );
-    // Mode d'emploi :
-    //
-    // Contrat :
-    //
-
 
 //-------------------------------------------- Constructeurs - destructeur
-    Sensor (const Sensor & unSensor);
-    // Mode d'emploi (constructeur de copie) :
-    //
-    // Contrat :
-    //
-
-    Sensor (std::string sensorId, std::string lattitude, std::string longitude, bool isReliable);
+    Sensor (std::string a_sensorId, double a_lattitude, double a_longitude);
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
+    // Construction d'un capteur à partir de son ID et de sa position, met isReliable = true à la construction
 
-    virtual ~Sensor ();
+    ~Sensor ();
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
+    // Destructeur du capteur
 
 //------------------------------------------------------------------ PRIVE
 
@@ -81,7 +81,8 @@ protected:
     double lattitude;
     double longitude;
     bool isReliable;
-    vector<Measurement> measurements;
+    User* owner;
+    std::vector<Measurement> measurements;
 
 //----------------------------------------------------- Attributs protégés
 

@@ -18,9 +18,9 @@
 //------------------------------------------------------------------ Types
 
 //------------------------------------------------------------------------
-// Rôle de la classe <Attribute>
-//
-//
+// Rôle de la classe <Attribute> : 
+// Représenter le type d'une mesure avec son code, son unité,
+// et sa description
 //------------------------------------------------------------------------
 
 class Attribute
@@ -40,4 +40,4 @@ protected:
     std::string description;
 };
 
-#endif
+#endif // ATTRIBUTE_H
