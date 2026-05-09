@@ -1,3 +1,88 @@
+/*************************************************************************
+                           DataContainer  -  description
+                             -------------------
+    début                : 09/05/2026
+    copyright            : (C) 2026 par tautret
+    e-mail               : tom.autret@insa-lyon.fr
+*************************************************************************/
+
+//---------- Interface de la classe <DataContainer> (fichier DataContainer.h) ----------------
+#if ! defined ( DATACONTAINER_H )
+#define DATACONTAINER_H
+
+//--------------------------------------------------- Interfaces utilisées
+#include <string>
+#include <vector>
+#include <map>
+
+#include "Attribute.h"
+#include "Sensor.h"
+#include "User.h"
+#include "AirCleaner.h"
+#include "Provider.h"
+//------------------------------------------------------------- Constantes
+
+//------------------------------------------------------------------ Types
+
+//------------------------------------------------------------------------
+// Rôle de la classe <DataContainer> : 
+// Permet de stocker toutes les données des fichiers, après leur
+// chargement, pendant toute l'execution
+// Contiendra l'ensemble des Attributes, PrivateUSer, Sensors, AirCleaners
+// et Providers
+//------------------------------------------------------------------------
+
+class DataContainer
+{
+//----------------------------------------------------------------- PUBLIC
+public:
+//----------------------------------------------------- Méthodes publiques
+    void addAttribute(const Attribute*);
+    // Mode d'emploi : 
+    // Ajoute un attribut de mesure à la collection
+
+    void addSensor(const Sensor*);
+    // Mode d'emploi :
+    // Ajoute un capteur à la collection
+
+    void addUser(const User*);
+    // Mode d'emploi :
+    // Ajoute un utilisateur à la collection
+
+    void addAirCleaner(const AirCleaner*);
+    // Mode d'emploi :
+    // Ajoute un air cleaner à la collection
+
+    void addProvider(const Provider*);
+    // Mode d'emploi :
+    // Ajoute un fournisseur à la collection
+
+//------------------------------------------------- Surcharge d'opérateurs
+
+//-------------------------------------------- Constructeurs - destructeur
+    DataContainer();
+    
+//------------------------------------------------------------------ PRIVE
+protected:
+//----------------------------------------------------- Méthodes protégées
+
+//----------------------------------------------------- Attributs protégés
+    std::map<std::string, Attribute*> allAttributes;
+    std::map<std::string, Sensor*> allSensors;
+    std::map<std::string, User*> allUsers;
+    std::vector<AirCleaner*> allAirCleaners;
+    std::map<std::string, Provider*> allProviders; 
+};
+
+#endif // DATACONTAINER_H
+
+
+
+
+
+
+
+
 // Contientra les données
 // Lui qui fait la construction et la destruction de tout les objets de données
 
