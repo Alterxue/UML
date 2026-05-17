@@ -30,15 +30,13 @@ list<AirCleaner> Provider::getMyCleaners(list<AirCleaner> cleaners) const
     list<AirCleaner> myCleaners;
     for (const AirCleaner & cleaner : cleaners)
     {
-        if (cleaner.isActive(std::chrono::system_clock::now()) && cleaner.getProviderID() == providerID)
+        if (cleaner.isActive(std::chrono::system_clock::now()) && cleaner.getProviderID() == this)
         {
             myCleaners.push_back(cleaner);
         }
     }
     return myCleaners;
 }
-
-
 
 
 //------------------------------------------------- Surcharge d'opérateurs

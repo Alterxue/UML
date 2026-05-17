@@ -33,8 +33,9 @@ class Provider
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    std::list<AirCleaner> getMyCleaners(std::list<AirCleaner> cleaners) const;
-//------------------------------------------------- Surcharge d'opérateurs
+    std::list<AirCleaner> getMyCleaners(std::list<AirCleaner> cleaners) const; // peut être changer par vector
+
+    //------------------------------------------------- Surcharge d'opérateurs
     Provider & operator = ( const Provider & unProvider );
     // Mode d'emploi :
     //
