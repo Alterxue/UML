@@ -55,10 +55,10 @@ public:
     
     static list<Measurement> getAllMeasurements();
     
-    static void addMeasurement(User user, string sensorID, string attributeID, double value);
+    static void addMeasurement(DateTime a_measureDate, Sensor* a_sensor, Attribute* an_attribute, double a_value);
     
     // User queries
-    static vector<PrivateUser> getAllPrivateUsers();
+    static list<PrivateUser> getAllPrivateUsers();
     
     // Air Cleaner queries
     static AirCleaner getCleanerById(string cleanerID);
