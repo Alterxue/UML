@@ -14,7 +14,7 @@ int main(){
 
     AirWatcherSystem * Application = new AirWatcherSystem();
     DataContainer * dataContainer = new DataContainer();
-    CSVDataManager * dataManager = new CSVDataManager();
+    //CSVDataManager * dataManager = new CSVDataManager();
 
     bool login = false;
     cout << "Bienvenue dans AirWatcherSystem !" << endl;
@@ -31,19 +31,20 @@ int main(){
         cout << "Entrez votre ID : ";
         cin >> userID;
         if (roleChoice == 1) {
-            login = Application->getAuthenticateService().loginPrivate(userID);
+            login = Application->setPrivateUser(*dataContainer,userID);
             if (!login) {
                 cout << "ID invalide, aucun utilisateur trouvé, veuillez réessayer." << endl;
             }
         } else if (roleChoice == 2) {
-            login = Application->getAuthenticateService().loginProvider(userID);
+            login = Application->setProvider(*dataContainer,userID);
             if (!login) {
                 cout << "ID invalide, aucun fournisseur trouvé, veuillez réessayer." << endl;
             }
         } else if (roleChoice == 3) {
-            login = Application->getAuthenticateService().loginGovernmentAgency(userID);
-            if (!login) {
-                cout << "ID invalide, aucune agence gouvernementale trouvée, veuillez réessayer." << endl;
+            if (userID == "admin") {
+                login = Application->setGovernmentAgency(*dataContainer,userID);
+            } else {
+                cout << "ID invalide, aucun agent gouvernemental trouvé, veuillez réessayer." << endl;
             }
         }
     }while(!login);
@@ -85,7 +86,7 @@ int main(){
 
                         switch (particularChoice) {
                             case 6:
-                                Application->getPrivateUser()->getPoints();
+                                //Application->getPrivateUser()->getPoints();
                                 break;
                             case 7:
                                 // Logic to calculate average AQI in user's area
