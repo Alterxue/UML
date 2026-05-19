@@ -23,6 +23,12 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
+
+string Attribute::getAttributeID() const
+{
+    return attributeID;
+}
+
 // type Xxx::Méthode ( liste des paramètres )
 // Algorithme :
 //

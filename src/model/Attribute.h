@@ -29,6 +29,8 @@ class Attribute
 public:
 //----------------------------------------------------- Méthodes publiques
 
+    std::string getAttributeID() const;
+
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur

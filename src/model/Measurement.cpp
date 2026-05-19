@@ -58,6 +58,7 @@ Measurement::Measurement(DateTime a_mesureDate, Sensor* a_sensor, Attribute* an_
     #ifdef MAP
         cout << "Appel au constructeur de <Measurement>" << endl;
     #endif
+    isValid = true;
 } //----- Fin de Measurement
 
 //------------------------------------------------------------------ PRIVE

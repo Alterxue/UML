@@ -17,7 +17,7 @@
 
 #include "Attribute.h"
 #include "Sensor.h"
-#include "User.h"
+#include "PrivateUser.h"
 #include "AirCleaner.h"
 #include "Provider.h"
 //------------------------------------------------------------- Constantes
@@ -37,25 +37,45 @@ class DataContainer
 //----------------------------------------------------------------- PUBLIC
 public:
 //----------------------------------------------------- Méthodes publiques
-    void addAttribute(const Attribute*);
+    void addAttribute(Attribute* ptr_atribute);
     // Mode d'emploi : 
     // Ajoute un attribut de mesure à la collection
 
-    void addSensor(const Sensor*);
+    void addSensor(Sensor* ptr_sensor);
     // Mode d'emploi :
     // Ajoute un capteur à la collection
 
-    void addUser(const User*);
+    void addUser(PrivateUser* ptr_privateuser);
     // Mode d'emploi :
     // Ajoute un utilisateur à la collection
 
-    void addAirCleaner(const AirCleaner*);
+    void addAirCleaner(AirCleaner* ptr_aircleaner);
     // Mode d'emploi :
     // Ajoute un air cleaner à la collection
 
-    void addProvider(const Provider*);
+    void addProvider(Provider* ptr_provider);
     // Mode d'emploi :
     // Ajoute un fournisseur à la collection
+
+    const std::map<std::string, Attribute*>& getAllAttributes() const;
+    // Mode d'emploi :
+    // Renvoie la collection des attributs
+
+    const std::map<std::string, Sensor*>& getAllSensors() const;
+    // Mode d'emploi :
+    // Renvoie la collection des capteurs
+
+    const std::map<std::string, PrivateUser*>& getAllUsers() const;
+    // Mode d'emploi :
+    // Renvoie la collection des utilisateurs
+
+    const std::vector<AirCleaner*>& getAllAirCleaners() const;
+    // Mode d'emploi :
+    // Renvoie la collection des air cleaners
+
+    const std::map<std::string, Provider*>& getAllProviders() const;
+    // Mode d'emploi :
+    // Renvoie la collection des fournisseurs
 
 //------------------------------------------------- Surcharge d'opérateurs
 
@@ -69,7 +89,7 @@ protected:
 //----------------------------------------------------- Attributs protégés
     std::map<std::string, Attribute*> allAttributes;
     std::map<std::string, Sensor*> allSensors;
-    std::map<std::string, User*> allUsers;
+    std::map<std::string, PrivateUser*> allUsers;
     std::vector<AirCleaner*> allAirCleaners;
     std::map<std::string, Provider*> allProviders; 
 };
@@ -89,7 +109,7 @@ protected:
 // Colections
 // Attribute : map<string, Attribute*> (seulement 4 instances, string : attributeID)
 // Sensors   : map<string, Sensor*> (string : sensorID)
-// Users     : map<string, User*> (string : userID)
+// PrivateUsers     : map<string, PrivateUser*> (string : userID)
 // AirCleaner: vector<AirCleaner*> (accès par parcours)
 // Provider  : map<string, Provider*> (string : providerID)
 
