@@ -38,15 +38,15 @@ public:
 //----------------------------------------------------- Méthodes publiques
 
     // Sensor queries
-    static list<Sensor> getSensors(User user);
+    static vector<Sensor> getSensors(User user);
     
-    static list<Sensor> getSensorsInArea(double lat, double lon, double radius);
+    static vector<Sensor> getSensorsInArea(double lat, double lon, double radius);
     
     static Sensor getSensorById(string sensorID);
     
-    static list<Sensor> getSensorsByUser(string userID);
+    static vector<Sensor> getSensorsByUser(string userID);
     
-    static list<Sensor> getAllSensors();
+    static vector<Sensor> getAllSensors();
     
     // Measurement queries
     static list<Measurement> getMeasurements(User user);
