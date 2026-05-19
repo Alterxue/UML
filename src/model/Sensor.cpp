@@ -30,6 +30,21 @@ vector<Measurement> Sensor::getMeasurements() const
     return this->measurements;
 } //----- Fin de getMeasurements
 
+bool Sensor::getReliability() const
+{
+    return this->isReliable;
+} //----- Fin de getReliability
+
+double Sensor::getLattitude() const
+{
+    return this->lattitude;
+} //----- Fin de getLattitude
+
+double Sensor::getLongitude() const
+{
+    return this->longitude;
+} //----- Fin de getLongitude
+
 string Sensor::getSensorID() const
 {
     return this->sensorID;

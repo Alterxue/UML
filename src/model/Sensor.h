@@ -45,6 +45,17 @@ public:
     // Mode d'emploi :
     // Retourne la liste des mesures du capteur
 
+    bool getReliability() const;
+    // Mode d'emploi :
+    // Retourne la fiabilité du capteur
+
+    double getLattitude() const;
+    // Mode d'emploi :
+    // Retourne la lattitude du capteur
+
+    double getLongitude() const;
+    // Mode d'emploi :
+    // Retourne la longitude du capteur
 
     std::string getSensorID() const;
     // Mode d'emploi :
