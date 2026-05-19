@@ -6,7 +6,7 @@
     e-mail               : $EMAIL$
 *************************************************************************/
 
-//---------- Interface de la classe <Xxx> (fichier Xxx.h) ----------------
+//---------- Interface de la classe <Statistics> (fichier Xxx.h) ----------------
 #if ! defined ( StatisticsServcie_H )
 #define StatisticsService_H
 #include <ctime>
