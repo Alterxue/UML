@@ -45,8 +45,8 @@ bool SecurityService::checkSensorReliability(User user, string targetSensorID) {
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Get all sensors and measurements
-    list<Sensor> tousCapteurs = DataService.getSensors(user);
-    list<Measurement> toutesMesures = DataService.getMeasurements(user);
+    list<Sensor> tousCapteurs = DataService::getSensors(user);
+    list<Measurement> toutesMesures = DataService::getMeasurements(user);
     
     // 2. Find the target sensor to analyze
     Sensor capteurAAnalyser;
@@ -146,7 +146,7 @@ bool SecurityService::checkSensorReliability(User user, string targetSensorID) {
             capteurAAnalyser.isReliable = false;
             
             // Update sensor status in persistent storage (DAO layer)
-            CSVDataManager.updateSensorStatus(targetSensorID, false);
+            CSVDataManager::updateSensorStatus(targetSensorID, false);
         }
     }
     
@@ -183,11 +183,11 @@ list<User> SecurityService::detectFraudulentUsers(User user) {
     }
     
     // 2. Get all private users
-    list<User> allPrivateUsers = DataService.getAllPrivateUsers();
+    list<User> allPrivateUsers = DataService::getAllPrivateUsers();
     
     // 3. For each private user, check their sensors
     for (const auto& privateUser : allPrivateUsers) {
-        list<Sensor> userSensors = DataService.getSensorsByUser(privateUser.userID);
+        list<Sensor> userSensors = DataService::getSensorsByUser(privateUser.userID);
         
         bool userIsFraudulent = false;
         
@@ -228,7 +228,7 @@ void SecurityService::removeCorruptedData(User user) {
     }
     
     // 2. Find all unreliable sensors
-    list<Sensor> allSensors = DataService.getAllSensors();
+    list<Sensor> allSensors = DataService::getAllSensors();
     list<string> unreliableSensorIds;
     
     for (const auto& sensor : allSensors) {
@@ -241,12 +241,12 @@ void SecurityService::removeCorruptedData(User user) {
     int corruptedRecordsCount = 0;
     
     for (const auto& sensorID : unreliableSensorIds) {
-        list<Measurement> measurements = DataService.getMeasurementsBySensor(sensorID);
+        list<Measurement> measurements = DataService::getMeasurementsBySensor(sensorID);
         
         for (const auto& measurement : measurements) {
             // Mark measurement as corrupted (soft delete)
             // In a real system, you would update CSVDataManager or database
-            DataService.markMeasurementAsInvalid(measurement);
+            DataService::markMeasurementAsInvalid(measurement);
             corruptedRecordsCount++;
         }
         
@@ -279,10 +279,10 @@ void SecurityService::initializeDatabase(User user) {
     
     // 2. Reload all data from CSV files via CSVDataManager
     cout << "Loading initial state from CSV files..." << endl;
-    DataService.reloadAllData();
+    DataService::reloadAllData();
     
     // 3. Build security baseline: Mark all government sensors as reliable
-    list<Sensor> allSensors = DataService.getAllSensors();
+    list<Sensor> allSensors = DataService::getAllSensors();
     int reliableSensorCount = 0;
     int unreliableSensorCount = 0;
     
@@ -303,14 +303,14 @@ void SecurityService::initializeDatabase(User user) {
     
     // 4. Clear any temporary ban flags or corrupted states
     cout << "Clearing temporary corruption flags..." << endl;
-    DataService.clearCorruptionFlags();
+    DataService::clearCorruptionFlags();
     
     // 5. Reset statistics cache
     cout << "Resetting statistics cache..." << endl;
     
     // 6. Verify data integrity
     cout << "Verifying data integrity..." << endl;
-    list<Measurement> allMeasurements = DataService.getAllMeasurements();
+    list<Measurement> allMeasurements = DataService::getAllMeasurements();
     cout << "Total Measurements in System: " << allMeasurements.size() << endl;
     
     // 7. Log completion

@@ -58,7 +58,7 @@ public:
     static void addMeasurement(User user, string sensorID, string attributeID, double value);
     
     // User queries
-    static list<User> getAllPrivateUsers();
+    static list<PrivateUser> getAllPrivateUsers();
     
     // Air Cleaner queries
     static AirCleaner getCleanerById(string cleanerID);
