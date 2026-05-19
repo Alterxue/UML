@@ -38,6 +38,13 @@ public:
     // Mode d'emploi :
     // Retourne la durée (en s) entre le début et la fin précis à la seconde
 
+    DateTime getStart();
+    // Mode d'emploi :
+    // Retourne le début du TimeRange
+
+    DateTime getEnd();
+    // Mode d'emploi :
+    // Retourne la fin du TimeRange
 
 //------------------------------------------------- Surcharge d'opérateurs
 
