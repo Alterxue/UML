@@ -78,14 +78,14 @@ bool SecurityService::checkSensorReliability(User user, string targetSensorID) {
     }
     
     if (capteursVoisinsFiables.empty()) {
-        cout << "WARNING: No reliable nearby sensors found. Assuming " << targetSensorID << " is reliable." << endl;
+        cout << "WARNING: No reliable nearby sensors found." << targetSensorID << " is reliable." << endl;
         return true;
     }
     
     // 4. Extract measurements for target sensor
     list<Measurement> mesuresCible;
     for (const auto& mesure : toutesMesures) {
-        if (mesure.sensorID == targetSensorID) {
+        if (mesure.sensor->sensorID == targetSensorID) {
             mesuresCible.push_back(mesure);
         }
     }
