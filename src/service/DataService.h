@@ -49,16 +49,16 @@ public:
     static vector<Sensor> getAllSensors();
     
     // Measurement queries
-    static list<Measurement> getMeasurements(User user);
+    static vector<Measurement> getMeasurements(User user);
     
-    static list<Measurement> getMeasurementsBySensor(string sensorID);
+    static vector<Measurement> getMeasurementsBySensor(string sensorID);
     
-    static list<Measurement> getAllMeasurements();
+    static vector<Measurement> getAllMeasurements();
     
     static void addMeasurement(User user, string sensorID, string attributeID, double value);
     
     // User queries
-    static list<PrivateUser> getAllPrivateUsers();
+    static vector<PrivateUser> getAllPrivateUsers();
     
     // Air Cleaner queries
     static AirCleaner getCleanerById(string cleanerID);
@@ -74,7 +74,9 @@ public:
     
     // User history
     static list<Measurement> getUserHistory(User user);
-    
+
+    static vector<PrivateUser> getAllPrivateUsers();
+
     // Initialization
     static void initializeDataContainer(DataContainer* container);
     
