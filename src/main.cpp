@@ -12,34 +12,51 @@
 
 int main(){
 
-    AirWatcherSystem Application = new AirWatcherSystem();
-    DataContainer dataContainer = new DataContainer();
-    CSVDataManager dataManager = new CSVDataManager();
+    AirWatcherSystem * Application = new AirWatcherSystem();
+    DataContainer * dataContainer = new DataContainer();
+    CSVDataManager * dataManager = new CSVDataManager();
 
     bool login = false;
-    do{
     cout << "Bienvenue dans AirWatcherSystem !" << endl;
-    cout << "Veuillez vous connecter pour accéder au système." << endl;
-    cout << "Vous êtes un : " << endl;
-    cout << "1. Utilisateur privé" << endl;
-    cout << "2. Fournisseur" << endl;
-    cout << "3. Agence gouvernementale" << endl;
-    
     int roleChoice;
-    cin >> roleChoice;
+    do{
+        cout << "Veuillez vous connecter pour accéder au système." << endl;
+        cout << "Vous êtes un : " << endl;
+        cout << "1. Utilisateur privé" << endl;
+        cout << "2. Fournisseur" << endl;
+        cout << "3. Agence gouvernementale" << endl;
+        cin >> roleChoice;
     
-    string userID;
-    cout << "Entrez votre ID : ";
-    cin >> userID;
+        string userID;
+        cout << "Entrez votre ID : ";
+        cin >> userID;
 
-    if (roleChoice == 1) {
-        PrivateUser privateUser = Application.getAuthenticateService().loginPrivate(userID);
-    } else if (roleChoice == 2) {
-        Provider provider = Application.getAuthenticateService().loginProvider(userID);
-    } else if (roleChoice == 3) {
-        GovernmentAgency governmentAgency = Application.getAuthenticateService().loginGovernmentAgency(userID);
-    }
-    }while(!login);
+        if (roleChoice == 1) {
+            PrivateUser * privateUser = Application->getAuthenticateService().loginPrivate(userID);
+            if (privateUser != nullptr) {
+                Application->setPrivateUser(privateUser);
+                login = true;
+            } else {
+                cout << "ID invalide, veuillez réessayer." << endl;
+            }
+        } else if (roleChoice == 2) {
+            Provider * provider = Application->getAuthenticateService().loginProvider(userID);
+            if (provider != nullptr) {
+                Application->setProvider(provider);
+                login = true;
+            } else {
+                cout << "ID invalide, veuillez réessayer." << endl;
+            }
+        } else if (roleChoice == 3) {
+            GovernmentAgency * governmentAgency = Application->getAuthenticateService().loginGovernmentAgency(userID);
+            if (governmentAgency != nullptr) {
+                Application->setGovernmentAgency(governmentAgency);
+                login = true;
+            } else {
+                cout << "ID invalide, veuillez réessayer." << endl;
+            }
+        }
+        }while(!login);
 
 
 
@@ -75,10 +92,34 @@ int main(){
                     cout << "6. Voir mes points" << endl;
                     cout << "7. Voir mes capteurs" << endl;
                     cout << "8. Ajouter un capteur" << endl;
+                    cout << "9. Analyser le rayon de purification" << endl;
+                    cout << "10. Consulter les statistiques de zone" << endl;
                     cout << "11. Retour au menu principal" << endl;
                     } while(particularChoice != 11);
+
+                    switch (particularChoice) {
+                        case 6:
+                            Application->getPrivateUser()->getPoints();
+                            break;
+                        case 7:
+                            Application->getPrivateUser()->getSensorsList();
+                            break;
+                        case 8:
+                            // Logic to add a sensor for the user
+                            break;
+                        case 9:
+                            // Logic to analyze purification radius
+                            break;
+                        case 10:
+                            // Logic to consult zone statistics
+                            break;
+                        case 11:
+                            break;
+                        default:
+                            cout << "Choix invalide, veuillez réessayer." << endl;
+                    }
                 } else if (roleChoice == 2) {
-                    // Logic for provider menu
+                    
                 } else if (roleChoice == 3) {
                     
                 }

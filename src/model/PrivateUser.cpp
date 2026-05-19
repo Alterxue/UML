@@ -39,6 +39,11 @@ int PrivateUser::getPoints() const
     return points;
 }
 
+vector<Sensor> PrivateUser::getSensorsList() const
+{
+    return sensorsList;
+}
+
 //------------------------------------------------- Surcharge d'opérateurs
 PrivateUser & PrivateUser::operator = (const PrivateUser & unPrivateUser)
 {

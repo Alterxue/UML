@@ -39,6 +39,8 @@ public:
 
     int getPoints() const;
 
+    std::vector<Sensor> getSensorsList() const;
+
 //------------------------------------------------- Surcharge d'opérateurs
     PrivateUser & operator = ( const PrivateUser & unPrivateUser );
     // Mode d'emploi :
