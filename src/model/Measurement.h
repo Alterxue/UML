@@ -45,6 +45,7 @@ protected:
     DateTime measureDate;
     Sensor* sensor;
     Attribute* attribute;
+    bool isValid;
     double value;
 };
 

@@ -30,10 +30,14 @@ using namespace std;
 
 void DataContainer::addAttribute(const Attribute* ptr_attribute)
 {
-    allAttributes[ptr_attribute->getID()] = ptr_attribute;
+    allAttributes[ptr_attribute->getAttributeID()] = ptr_attribute;
 } //----- Fin de addAttribute
 
-void addSensor(const Sensor* ptr_sensor)
+void DataContainer::addSensor(const Sensor* ptr_sensor)
 {
-    allSensors[ptr_sensor->getSensorID()] = 
-}
+    allSensors[ptr_sensor->getSensorID()] = ptr_sensor;
+} //----- Fin de addSensor
+
+void DataContainer::addUser()
+
+

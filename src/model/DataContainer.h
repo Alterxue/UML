@@ -45,7 +45,7 @@ public:
     // Mode d'emploi :
     // Ajoute un capteur à la collection
 
-    void addUser(const User*);
+    void addUser(const User* ptr_user);
     // Mode d'emploi :
     // Ajoute un utilisateur à la collection
 
