@@ -80,6 +80,13 @@ void DataContainer::addProvider(Provider* ptr_provider)
 DataContainer::DataContainer()
 {
     #ifdef MAP
-        cout<<"Appel au constructeur de DataContainer"<<endl;
+        cout <<"Appel au constructeur de <DataContainer>"<< endl;
     #endif
+}
+
+DataContainer::~DataContainer()
+{
+   #ifdef MAP
+        cout <<"Appel au destructeur de <DataContainer>"<< endl;
+    #endif 
 }

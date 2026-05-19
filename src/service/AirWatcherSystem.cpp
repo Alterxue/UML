@@ -26,30 +26,38 @@ using namespace std;
 // Algorithme :
 //
 // {
-// } //----- Fin de getInstance
-
-
+// } //----- Fin de méthode
 
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
 AirWatcherSystem::AirWatcherSystem ()
 // Algorithme :
-//
 {
-#ifdef MAP
+    #ifdef MAP
     cout << "Appel au constructeur <AirWatcherSystem>" << endl;
-#endif
+    #endif
+    currentUser = nullptr;
+    statsService = new StatisticsService();
+    securityService = new SecurityService();
+    dataService = new DataService();
+    authService = new AuthenticateService();
 } //----- Fin de AirWatcherSystem 
 
 
 AirWatcherSystem::~AirWatcherSystem ( )
 // Algorithme :
-//
 {
-#ifdef MAP
-    cout << "Appel au destructeur de <AirWatcherSystem>" << endl;
-#endif
+    #ifdef MAP
+        cout << "Appel au destructeur de <AirWatcherSystem>" << endl;
+    #endif
+    if (currentUser != nullptr){
+        delete currentUser;
+    }
+    delete statsService;
+    delete securityService;
+    delete dataService;
+    delete authService;
 } //----- Fin de ~AirWatcherSystem
 
 
