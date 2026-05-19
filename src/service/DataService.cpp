@@ -55,8 +55,8 @@ DataContainer* DataService::getDataContainer() {
 // ==================== SENSOR QUERY METHODS ====================
 
 // Get all sensors owned by a user or all public government sensors
-list<Sensor> DataService::getSensors(User user) {
-    list<Sensor> result;
+vector<Sensor> DataService::getSensors(User user) {
+    vector<Sensor> result;
     
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
@@ -72,35 +72,34 @@ list<Sensor> DataService::getSensors(User user) {
     // If user is PrivateUser, return only their sensors
     PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
     if (privateUser != nullptr) {
-        return getSensorsByUser(privateUser->userID);
+        return privateUser->sensorsIDList;
     }
     
     return result;
 }
 
 // Get all sensors in the system
-list<Sensor> DataService::getAllSensors() {
-    list<Sensor> result;
+vector<Sensor> DataService::getAllSensors() {
+    vector<Sensor> result;
     
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return result;
     }
     
-    vector<Sensor*> sensors = dataContainer->getAllSensors();
-    for (const auto& sensor : sensors) {
-        if (sensor != nullptr) {
-            result.push_back(*sensor);
-        }
+    const auto& sensors = dataContainer->getAllSensors(); // pas de copie
+    result.reserve(sensors.size());
+    for (const auto& [id, ptr] : sensors) {
+        if (ptr) result.push_back(*ptr); // copie
     }
     
     return result;
 }
 
 // Get sensors within a geographical area (circle)
-list<Sensor> DataService::getSensorsInArea(double lat, double lon, double radius) {
-    list<Sensor> result;
-    list<Sensor> allSensors = getAllSensors();
+vector<Sensor> DataService::getSensorsInArea(double lat, double lon, double radius) {
+    vector<Sensor> result;
+    vector<Sensor> allSensors = getAllSensors();
     
     // Filter sensors by distance
     for (const auto& sensor : allSensors) {
@@ -115,39 +114,18 @@ list<Sensor> DataService::getSensorsInArea(double lat, double lon, double radius
 
 // Get sensor by ID
 Sensor DataService::getSensorById(string sensorID) {
-    Sensor dummy;
-    list<Sensor> allSensors = getAllSensors();
-    
-    for (const auto& sensor : allSensors) {
-        if (sensor.sensorID == sensorID) {
-            return sensor;
-        }
-    }
-    
+    const auto& sensorsMap = dataContainer->getAllSensors();
+    auto it = sensorsMap.find(sensorID);
+    if (it != sensorsMap.end()) return it->second;
     cout << "WARNING: Sensor " << sensorID << " not found" << endl;
-    return dummy;
-}
-
-// Get all sensors owned by a specific user
-list<Sensor> DataService::getSensorsByUser(string userID) {
-    list<Sensor> result;
-    list<Sensor> allSensors = getAllSensors();
-    
-    for (const auto& sensor : allSensors) {
-        // Check if sensor belongs to this user
-        if (sensor.userID == userID) {
-            result.push_back(sensor);
-        }
-    }
-    
-    return result;
+    return nullptr;
 }
 
 // ==================== MEASUREMENT QUERY METHODS ====================
 
 // Get all measurements for a user's sensors
-list<Measurement> DataService::getMeasurements(User user) {
-    list<Measurement> result;
+vector<Measurement> DataService::getMeasurements(User user) {
+    vector<Measurement> result;
     
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
@@ -163,12 +141,12 @@ list<Measurement> DataService::getMeasurements(User user) {
     // If PrivateUser, return measurements from their sensors only
     PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
     if (privateUser != nullptr) {
-        list<Sensor> userSensors = getSensorsByUser(privateUser->userID);
+        vector<Sensor> userSensors = privateUser->sensorsIDList;
         list<Measurement> allMeasurements = getAllMeasurements();
         
         for (const auto& measurement : allMeasurements) {
             for (const auto& sensor : userSensors) {
-                if (measurement.sensorID == sensor.sensorID) {
+                if (measurement.sensor->sensorID == sensor.sensorID) {
                     result.push_back(measurement);
                     break;
                 }
@@ -188,19 +166,10 @@ list<Measurement> DataService::getAllMeasurements() {
         return result;
     }
     
-    // TODO: Implement when Measurement storage is available in DataContainer
-    // For now, return empty - will be populated from CSV data via CSVDataManager
-    
-    return result;
-}
-
-// Get measurements for a specific sensor
-list<Measurement> DataService::getMeasurementsBySensor(string sensorID) {
-    list<Measurement> result;
-    list<Measurement> allMeasurements = getAllMeasurements();
-    
-    for (const auto& measurement : allMeasurements) {
-        if (measurement.sensorID == sensorID && measurement.isValid == true) {
+    vector<Sensor> allSensors = getAllSensors();
+    for (const auto& sensor : allSensors) {
+        vector<Measurement> sensorMeasurements = sensor.getMeasurements();
+        for (const auto& measurement : sensorMeasurements) {
             result.push_back(measurement);
         }
     }
@@ -208,25 +177,44 @@ list<Measurement> DataService::getMeasurementsBySensor(string sensorID) {
     return result;
 }
 
+// Get measurements for a specific sensor
+list<Measurement> DataService::getMeasurementsBySensor(string sensorID) {
+    list<Measurement> result;
+    
+    if (dataContainer == nullptr) {
+        cout << "ERROR: DataContainer not initialized" << endl;
+        return result;
+    }
+    
+    const auto& sensorsMap = dataContainer->getAllSensors();
+    auto it = sensorsMap.find(sensorID);
+    
+    if (it != sensorsMap.end() && it->second != nullptr) {
+        vector<Measurement> measurements = it->second->getMeasurements();
+        for (const auto& measurement : measurements) {
+            result.push_back(measurement);
+        }
+    } else {
+        cout << "WARNING: Sensor " << sensorID << " not found" << endl;
+    }
+    
+    return result;
+}
+
 // Add a new measurement
-void DataService::addMeasurement(User user, string sensorID, string attributeID, double value) {
+void DataService::addMeasurement(DateTime a_measureDate, Sensor* a_sensor, Attribute* an_attribute, double a_value) {
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return;
     }
     
     // Create new measurement
-    Measurement measurement;
-    measurement.measurementID = sensorID + "_" + attributeID + "_" + to_string(time(nullptr));
-    measurement.sensorID = sensorID;
-    measurement.attributeID = attributeID;
-    measurement.value = value;
-    measurement.timestamp = time(nullptr);
-    measurement.isValid = true;
+    Measurement measurement(a_measureDate, a_sensor, an_attribute, a_value);
     
-    // Add to DataContainer - TODO: Add method to DataContainer for storing measurements
+    // Add measurement to sensor
+    a_sensor->addMeasurement(measurement);
     
-    cout << "Measurement added: " << measurement.measurementID << endl;
+    cout << "Measurement added: " << measurement << endl;
 }
 
 // ==================== USER QUERY METHODS ====================
@@ -245,25 +233,21 @@ list<Measurement> DataService::getUserHistory(User user) {
 }
 
 // Get all private users
-list<User> DataService::getAllPrivateUsers() {
-    list<User> result;
-    
+list<PrivateUser> DataService::getAllPrivateUsers() {
+    list<PrivateUser> result;
+
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return result;
     }
-    
-    vector<User*> users = dataContainer->getAllUsers();
-    for (const auto& user : users) {
-        if (user != nullptr) {
-            // Only include PrivateUser instances
-            PrivateUser* privateUser = dynamic_cast<PrivateUser*>(user);
-            if (privateUser != nullptr) {
-                result.push_back(*privateUser);
-            }
+
+    const auto& users = dataContainer->getAllUsers();
+    for (const auto& [id, privateUser] : users) {
+        if (privateUser) {
+            result.push_back(*privateUser);
         }
     }
-    
+
     return result;
 }
 
@@ -279,9 +263,10 @@ AirCleaner DataService::getCleanerById(string cleanerID) {
                           chrono::system_clock::now());
     }
     
-    AirCleaner* cleaner = dataContainer->getCleanerById(cleanerID);
-    if (cleaner != nullptr) {
-        return *cleaner;
+    const auto& cleaners = dataContainer->getAllAirCleaners();
+    auto it = cleaners.find(cleanerID);
+    if (it != cleaners.end() && it->second != nullptr) {
+        return *it->second;
     }
     
     cout << "WARNING: Air Cleaner " << cleanerID << " not found" << endl;
@@ -294,24 +279,32 @@ AirCleaner DataService::getCleanerById(string cleanerID) {
 
 // ==================== DATA MANAGEMENT METHODS ====================
 
-// Mark a measurement as invalid (soft delete)
+// Mark a measurement as invalid
 void DataService::markMeasurementAsInvalid(Measurement measurement) {
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return;
     }
-    
-    list<Measurement> allMeasurements = getAllMeasurements();
-    
-    for (auto& m : allMeasurements) {
-        if (m.measurementID == measurement.measurementID) {
-            m.isValid = false;
-            cout << "Measurement " << measurement.measurementID << " marked as invalid" << endl;
+
+    Sensor* sensor = measurement.getSensor();
+    if (sensor == nullptr) {
+        cout << "ERROR: Measurement has no associated sensor" << endl;
+        return;
+    }
+
+    vector<Measurement> sensorMeasurements = sensor->getMeasurements();
+    for (auto& m : sensorMeasurements) {
+        if (m.getSensor() == measurement.getSensor() &&
+            m.getAttribute() == measurement.getAttribute() &&
+            m.getMeasureDate() == measurement.getMeasureDate() &&
+            m.getValue() == measurement.getValue()) {
+            m.setIsValid(false);
+            cout << "Measurement marked as invalid" << endl;
             return;
         }
     }
-    
-    cout << "WARNING: Measurement " << measurement.measurementID << " not found" << endl;
+
+    cout << "WARNING: Measurement not found" << endl;
 }
 
 // Update sensor reliability status
@@ -320,21 +313,16 @@ void DataService::updateSensorStatus(string sensorID, bool isReliable) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return;
     }
-    
-    list<Sensor> allSensors = getAllSensors();
-    
-    for (auto& sensor : allSensors) {
-        if (sensor.sensorID == sensorID) {
-            sensor.isReliable = isReliable;
-            cout << "Sensor " << sensorID << " status updated: " 
-                 << (isReliable ? "RELIABLE" : "UNRELIABLE") << endl;
-            
-            // TODO: Update in persistent storage via CSVDataManager
-            
-            return;
-        }
+
+    const auto& sensors = dataContainer->getAllSensors();
+    auto it = sensors.find(sensorID);
+    if (it != sensors.end() && it->second != nullptr) {
+        it->second->setReliability(isReliable);
+        cout << "Sensor " << sensorID << " status updated: "
+             << (isReliable ? "RELIABLE" : "UNRELIABLE") << endl;
+        return;
     }
-    
+
     cout << "WARNING: Sensor " << sensorID << " not found" << endl;
 }
 
@@ -344,17 +332,24 @@ void DataService::clearCorruptionFlags() {
         cout << "ERROR: DataContainer not initialized" << endl;
         return;
     }
-    
-    list<Measurement> allMeasurements = getAllMeasurements();
-    
+
+    const auto& sensors = dataContainer->getAllSensors();
     int clearedCount = 0;
-    for (auto& measurement : allMeasurements) {
-        if (measurement.isValid == false) {
-            measurement.isValid = true;
-            clearedCount++;
+
+    for (const auto& [id, sensorPtr] : sensors) {
+        if (sensorPtr == nullptr) {
+            continue;
+        }
+
+        vector<Measurement> sensorMeasurements = sensorPtr->getMeasurements();
+        for (auto& measurement : sensorMeasurements) {
+            if (!measurement.isValid()) {
+                measurement.setIsValid(true);
+                clearedCount++;
+            }
         }
     }
-    
+
     cout << "Corruption flags cleared. Records restored: " << clearedCount << endl;
 }
 
