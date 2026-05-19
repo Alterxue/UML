@@ -37,11 +37,11 @@ class DataContainer
 //----------------------------------------------------------------- PUBLIC
 public:
 //----------------------------------------------------- Méthodes publiques
-    void addAttribute(const Attribute*);
+    void addAttribute(const Attribute* ptr_atribute);
     // Mode d'emploi : 
     // Ajoute un attribut de mesure à la collection
 
-    void addSensor(const Sensor*);
+    void addSensor(const Sensor* ptr_sensor);
     // Mode d'emploi :
     // Ajoute un capteur à la collection
 

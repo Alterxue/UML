@@ -28,7 +28,12 @@ using namespace std;
 
 //----------------------------------------------------- Méthodes publiques
 
-void DataContainer::addAttribute(const Attribute*)
+void DataContainer::addAttribute(const Attribute* ptr_attribute)
 {
-    
+    allAttributes[ptr_attribute->getID()] = ptr_attribute;
+} //----- Fin de addAttribute
+
+void addSensor(const Sensor* ptr_sensor)
+{
+    allSensors[ptr_sensor->getSensorID()] = 
 }
