@@ -44,7 +44,7 @@ public:
     // Mode d'emploi :
     // Indique si l'AirCleaner était actif à la date donnée
 
-    Provider* getProviderID() const;
+    Provider* getProvider() const;
     // Mode d'emploi : 
     // Renvoie le Provider de ce Aircleaner
     

@@ -30,7 +30,7 @@ list<AirCleaner> Provider::getMyCleaners(list<AirCleaner> cleaners) const
     list<AirCleaner> myCleaners;
     for (const AirCleaner & cleaner : cleaners)
     {
-        if (cleaner.isActive(std::chrono::system_clock::now()) && cleaner.getProviderID() == this)
+        if (cleaner.isActive(std::chrono::system_clock::now()) && cleaner.getProvider() == this)
         {
             myCleaners.push_back(cleaner);
         }

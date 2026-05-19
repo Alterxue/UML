@@ -29,7 +29,7 @@ bool AirCleaner::isActive(const DateTime date) const
     return workingPeriod.contains(date);
 }
 
-Provider* AirCleaner::getProviderID() const
+Provider* AirCleaner::getProvider() const
 {
     return provider;
 } //----- Fin de getProviderID
