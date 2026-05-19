@@ -1,9 +1,9 @@
 /*************************************************************************
                            AuthenticateService  -  description
                              -------------------
-    début                : $DATE$
-    copyright            : (C) $YEAR$ par $AUTHOR$
-    e-mail               : $EMAIL$
+    début                : 19/05/2026
+    copyright            : (C) 2026 par tautret
+    e-mail               : tom.autret@insa-lyon.fr
 *************************************************************************/
 
 //---------- Réalisation de la classe <AuthenticateService> (fichier AuthenticateService.cpp) ------------
@@ -22,19 +22,3 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-bool AuthenticateService::login(const std::string& id, Role role)
-// pas de booléen en retour mais un user ou null si la connexion a pas réussi
-{
-    bool trouve = false;
-    // recherche de l'utilisateur ID dans tous les CSV avec le data manager
-    if (trouve){
-        // création tempUSer = 
-        tempUSer = 
-        outUser = tempUSer;
-        return true;
-    }
-
-    else {
-        return false;
-    }
-}

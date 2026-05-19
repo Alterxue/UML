@@ -81,6 +81,8 @@ public:
 
 //-------------------------------------------- Constructeurs - destructeur
     DataContainer();
+
+    ~DataContainer();
     
 //------------------------------------------------------------------ PRIVE
 protected:
