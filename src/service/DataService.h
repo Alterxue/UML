@@ -51,9 +51,9 @@ public:
     // Measurement queries
     static vector<Measurement> getMeasurements(User user);
     
-    static vector<Measurement> getMeasurementsBySensor(string sensorID);
+    static list<Measurement> getMeasurementsBySensor(string sensorID);
     
-    static vector<Measurement> getAllMeasurements();
+    static list<Measurement> getAllMeasurements();
     
     static void addMeasurement(User user, string sensorID, string attributeID, double value);
     
@@ -75,7 +75,7 @@ public:
     // User history
     static list<Measurement> getUserHistory(User user);
 
-    static vector<PrivateUser> getAllPrivateUsers();
+    static list<PrivateUser> getAllPrivateUsers();
 
     // Initialization
     static void initializeDataContainer(DataContainer* container);
