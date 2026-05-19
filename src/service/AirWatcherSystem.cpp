@@ -22,27 +22,13 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-AirWatcherSystem& AirWatcherSystem::getInstance()
+// Nom de la méthode
 // Algorithme :
 //
-{
-    static AirWatcherSystem instanceAirWatcherSystem;
-    return instanceAirWatcherSystem;
-} //----- Fin de getInstance
+// {
+// } //----- Fin de getInstance
 
-bool AirWatcherSystem::login(const string& userID, const Role role)
-// Algorithme :
-//
-{
-    if ( role == )
-    // currentUser = user crée par le service auth
-} //----- Fin de login
 
-void AirWatcherSystem::logout()
-// Algorithme :
-//
-{
-} //----- Fin de getInstance
 
 //------------------------------------------------- Surcharge d'opérateurs
 

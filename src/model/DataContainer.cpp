@@ -75,3 +75,11 @@ void DataContainer::addProvider(Provider* ptr_provider)
 {
     allProviders[ptr_provider->getUserID()] = ptr_provider;
 } //----- Fin de addProvider
+
+//-------------------------------------------- Constructeurs - destructeur
+DataContainer::DataContainer()
+{
+    #ifdef MAP
+        cout<<"Appel au constructeur de DataContainer"<<endl;
+    #endif
+}

@@ -16,6 +16,7 @@
 #include "DataService.h"
 #include "StatisticsService.h"
 #include "SecurityService.h"
+#include "AuthenticateService.h"
 #include "../model/User.h"
 #include "../model/Role.h"
 
@@ -34,19 +35,7 @@ class AirWatcherSystem
 //----------------------------------------------------------------- PUBLIC
 public:
 //----------------------------------------------------- Méthodes publiques
-    static AirWatcherSystem& getInstance();
-    // Mode d'emploi :
-    //
-    // Contrat :
-    //
-
-    bool login(const std::string& id, const Role role);
-    // Mode d'emploi :
-    //
-    // Contrat :
-    //
-
-    void logout();
+    // Nom de la méthode
     // Mode d'emploi :
     //
     // Contrat :
@@ -72,7 +61,8 @@ protected:
     User currentUser;
     StatisticsService statsService;
     SecurityService securityService;
-    DataService dataService;
+    DataService dataService
+    AuthenticateService authService;
 };
 
 
