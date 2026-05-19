@@ -7,13 +7,18 @@
 *************************************************************************/
 
 //---------- Interface de la classe <Statistics> (fichier Xxx.h) ----------------
-#if ! defined ( StatisticsServcie_H )
-#define StatisticsService_H
+#if ! defined ( STATISTICSSERVICE_H )
+#define STATISTICSSERVICE_H
+
 #include <ctime>
-#include <string>
 #include <list>
-#include "Sensor.h"
-#include "TimeRange.h"
+#include <map>
+#include <string>
+
+#include "../model/Sensor.h"
+#include "../model/TimeRange.h"
+#include "../model/User.h"
+
 using namespace std;
 
 //--------------------------------------------------- Interfaces utilisées
@@ -28,26 +33,26 @@ using namespace std;
 //
 //------------------------------------------------------------------------
 
-class StatisticsService :
+class StatisticsService
 {
 //----------------------------------------------------------------- PUBLIC
 
 public:
 //----------------------------------------------------- Méthodes publiques
 
-    static double calculateAirQuality(User user, double lat,double lon,DateTime time);
+    static double calculateAirQuality(User user, double lat, double lon, DateTime time);
 
-    static double estimateAirQuality(double lat, double long);
+    static double estimateAirQuality(double lat, double lon);
 
     static double viewCleanerImpact(User user, string cleanerID, TimeRange period);
 
-    static list<Sensor> compareSensorsBySimilarity(User user,string targetSensor, TimeRange period);
+    static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, TimeRange period);
 
-    static double calculateAreaMean(User user, double lat,double lon,double radius,TimeRange period);
+    static double calculateAreaMean(User user, double lat, double lon, double radius, TimeRange period);
 
-    static double analyzeCleanerRadius(User user,string cleanerID);
+    static double analyzeCleanerRadius(User user, string cleanerID);
 
-    static string getZoneStatistic(User user, double lat, double lon,double radius, TimeRange period);
+    static string getZoneStatistic(User user, double lat, double lon, double radius, TimeRange period);
 
     static double calculateLocalAQI(User user, double lat, double lon, double radius);
 
@@ -62,4 +67,4 @@ public:
 };
 
 
-#endif
+#endif // STATISTICSSERVICE_H

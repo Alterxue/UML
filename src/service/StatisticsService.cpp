@@ -39,8 +39,8 @@ static double calculateAirQuality(User user, double lat, double lon, DateTime ti
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // obtenir les listes de capteurs et mesures
-    list<Sensor> tousCapteurs = DataService::getSensors(user);
-    list<Measurement> toutesMesures = DataService::getMeasurements(user);
+    vector<Sensor> tousCapteurs = DataService::getSensors(user);
+    vector<Measurement> toutesMesures = DataService::getMeasurements(user);
     
     map<string, double> sommesPonderees;  
     map<string, double> sommePoids;      
@@ -84,11 +84,11 @@ static double calculateAreaMean(User user, double lat, double lon, double radius
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // Récupération de toutes les données via DataService
-    list<Sensor> tousCapteurs = DataService::getSensors(user);
-    list<Measurement> toutesMesures = DataService::getMeasurements(user);
+    vector<Sensor> tousCapteurs = DataService::getSensors(user);
+    vector<Measurement> toutesMesures = DataService::getMeasurements(user);
     
     // Filtrage spatial et fiabilité - récupérer les capteurs dans la zone
-    list<Sensor> capteursZone;
+    vector<Sensor> capteursZone;
     
     for (const auto& capteur : tousCapteurs) {
         double distance = capteur.calculateDistance(lat, lon);
@@ -140,15 +140,15 @@ static double calculateAreaMean(User user, double lat, double lon, double radius
 }
 
 
-static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, TimeRange period){
+static vector<Sensor> compareSensorsBySimilarity(User user, string targetSensor, TimeRange period){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     //Récupération de toutes les données
-    list<Sensor> tousCapteurs = DataService::getSensors(user);
-    list<Measurement> toutesMesures = DataService::getMeasurements(user);
+    vector<Sensor> tousCapteurs = DataService::getSensors(user);
+    vector<Measurement> toutesMesures = DataService::getMeasurements(user);
     
     // Extraction des données du capteur cible pour la période
-    list<Measurement> donneesCible;
+    vector<Measurement> donneesCible;
     
     for (const auto& mesure : toutesMesures) {
         if (mesure.getSensor()->getSensorID() == targetSensor && period.contains(mesure.getMeasureDate())) {
@@ -166,7 +166,7 @@ static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, T
         }
         
         //Extraction des données du capteur actuel pour la période
-        list<Measurement> donneesAComparer;
+        vector<Measurement> donneesAComparer;
         for (const auto& mesure : toutesMesures) {
             if (mesure.getSensor()->getSensorID() == capteur.getSensorID() && period.contains(mesure.getMeasureDate())) {
                 donneesAComparer.push_back(mesure);
@@ -212,7 +212,7 @@ static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, T
          });
     
     // Reconstruire la liste de capteurs triée
-    list<Sensor> listeTriee;
+    vector<Sensor> listeTriee;
     
     for (const auto& pair : scoresVecteur) {
         // Trouver le capteur correspondant dans la liste originale
@@ -285,11 +285,11 @@ static string getZoneStatistic(User user, double lat, double lon, double radius,
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // Get all sensors in the area
-    list<Sensor> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
-    list<Measurement> toutesMesures = DataService::getMeasurements(user);
+    vector<Sensor> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
+    vector<Measurement> toutesMesures = DataService::getMeasurements(user);
     
     // Filter measurements by sensor and time period
-    list<Measurement> mesuresZone;
+    vector<Measurement> mesuresZone;
     for (const auto& mesure : toutesMesures) {
         for (const auto& capteur : listeCapteurs) {
             if (mesure.getSensor()->getSensorID() == capteur.getSensorID() && period.contains(mesure.getMeasureDate())) {
@@ -371,8 +371,8 @@ static double viewCleanerImpact(User user, string cleanerID, TimeRange period){
     DateTime cleanerStartTime = cleaner.getWorkingPeriod().getStart();          
 
     //Identifier les capteurs impactés (dans le rayon d'action du purificateur)
-    list<Sensor> tousCapteurs = DataService::getSensors(user);
-    list<string> capteursImpactes;
+    vector<Sensor> tousCapteurs = DataService::getSensors(user);
+    vector<string> capteursImpactes;
     
     for (const auto& capteur : tousCapteurs) {
         double distance = capteur.calculateDistance(cleaner_lat, cleaner_lon);
@@ -411,7 +411,7 @@ static double estimateAirQuality(double lat, double lon){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // Récupérer tous les capteurs et mesures (sans filtrage par utilisateur
-    list<Sensor> tousCapteurs = DataService::getAllSensors();
+    vector<Sensor> tousCapteurs = DataService::getAllSensors();
     list<Measurement> toutesMesures = DataService::getAllMeasurements();
     
     // Initialiser les structures pour l'interpolation spatiale (IDW)
@@ -461,7 +461,7 @@ static double calculateLocalAQI(User user, double lat, double lon, double radius
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Récupération du capteur le plus proche (normalement à distance ~0)
-    list<Sensor> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
+    vector<Sensor> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
     
     // Si aucun capteur dans la zone, retourner erreur
     if (listeCapteurs.empty()) {
@@ -472,10 +472,10 @@ static double calculateLocalAQI(User user, double lat, double lon, double radius
     // 2. Récupération des mesures pour ce capteur précis sur la période
     // On prend le capteur le plus proche (le premier de la liste)
     Sensor capteurLocal = listeCapteurs.front();
-    list<Measurement> mesures = DataService::getMeasurements(user);
+    vector<Measurement> mesures = DataService::getMeasurements(user);
     
     // Filtrer les mesures pour ce capteur spécifique et cette période
-    list<Measurement> mesuresLocales;
+    vector<Measurement> mesuresLocales;
     for (const auto& mesure : mesures) {
         if (mesure.getSensor()->getSensorID() == capteurLocal.getSensorID() && period.contains(mesure.getMeasureDate())) {
             mesuresLocales.push_back(mesure);

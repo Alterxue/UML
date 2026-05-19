@@ -7,13 +7,15 @@
 *************************************************************************/
 
 //---------- Interface de la classe <SecurityService> (fichier SecurityService.h) ----------------
-#if ! defined ( SecurityServcie_H )
-#define SecurityService_H
+#if ! defined ( SECURITYSERVICE_H )
+#define SECURITYSERVICE_H
+
 #include <ctime>
-#include <string>
 #include <list>
-#include "Sensor.h"
-#include "TimeRange.h"
+#include <string>
+
+#include "../model/User.h"
+
 using namespace std;
 
 //--------------------------------------------------- Interfaces utilisées
@@ -31,7 +33,7 @@ using namespace std;
 //------------------------------------------------------------------------
 
 
-class SecurityService :
+class SecurityService
 {
 //----------------------------------------------------------------- PUBLIC
 
@@ -67,4 +69,4 @@ public:
 };
 
 
-#endif
+#endif // SECURITYSERVICE_H
