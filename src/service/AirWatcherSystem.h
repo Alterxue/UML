@@ -40,9 +40,6 @@ public:
     //
     // Contrat :
     //
-
-    AuthenticateService* getAuthticateService();
-
     bool setPrivateUser(DataContainer& dc,std::string& id);
     // appelle le loginprivate du auth et va set en fonction de l'objet renvoyé par le login de auth
 
