@@ -32,21 +32,21 @@ class AuthenticateService
 //----------------------------------------------------------------- PUBLIC
 public:
 //----------------------------------------------------- Méthodes publiques
-    PrivateUser loginPrivate(DataContainer& dc, std::string& id, Role role);
+    PrivateUser* loginPrivate(DataContainer& dc, std::string& id);
     // Mode d'emploi :
     // Renvoie le PrivateUser correspondant à l'id si il existe et nullptr
     // sinon 
 
-    Provider loginProvider(DataContainer& dc, const std::string& id, Role role);
+    Provider* loginProvider(DataContainer& dc, std::string& id);
     // Mode d'emploi :
     // Renvoie le Provider correspondant à l'id si il existe et nullptr
     // sinon 
 
-    GovernmentAgency loginGovernmentAgency(const std::string& id, Role role);
+    GovernmentAgency* loginGovernmentAgency(std::string& id);
     // Mode d'emploi :
     // Renvoie l'objet ' correspondant à l'id si il existe et nullptr
     // sinon 
-    
+
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur

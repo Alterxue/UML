@@ -16,24 +16,45 @@ using namespace std;
 
 //------------------------------------------------------ Include personnel
 #include "AuthenticateService.h"
+#include "../model/DataContainer.h"
+#include "../model/Role.h"
 
 //------------------------------------------------------------- Constantes
 
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-bool loginPrivate(DataContainer& dc, string& id, Role role)
+PrivateUser* AuthenticateService::loginPrivate(DataContainer& dc, string& id)
 {
     map<string, PrivateUser*> listPrivateUser = dc.getAllUsers();
-    if ((dc.getAllUsers()).find(id)){
-        PrivateUser* privateUser = new PrivateUser(id, role);
-        return privateUser;
-    }
+    map<string, PrivateUser*>::const_iterator it = listPrivateUser.find(id);
 
+    if (it != listPrivateUser.end()){
+        return it->second;
+    }
     else {
         return nullptr;
     }
 }
+
+Provider* AuthenticateService::loginProvider(DataContainer& dc, string& id)
+{
+    map<string, Provider*> listProvider = dc.getAllProviders();
+    map<string, Provider*>::const_iterator it = listProvider.find(id);
+
+    if (it != listProvider.end()){
+        return it->second;
+    }
+    else {
+        return nullptr;
+    }
+}
+
+GovernmentAgency* AuthenticateService::loginGovernmentAgency(string& id)
+{
+    return new GovernmentAgency("admin", GOVERNMENT_AGENCY,"admin");
+}
+
 
 //-------------------------------------------- Constructeurs - destructeur
 AuthenticateService::AuthenticateService()

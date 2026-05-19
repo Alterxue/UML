@@ -13,9 +13,11 @@
 //-------------------------------------------------------- Include système
 using namespace std;
 #include <iostream>
+#include <string>
 
 //------------------------------------------------------ Include personnel
 #include "AirWatcherSystem.h"
+#include "../model/DataContainer.h"
 
 //------------------------------------------------------------- Constantes
 
@@ -27,6 +29,34 @@ using namespace std;
 //
 // {
 // } //----- Fin de méthode
+
+bool AirWatcherSystem::setPrivateUser(DataContainer& dc, string& id)
+{
+    PrivateUser* privateUser = authService->loginPrivate(dc, id);
+    if (privateUser == nullptr){
+        return false;
+    }
+    return true;
+}
+
+bool AirWatcherSystem::setProvider(DataContainer& dc, std::string& id)
+{
+    Provider* provider = authService->loginProvider(dc, id);
+    if (provider == nullptr){
+        return false;
+    }
+    return true;
+
+}
+
+bool AirWatcherSystem::setGovernmentAgency(DataContainer& dc, std::string& id)
+{
+    GovernmentAgency* govagency = authService->loginGovernmentAgency(id);
+    if (govagency == nullptr){
+        return false;
+    }
+    return true;
+}
 
 //------------------------------------------------- Surcharge d'opérateurs
 
@@ -53,8 +83,14 @@ AirWatcherSystem::~AirWatcherSystem ( )
     #ifdef MAP
         cout << "Appel au destructeur de <AirWatcherSystem>" << endl;
     #endif
-    if (currentUser != nullptr){
-        delete currentUser;
+    if (currentPrivateUser != nullptr){
+        delete currentPrivateUser;
+    }
+    if (currentProvider != nullptr){
+        delete currentProvider;
+    }
+    if (currentGovernmentAgency != nullptr){
+        delete currentGovernmentAgency;
     }
     delete statsService;
     delete securityService;
