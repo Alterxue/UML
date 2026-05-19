@@ -73,5 +73,5 @@ void DataContainer::addAirCleaner(AirCleaner* ptr_aircleaner)
 
 void DataContainer::addProvider(Provider* ptr_provider)
 {
-    allProviders[ptr_provider->getProviderID()] = ptr_provider;
+    allProviders[ptr_provider->getUserID()] = ptr_provider;
 } //----- Fin de addProvider
