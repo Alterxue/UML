@@ -17,7 +17,7 @@
 
 #include "Attribute.h"
 #include "Sensor.h"
-#include "User.h"
+#include "PrivateUser.h"
 #include "AirCleaner.h"
 #include "Provider.h"
 //------------------------------------------------------------- Constantes
@@ -37,25 +37,27 @@ class DataContainer
 //----------------------------------------------------------------- PUBLIC
 public:
 //----------------------------------------------------- Méthodes publiques
-    void addAttribute(const Attribute* ptr_atribute);
+    void addAttribute(Attribute* ptr_atribute);
     // Mode d'emploi : 
     // Ajoute un attribut de mesure à la collection
 
-    void addSensor(const Sensor* ptr_sensor);
+    void addSensor(Sensor* ptr_sensor);
     // Mode d'emploi :
     // Ajoute un capteur à la collection
 
-    void addUser(const User* ptr_user);
+    void addUser(PrivateUser* ptr_privateuser);
     // Mode d'emploi :
     // Ajoute un utilisateur à la collection
 
-    void addAirCleaner(const AirCleaner*);
+    void addAirCleaner(AirCleaner* ptr_aircleaner);
     // Mode d'emploi :
     // Ajoute un air cleaner à la collection
 
-    void addProvider(const Provider*);
+    void addProvider(Provider*);
     // Mode d'emploi :
     // Ajoute un fournisseur à la collection
+
+    
 
 //------------------------------------------------- Surcharge d'opérateurs
 
@@ -69,7 +71,7 @@ protected:
 //----------------------------------------------------- Attributs protégés
     std::map<std::string, Attribute*> allAttributes;
     std::map<std::string, Sensor*> allSensors;
-    std::map<std::string, User*> allUsers;
+    std::map<std::string, PrivateUser*> allUsers;
     std::vector<AirCleaner*> allAirCleaners;
     std::map<std::string, Provider*> allProviders; 
 };
