@@ -16,7 +16,8 @@ int main(){
     DataContainer dataContainer = new DataContainer();
     CSVDataManager dataManager = new CSVDataManager();
 
-
+    bool login = false;
+    do{
     cout << "Bienvenue dans AirWatcherSystem !" << endl;
     cout << "Veuillez vous connecter pour accéder au système." << endl;
     cout << "Vous êtes un : " << endl;
@@ -38,6 +39,10 @@ int main(){
     } else if (roleChoice == 3) {
         GovernmentAgency governmentAgency = Application.getAuthenticateService().loginGovernmentAgency(userID);
     }
+    }while(!login);
+
+
+
     int choice;
     do {
         cout << "-- Menu principal AirWatcher --" << endl;
@@ -64,11 +69,18 @@ int main(){
                 break;
             case 5:
                 if (roleChoice == 1) {
-                    // Logic for private user menu
+                    int particularChoice;
+                    do {
+                    cout << "-- MENU PARTICULIER --" << endl;
+                    cout << "6. Voir mes points" << endl;
+                    cout << "7. Voir mes capteurs" << endl;
+                    cout << "8. Ajouter un capteur" << endl;
+                    cout << "11. Retour au menu principal" << endl;
+                    } while(particularChoice != 11);
                 } else if (roleChoice == 2) {
                     // Logic for provider menu
                 } else if (roleChoice == 3) {
-                    // Logic for government agency menu
+                    
                 }
                 break;
             case 6:

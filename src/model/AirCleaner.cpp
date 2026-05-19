@@ -39,6 +39,21 @@ string AirCleaner::getAirCleanerID() const
     return cleanerID;
 }
 
+double AirCleaner::getLattitude() const
+{
+    return lattitude;
+}
+
+double AirCleaner::getLongitude() const
+{
+    return longitude;
+}
+
+TimeRange AirCleaner::getWorkingPeriod() const
+{
+    return workingPeriod;
+}
+
 //------------------------------------------------- Surcharge d'opérateurs
 AirCleaner & AirCleaner::operator = (const AirCleaner & unAirCleaner)
 // Algorithme :

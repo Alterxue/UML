@@ -50,6 +50,12 @@ public:
 
     std::string getAirCleanerID() const;
     
+    double getLattitude() const;
+
+    double getLongitude() const;
+
+    TimeRange getWorkingPeriod() const;
+
 //------------------------------------------------- Surcharge d'opérateurs
     AirCleaner & operator = ( const AirCleaner & unAirCleaner );
     // Mode d'emploi :

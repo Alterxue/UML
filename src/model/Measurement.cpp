@@ -49,6 +49,11 @@ double Measurement::getValue() const
 {
     return this->value;
 } //----- Fin de getValue
+
+void Measurement::setIsValid(bool valid)
+{
+    this->isValid = valid;
+} //----- Fin de setIsValid
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur

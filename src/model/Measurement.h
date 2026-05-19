@@ -38,11 +38,14 @@ public:
     Sensor* getSensor() const;
     Attribute* getAttribute() const;
     double getValue() const;
+
+    void setIsValid(bool valid);
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
     Measurement(DateTime a_measureDate, Sensor* a_sensor, Attribute* an_attribute, double a_value);
 
+    
 //------------------------------------------------------------------ PRIVE
 protected:
 //----------------------------------------------------- Attributs protégés
