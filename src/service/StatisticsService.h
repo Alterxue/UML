@@ -35,7 +35,7 @@ class StatisticsService :
 public:
 //----------------------------------------------------- Méthodes publiques
 
-    static double calculateAirQuality(User user, double lat,double lon,time_t time);
+    static double calculateAirQuality(User user, double lat,double lon,DateTime time);
 
     static double estimateAirQuality(double lat, double long);
 

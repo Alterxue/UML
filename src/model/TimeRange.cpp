@@ -39,6 +39,16 @@ Seconds TimeRange::getDuration() const
     return chrono::duration_cast<Seconds>(end - start);
 } //----- Fin de getDuration
 
+DateTime TimeRange::getStart()
+{
+    return start;
+} //----- Fin de getStart
+
+DateTime TimeRange::getEnd()
+{
+    return end;
+} //----- Fin de getEnd
+
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur

@@ -40,6 +40,7 @@ public:
     //
     // Contrat :
     //
+    void setPrivateUser(PrivateUser* privateUser);
 
 //-------------------------------------------- Constructeurs - destructeur
     AirWatcherSystem();
@@ -58,7 +59,9 @@ public:
 
 protected:
 //----------------------------------------------------- Attributs protégés
-    User* currentUser;
+    PrivateUser* currentPrivateUser;
+    Provider* currentProvider;
+    GovernmentAgency* currentGovernmentAgency;
     StatisticsService* statsService;
     SecurityService* securityService;
     DataService* dataService

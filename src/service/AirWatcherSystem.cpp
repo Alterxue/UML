@@ -37,7 +37,9 @@ AirWatcherSystem::AirWatcherSystem ()
     #ifdef MAP
     cout << "Appel au constructeur <AirWatcherSystem>" << endl;
     #endif
-    currentUser = nullptr;
+    currentPrivateUser = nullptr;
+    currentProvider = nullptr;
+    currentGovernmentAgency = nullptr;
     statsService = new StatisticsService();
     securityService = new SecurityService();
     dataService = new DataService();

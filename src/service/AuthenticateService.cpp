@@ -22,3 +22,30 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
+bool loginPrivate(DataContainer& dc, string& id, Role role)
+{
+    map<string, PrivateUser*> listPrivateUser = dc.getAllUsers();
+    if ((dc.getAllUsers()).find(id)){
+        PrivateUser* privateUser = new PrivateUser(id, role);
+        return privateUser;
+    }
+
+    else {
+        return nullptr;
+    }
+}
+
+//-------------------------------------------- Constructeurs - destructeur
+AuthenticateService::AuthenticateService()
+{
+    #ifdef MAP
+        cout <<"Appel au constructeur de <AuthenticateService>"<< endl;
+    #endif
+}
+
+AuthenticateService::~AuthenticateService()
+{
+   #ifdef MAP
+        cout <<"Appel au destructeur de <AuthenticateService>"<< endl;
+    #endif 
+}

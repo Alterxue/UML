@@ -24,6 +24,7 @@ using namespace std;
 #include "../model/Sensor.h"
 #include "../model/TimeRange.h"
 #include "DataService.h"
+#include "StatisticsService.h"
 using namespace std;
 
 
@@ -33,24 +34,25 @@ using namespace std;
 
 //----------------------------------------------------- Méthodes publiques
 
-static double calculateAirQuality(User user, double lat, double lon, time_t time){
+static double calculateAirQuality(User user, double lat, double lon, DateTime time){
     // commencer a compter le temps
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // obtenir les listes de capteurs et mesures
-    list<Sensor> tousCapteurs = DataService.getSensors(user);
-    list<Measurement> toutesMesures = DataService.getMeasurements(user);
+    list<Sensor> tousCapteurs = DataService::getSensors(user);
+    list<Measurement> toutesMesures = DataService::getMeasurements(user);
     
     map<string, double> sommesPonderees;  
     map<string, double> sommePoids;      
     for (Sensor capteur:tousCapteurs){
-        if (capteur.isReliable == true){
+        if (capteur.getReliability() == true){
             double distance = capteur.calculateDistance(lat,lon);
             double poids = (distance < 0.1) ? 100 : 1 / (distance * distance);
             for(Measurement mesure: toutesMesures){
-                if(mesure.sensor->sensorID == capteur.sensorID and mesure.measureDate == time){
-                    sommesPonderees[mesure.attribute->attributeID] += (mesure.value * poids);
-                    sommePoids[mesure.attribut->attributeID] += poids;
+                if(mesure.getSensor()->getSensorID() == capteur.getSensorID() && mesure.getMeasureDate() == time){
+                    string attrID = mesure.getAttribute()->getAttributeID();
+                    sommesPonderees[attrID] += (mesure.getValue() * poids);
+                    sommePoids[attrID] += poids;
                 }
             }
         }
@@ -82,8 +84,8 @@ static double calculateAreaMean(User user, double lat, double lon, double radius
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // Récupération de toutes les données via DataService
-    list<Sensor> tousCapteurs = DataService.getSensors(user);
-    list<Measurement> toutesMesures = DataService.getMeasurements(user);
+    list<Sensor> tousCapteurs = DataService::getSensors(user);
+    list<Measurement> toutesMesures = DataService::getMeasurements(user);
     
     // Filtrage spatial et fiabilité - récupérer les capteurs dans la zone
     list<Sensor> capteursZone;
@@ -91,7 +93,7 @@ static double calculateAreaMean(User user, double lat, double lon, double radius
     for (const auto& capteur : tousCapteurs) {
         double distance = capteur.calculateDistance(lat, lon);
         // Vérifier si le capteur est dans le rayon ET est fiable
-        if (distance <= radius && capteur.isReliable == true) {
+        if (distance <= radius && capteur.getReliability() == true) {
             capteursZone.push_back(capteur);
         }
     }
@@ -102,11 +104,13 @@ static double calculateAreaMean(User user, double lat, double lon, double radius
     
     for (const auto& capteur : capteursZone) {
         for (const auto& mesure : toutesMesures) {
-            if (mesure.sensor->sensorID == capteur.sensorID && 
-                period.contains(mesure.measureDate) {
-                
-                sommesAttributs[mesure.attributeID] += mesure.value;
-                comptesAttributs[mesure.attributeID] += 1;
+            if (mesure.getSensor()->getSensorID() == capteur.getSensorID() && 
+                period.contains(mesure.getMeasureDate())) {
+
+                string attrID = mesure.getAttribute()->getAttributeID();
+                sommesAttributs[attrID] += mesure.getValue();
+                comptesAttributs[attrID] += 1;
+
             }
         }
     }
@@ -140,14 +144,14 @@ static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, T
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     //Récupération de toutes les données
-    list<Sensor> tousCapteurs = DataService.getSensors(user);
-    list<Measurement> toutesMesures = DataService.getMeasurements(user);
+    list<Sensor> tousCapteurs = DataService::getSensors(user);
+    list<Measurement> toutesMesures = DataService::getMeasurements(user);
     
     // Extraction des données du capteur cible pour la période
     list<Measurement> donneesCible;
     
     for (const auto& mesure : toutesMesures) {
-        if (mesure.sensor->sensorID == targetSensor && period.contains(mesure.measureDate)) {
+        if (mesure.getSensor()->getSensorID() == targetSensor && period.contains(mesure.getMeasureDate())) {
             donneesCible.push_back(mesure);
         }
     }
@@ -157,14 +161,14 @@ static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, T
     
     for (const auto& capteur : tousCapteurs) {
         // Ignorer le capteur cible et les capteurs non fiables
-        if (capteur.sensorID == targetSensor || capteur.isReliable == false) {
+        if (capteur.getSensorID() == targetSensor || capteur.getReliability() == false) {
             continue;
         }
         
         //Extraction des données du capteur actuel pour la période
         list<Measurement> donneesAComparer;
         for (const auto& mesure : toutesMesures) {
-            if (mesure.sensor->sensorID == capteur.sensorID && period.contains(mesure.measureDate)) {
+            if (mesure.getSensor()->getSensorID() == capteur.getSensorID() && period.contains(mesure.getMeasureDate())) {
                 donneesAComparer.push_back(mesure);
             }
         }
@@ -178,11 +182,11 @@ static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, T
             bool trouve = false;
             
             for (const auto& mesureAComparer : donneesAComparer) {
-                if (mesureAComparer.measureDate == mesureCible.measureDate && 
-                    mesureAComparer.attribut->attributeID == mesureCible.attribute->attributeID) {
+                if (mesureAComparer.getMeasureDate() == mesureCible.getMeasureDate() && 
+                    mesureAComparer.getAttribute()->getAttributeID() == mesureCible.getAttribute()->getAttributeID()) {
                     
                     // Calculer la différence absolue entre les deux valeurs
-                    double difference = abs(mesureCible.value - mesureAComparer.value);
+                    double difference = abs(mesureCible.getValue() - mesureAComparer.getValue());
                     differenceTotale += difference;
                     pointsCommuns += 1;
                     trouve = true;
@@ -194,7 +198,7 @@ static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, T
         //Calcul de l'écart moyen et stockage du score
         if (pointsCommuns > 0) {
             double ecartMoyen = differenceTotale / pointsCommuns;
-            scoresSimilarite[capteur.sensorID] = ecartMoyen;
+            scoresSimilarite[capteur.getSensorID()] = ecartMoyen;
         }
     }
     
@@ -213,7 +217,7 @@ static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, T
     for (const auto& pair : scoresVecteur) {
         // Trouver le capteur correspondant dans la liste originale
         for (const auto& capteur : tousCapteurs) {
-            if (capteur.sensorID == pair.first) {
+            if (capteur.getSensorID() == pair.first) {
                 listeTriee.push_back(capteur);
                 break;
             }
@@ -232,11 +236,11 @@ static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, T
 static double analyzeCleanerRadius(User user, string cleanerID){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
-    AirCleaner cleaner = DataService.getCleanerById(cleanerID);
-    
-    time_t startTime = cleaner.workingPeriod.start;
-    time_t stopTime = cleaner.workingPeriod.end;
-    time_t dureeFonctionnement = stopTime - startTime;
+    AirCleaner cleaner = DataService::getCleanerById(cleanerID);
+    TimeRange workingPeriod = cleaner.getWorkingPeriod();
+    DateTime startTime = workingPeriod.getStart();
+    DateTime stopTime = workingPeriod.getEnd();
+    auto dureeFonctionnement = stopTime - startTime;
     
     TimeRange periodePendant(startTime, stopTime);
     TimeRange periodeAvant(startTime - dureeFonctionnement, startTime);
@@ -246,8 +250,8 @@ static double analyzeCleanerRadius(User user, string cleanerID){
     
     for (double rayon = 1.0; rayon <= 10.0; rayon += 1.0) {
         // la qualite avant activation de aircleaner
-        double aqiAvant = calculateAreaMean(user, cleaner.latitude, cleaner.longitude, rayon, periodeAvant);
-        double aqiPendant = calculateAreaMean(user, cleaner.latitude, cleaner.longitude, rayon, periodePendant);
+        double aqiAvant = calculateAreaMean(user, cleaner.getLattitude(), cleaner.getLongitude(), rayon, periodeAvant);
+        double aqiPendant = calculateAreaMean(user, cleaner.getLattitude(), cleaner.getLongitude(), rayon, periodePendant);
         
         if (aqiPendant < aqiAvant) {
             double amelioration = ((aqiAvant - aqiPendant) / aqiAvant) * 100.0;
@@ -281,14 +285,14 @@ static string getZoneStatistic(User user, double lat, double lon, double radius,
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // Get all sensors in the area
-    list<Sensor> listeCapteurs = DataService.getSensorsInArea(lat, lon, radius);
-    list<Measurement> toutesMesures = DataService.getMeasurements(user);
+    list<Sensor> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
+    list<Measurement> toutesMesures = DataService::getMeasurements(user);
     
     // Filter measurements by sensor and time period
     list<Measurement> mesuresZone;
     for (const auto& mesure : toutesMesures) {
         for (const auto& capteur : listeCapteurs) {
-            if (mesure.sensor->sensorID == capteur.sensorID && period.contains(mesure.measureDate)) {
+            if (mesure.getSensor()->getSensorID() == capteur.getSensorID() && period.contains(mesure.getMeasureDate())) {
                 mesuresZone.push_back(mesure);
             }
         }
@@ -308,7 +312,7 @@ static string getZoneStatistic(User user, double lat, double lon, double radius,
     
     for (const auto& mesure : mesuresZone) {
         map<string, double> mesureMap;
-        mesureMap[mesure.attributeID] = mesure.value;
+        mesureMap[mesure.getAttribute()->getAttributeID()] = mesure.getValue();
         double aqiActuel = convertirVersIndiceATMO(mesureMap);
         
         if (aqiActuel > maxAQI) {
@@ -324,8 +328,9 @@ static string getZoneStatistic(User user, double lat, double lon, double radius,
     map<string, int> comptesPolluants;
     
     for (const auto& mesure : mesuresZone) {
-        sommesPolluants[mesure.attribute->attributeID] += mesure.value;
-        comptesPolluants[mesure.attribute->attributeID] += 1;
+        string attrID = mesure.getAttribute()->getAttributeID();
+        sommesPolluants[attrID] += mesure.getValue();
+        comptesPolluants[attrID] += 1;
     }
     
     string polluantPrincipal = "";
@@ -359,26 +364,26 @@ static string getZoneStatistic(User user, double lat, double lon, double radius,
 static double viewCleanerImpact(User user, string cleanerID, TimeRange period){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
-    AirCleaner cleaner = DataService.getCleanerById(cleanerID);
+    AirCleaner cleaner = DataService::getCleanerById(cleanerID);
     double rayonEffet = 5.0;    
-    double cleaner_lat = cleaner.latitude;     
-    double cleaner_lon = cleaner.longitude;       
-    time_t startTime = cleaner.startTime;           
+    double cleaner_lat = cleaner.getLattitude();     
+    double cleaner_lon = cleaner.getLongitude();       
+    DateTime cleanerStartTime = cleaner.getWorkingPeriod().getStart();          
 
     //Identifier les capteurs impactés (dans le rayon d'action du purificateur)
-    list<Sensor> tousCapteurs = DataService.getSensors(user);
+    list<Sensor> tousCapteurs = DataService::getSensors(user);
     list<string> capteursImpactes;
     
     for (const auto& capteur : tousCapteurs) {
         double distance = capteur.calculateDistance(cleaner_lat, cleaner_lon);
         if (distance <= rayonEffet) {
-            capteursImpactes.push_back(capteur.sensorID);
+            capteursImpactes.push_back(capteur.getSensorID());
         }
     }
     
     //Séparer la période en "Avant" et "Après" activation
-    TimeRange periodeAvant = period.getSubRangeBefore(startTime);
-    TimeRange periodeApres = period.getSubRangeAfter(startTime);
+    TimeRange periodeAvant(period.getStart(), cleanerStartTime);
+    TimeRange periodeApres(cleanerStartTime, period.getEnd());
     
     //Calculer la qualité moyenne pour chaque période
     double qualiteAvant = calculateAreaMean(user, cleaner_lat, cleaner_lon, rayonEffet, periodeAvant);
@@ -401,13 +406,13 @@ static double viewCleanerImpact(User user, string cleanerID, TimeRange period){
 // Estimer la qualité de l'air à une position précise (même sans capteur)
 // Utilise l'interpolation spatiale basée sur les capteurs voisins
 // Cette fonction est similaire à calculateAirQuality mais sans paramètre User
-static double estimateAirQuality(double lat, double lon）{
+static double estimateAirQuality(double lat, double lon){
     // Enregistrer le temps de début
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // Récupérer tous les capteurs et mesures (sans filtrage par utilisateur
-    list<Sensor> tousCapteurs = DataService.getAllSensors();
-    list<Measurement> toutesMesures = DataService.getAllMeasurements();
+    list<Sensor> tousCapteurs = DataService::getAllSensors();
+    list<Measurement> toutesMesures = DataService::getAllMeasurements();
     
     // Initialiser les structures pour l'interpolation spatiale (IDW)
     map<string, double> sommesPonderees;  // {attributeID: somme_valeurs_pondérées}
@@ -416,7 +421,7 @@ static double estimateAirQuality(double lat, double lon）{
     //Parcourir les capteurs pour l'interpolation
     for (const auto& capteur : tousCapteurs) {
         // Utiliser uniquement les capteurs fiables
-        if (capteur.isReliable == true) {
+        if (capteur.getReliability()== true) {
             // Calculer la distance entre le capteur et le point d'intérêt
             double distance = capteur.calculateDistance(lat, lon);
             
@@ -425,105 +430,38 @@ static double estimateAirQuality(double lat, double lon）{
             
             // Chercher les mesures de ce capteur
             for (const auto& mesure : toutesMesures) {
-                if (mesure.sensor->sensorID == capteur.sensorID) {
-                    sommesPonderees[mesure.attribute->attributeID] += (mesure.value * poids);
-                    sommePoids[mesure.attribute->attributeID] += poids;
+               if (mesure.getSensor()->getSensorID() == capteur.getSensorID()) {
+                    string attrID = mesure.getAttribute()->getAttributeID();
+                    sommesPonderees[attrID] += (mesure.getValue() * poids);
+                    sommePoids[attrID] += poids;
                 }
             }
         }
     }
-    
-static double calculateLocalAQI(User user, double lat, double lon, double radius, TimeRange period){
-    auto tempsDebut = chrono::high_resolution_clock::now();
-    
-    // 1. Récupération du capteur le plus proche (normalement à distance ~0)
-    list<Sensor> listeCapteurs = DataService.getSensorsInArea(lat, lon, radius);
-    
-    // Si aucun capteur dans la zone, retourner erreur
-    if (listeCapteurs.empty()) {
-        cout << "ERROR: No sensor found in this area" << endl;
-        return 0.0;
-    }
-    
-    // 2. Récupération des mesures pour ce capteur précis sur la période
-    // On prend le capteur le plus proche (le premier de la liste)
-    Sensor capteurLocal = listeCapteurs.front();
-    list<Measurement> mesures = DataService.getMeasurements(user);
-    
-    // Filtrer les mesures pour ce capteur spécifique et cette période
-    list<Measurement> mesuresLocales;
-    for (const auto& mesure : mesures) {
-        if (mesure.sensorID == capteurLocal.sensorID && period.contains(mesure.timestamp)) {
-            mesuresLocales.push_back(mesure);
-        }
-    }
-    
-    // Si pas de mesures pour ce capteur, retourner erreur
-    if (mesuresLocales.empty()) {
-        cout << "ERROR: No measurements available for this sensor in the given period" << endl;
-        return 0.0;
-    }
-    
-    // 3. Calcul des moyennes par polluant pour ce capteur
-    map<string, double> sommeAttributs;
-    map<string, int> comptesAttributs;
-    
-    for (const auto& mesure : mesuresLocales) {
-        sommeAttributs[mesure.attributeID] += mesure.value;
-        comptesAttributs[mesure.attributeID] += 1;
-    }
-    
-    // Calculer les moyennes simples
-    map<string, double> moyennesParAttribut;
-    for (const auto& pair : sommeAttributs) {
-        string attributeID = pair.first;
-        double sommeValue = pair.second;
-        
-        if (comptesAttributs[attributeID] > 0) {
-            moyennesParAttribut[attributeID] = sommeValue / comptesAttributs[attributeID];
-        }
-    }
-    
-    // 4. Conversion en indice ATMO final
-    double indiceGlobal = convertirVersIndiceATMO(moyennesParAttribut);
-    
-    // Enregistrer le temps de fin
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
-    
-    cout << "Temps d'exécution calculateLocalAQI : " << duree.count() << " ms" << endl;
-    cout << "Local AQI for sensor " << capteurLocal.sensorID << " : " << indiceGlobal << endl;
-    
-    return indiceGlobal;
-}
-    
-    //calcul des moyennes pondérées par attribut
     map<string, double> moyennesEstimees;
     for (const auto& pair : sommesPonderees) {
         string attributeID = pair.first;
-        double sommePonderee = pair.second;
-        
         if (sommePoids[attributeID] > 0) {
-            moyennesEstimees[attributeID] = sommePonderee / sommePoids[attributeID];
+            moyennesEstimees[attributeID] = pair.second / sommePoids[attributeID];
         }
     }
     
-    //Conversion en indice ATMO global
     double indiceGlobal = convertirVersIndiceATMO(moyennesEstimees);
 
     auto tempsFin = chrono::high_resolution_clock::now();
     auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
     cout << "Temps d'exécution estimateAirQuality : " << duree.count() << " ms" << endl;
-    
     return indiceGlobal;
 }
 
+
+    
 static double calculateLocalAQI(User user, double lat, double lon, double radius, TimeRange period){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Récupération du capteur le plus proche (normalement à distance ~0)
-    list<Sensor> listeCapteurs = DataService.getSensorsInArea(lat, lon, radius);
+    list<Sensor> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
     
     // Si aucun capteur dans la zone, retourner erreur
     if (listeCapteurs.empty()) {
@@ -534,12 +472,12 @@ static double calculateLocalAQI(User user, double lat, double lon, double radius
     // 2. Récupération des mesures pour ce capteur précis sur la période
     // On prend le capteur le plus proche (le premier de la liste)
     Sensor capteurLocal = listeCapteurs.front();
-    list<Measurement> mesures = DataService.getMeasurements(user);
+    list<Measurement> mesures = DataService::getMeasurements(user);
     
     // Filtrer les mesures pour ce capteur spécifique et cette période
     list<Measurement> mesuresLocales;
     for (const auto& mesure : mesures) {
-        if (mesure.sensorID == capteurLocal.sensorID && period.contains(mesure.timestamp)) {
+        if (mesure.getSensor()->getSensorID() == capteurLocal.getSensorID() && period.contains(mesure.getMeasureDate())) {
             mesuresLocales.push_back(mesure);
         }
     }
@@ -555,8 +493,9 @@ static double calculateLocalAQI(User user, double lat, double lon, double radius
     map<string, int> comptesAttributs;
     
     for (const auto& mesure : mesuresLocales) {
-        sommeAttributs[mesure.attributeID] += mesure.value;
-        comptesAttributs[mesure.attributeID] += 1;
+        string attrID = mesure.getAttribute()->getAttributeID();
+        sommeAttributs[attrID] += mesure.getValue();
+        comptesAttributs[attrID] += 1;
     }
     
     // Calculer les moyennes simples
@@ -578,10 +517,12 @@ static double calculateLocalAQI(User user, double lat, double lon, double radius
     auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
     cout << "Temps d'exécution calculateLocalAQI : " << duree.count() << " ms" << endl;
-    cout << "Local AQI for sensor " << capteurLocal.sensorID << " : " << indiceGlobal << endl;
+    cout << "Local AQI for sensor " << capteurLocal.getSensorID()<< " : " << indiceGlobal << endl;
     
     return indiceGlobal;
 }
+    
+
 
 double convertirVersIndiceATMO(map<string, double> moyennesEstimees) {
     double indiceMax = 0;
