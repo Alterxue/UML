@@ -58,11 +58,11 @@ public:
 
 protected:
 //----------------------------------------------------- Attributs protégés
-    User currentUser;
-    StatisticsService statsService;
-    SecurityService securityService;
-    DataService dataService
-    AuthenticateService authService;
+    User* currentUser;
+    StatisticsService* statsService;
+    SecurityService* securityService;
+    DataService* dataService
+    AuthenticateService* authService;
 };
 
 

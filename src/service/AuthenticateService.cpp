@@ -22,7 +22,8 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-bool AuthenticateService::login(const std::string& id, Role role, User& outUser)
+bool AuthenticateService::login(const std::string& id, Role role)
+// pas de booléen en retour mais un user ou null si la connexion a pas réussi
 {
     bool trouve = false;
     // recherche de l'utilisateur ID dans tous les CSV avec le data manager
