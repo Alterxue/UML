@@ -303,7 +303,7 @@ void SecurityService::initializeDatabase(User user) {
     
     // 4. Clear any temporary ban flags or corrupted states
     cout << "Clearing temporary corruption flags..." << endl;
-    DataService.clearCorruptionFlags();
+    DataService::clearCorruptionFlags();
     
     // 5. Reset statistics cache
     cout << "Resetting statistics cache..." << endl;
