@@ -109,7 +109,7 @@ protected:
 // Colections
 // Attribute : map<string, Attribute*> (seulement 4 instances, string : attributeID)
 // Sensors   : map<string, Sensor*> (string : sensorID)
-// Users     : map<string, User*> (string : userID)
+// PrivateUsers     : map<string, PrivateUser*> (string : userID)
 // AirCleaner: vector<AirCleaner*> (accès par parcours)
 // Provider  : map<string, Provider*> (string : providerID)
 
