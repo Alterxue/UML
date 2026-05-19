@@ -69,7 +69,7 @@ public:
     // Mode d'emploi :
     // Renvoie la collection des utilisateurs
 
-    const std::vector<AirCleaner*>& getAllAirCleaners() const;
+    const std::map<std::string, AirCleaner*>& getAllAirCleaners() const;
     // Mode d'emploi :
     // Renvoie la collection des air cleaners
 
@@ -90,7 +90,7 @@ protected:
     std::map<std::string, Attribute*> allAttributes;
     std::map<std::string, Sensor*> allSensors;
     std::map<std::string, PrivateUser*> allUsers;
-    std::vector<AirCleaner*> allAirCleaners;
+    std::map<std::string, AirCleaner*> allAirCleaners;
     std::map<std::string, Provider*> allProviders; 
 };
 
@@ -110,15 +110,16 @@ protected:
 // Attribute : map<string, Attribute*> (seulement 4 instances, string : attributeID)
 // Sensors   : map<string, Sensor*> (string : sensorID)
 // PrivateUsers     : map<string, PrivateUser*> (string : userID)
-// AirCleaner: vector<AirCleaner*> (accès par parcours)
+// AirCleaner: map<string,AirCleaner*> (accès par parcours)
 // Provider  : map<string, Provider*> (string : providerID)
 
 // PipeLine de chragement des données
 // 1) attributes.csv  : pour les attributs qui dépendent de personne
 // 2) sensors.csv     : création des censors, pas encore de mesures ni de proprio
 // 3) user.csv        : On créé les privateUser, on cherche le ou les sensors qu'il possède puis user->addSensor(s), s->setOwner(user)
-// 4) provider.csv    : On créé les provider
-// 5) cleaner.csv     : On crée les aircleaners et on ajoute au provider correspondant
+// 4) cleaner.csv     : On crée les aircleaners
+// 5) provider.csv    : On créé les provider et on lui ajoute les cleaners qui vont bien
+
 // 7) measurement.csv : pour chaque mesure on récupère le pointeur de l'attribut et du capteur, on crée le mesurement et on l'ajoute au sensore qui va bien
 
 // Pipeline de destruction

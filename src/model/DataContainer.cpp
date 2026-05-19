@@ -41,7 +41,7 @@ const std::map<std::string, PrivateUser*>& DataContainer::getAllUsers() const
     return allUsers;
 } //----- Fin de getAllUsers
 
-const std::vector<AirCleaner*>& DataContainer::getAllAirCleaners() const
+const std::map<string, AirCleaner*>& DataContainer::getAllAirCleaners() const
 {
     return allAirCleaners;
 } //----- Fin de getAllAirCleaners
@@ -68,7 +68,7 @@ void DataContainer::addUser(PrivateUser* ptr_privateuser)
 
 void DataContainer::addAirCleaner(AirCleaner* ptr_aircleaner)
 {
-    allAirCleaners.push_back(ptr_aircleaner);
+    allAirCleaners[ptr_aircleaner->getAirCleanerID()] = ptr_aircleaner;
 } //----- Fin de addAirCleaner
 
 void DataContainer::addProvider(Provider* ptr_provider)

@@ -47,6 +47,8 @@ public:
     Provider* getProvider() const;
     // Mode d'emploi : 
     // Renvoie le Provider de ce Aircleaner
+
+    std::string getAirCleanerID() const;
     
 //------------------------------------------------- Surcharge d'opérateurs
     AirCleaner & operator = ( const AirCleaner & unAirCleaner );

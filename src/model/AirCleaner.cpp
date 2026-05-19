@@ -34,6 +34,11 @@ Provider* AirCleaner::getProvider() const
     return provider;
 } //----- Fin de getProviderID
 
+string AirCleaner::getAirCleanerID() const
+{
+    return cleanerID;
+}
+
 //------------------------------------------------- Surcharge d'opérateurs
 AirCleaner & AirCleaner::operator = (const AirCleaner & unAirCleaner)
 // Algorithme :
