@@ -25,6 +25,11 @@ using namespace std;
 
 //----------------------------------------------------- Méthodes publiques
 
+string Provider::getProviderID() const
+{
+    return providerID;
+}
+
 list<AirCleaner> Provider::getMyCleaners(list<AirCleaner> cleaners) const
 {
     list<AirCleaner> myCleaners;

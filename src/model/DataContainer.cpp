@@ -26,16 +26,52 @@ using namespace std;
 
 //----------------------------------------------------- Méthodes publiques
 
-//----------------------------------------------------- Méthodes publiques
+const std::map<std::string, Attribute*>& DataContainer::getAllAttributes() const
+{
+    return allAttributes;
+} //----- Fin de getAllAttributes
 
-void DataContainer::addAttribute(const Attribute* ptr_attribute)
+const std::map<std::string, Sensor*>& DataContainer::getAllSensors() const
+{
+    return allSensors;
+} //----- Fin de getAllSensors
+
+const std::map<std::string, PrivateUser*>& DataContainer::getAllUsers() const
+{
+    return allUsers;
+} //----- Fin de getAllUsers
+
+const std::vector<AirCleaner*>& DataContainer::getAllAirCleaners() const
+{
+    return allAirCleaners;
+} //----- Fin de getAllAirCleaners
+
+const std::map<std::string, Provider*>& DataContainer::getAllProviders() const
+{
+    return allProviders;
+} //----- Fin de getAllProviders
+
+void DataContainer::addAttribute(Attribute* ptr_attribute)
 {
     allAttributes[ptr_attribute->getAttributeID()] = ptr_attribute;
 } //----- Fin de addAttribute
 
-void DataContainer::addSensor(const Sensor* ptr_sensor)
+void DataContainer::addSensor(Sensor* ptr_sensor)
 {
     allSensors[ptr_sensor->getSensorID()] = ptr_sensor;
 } //----- Fin de addSensor
 
-void DataContainer::addUser()
+void DataContainer::addUser(PrivateUser* ptr_privateuser)
+{
+    allUsers[ptr_privateuser->getUserID()] = ptr_privateuser;
+} //----- Fin de addUser
+
+void DataContainer::addAirCleaner(AirCleaner* ptr_aircleaner)
+{
+    allAirCleaners.push_back(ptr_aircleaner);
+} //----- Fin de addAirCleaner
+
+void DataContainer::addProvider(Provider* ptr_provider)
+{
+    allProviders[ptr_provider->getProviderID()] = ptr_provider;
+} //----- Fin de addProvider
