@@ -40,7 +40,15 @@ public:
     //
     // Contrat :
     //
-    void setPrivateUser(PrivateUser* privateUser);
+
+    AuthenticateService* getAuthticateService();
+
+    bool setPrivateUser(DataContainer& dc,std::string& id);
+    // appelle le loginprivate du auth et va set en fonction de l'objet renvoyé par le login de auth
+
+    bool setProvider(DataContainer& dc, std::string& id);
+
+    bool setGovernmentAgency(DataContainer& dc, std::string& id);
 
 //-------------------------------------------- Constructeurs - destructeur
     AirWatcherSystem();
@@ -64,7 +72,7 @@ protected:
     GovernmentAgency* currentGovernmentAgency;
     StatisticsService* statsService;
     SecurityService* securityService;
-    DataService* dataService
+    DataService* dataService;
     AuthenticateService* authService;
 };
 
