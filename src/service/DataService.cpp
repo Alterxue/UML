@@ -72,7 +72,7 @@ vector<Sensor> DataService::getSensors(User user) {
     // If user is PrivateUser, return only their sensors
     PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
     if (privateUser != nullptr) {
-        return privateUser->sensorsIDList;
+        return privateUser->sensorsList;
     }
     
     return result;
@@ -141,7 +141,7 @@ vector<Measurement> DataService::getMeasurements(User user) {
     // If PrivateUser, return measurements from their sensors only
     PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
     if (privateUser != nullptr) {
-        vector<Sensor> userSensors = privateUser->sensorsIDList;
+        vector<Sensor> userSensors = privateUser->sensorsList;
         list<Measurement> allMeasurements = getAllMeasurements();
         
         for (const auto& measurement : allMeasurements) {
