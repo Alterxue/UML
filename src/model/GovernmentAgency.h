@@ -13,7 +13,6 @@
 
 
 //--------------------------------------------------- Interfaces utilisées
-#include "Role.h"
 #include "User.h"
 #include "Sensor.h"
 #include <string>

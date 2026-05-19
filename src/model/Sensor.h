@@ -41,6 +41,11 @@ public:
     // Contrat :
     //
 
+    std::vector<Measurement> getMeasurements() const;
+    // Mode d'emploi :
+    // Retourne la liste des mesures du capteur
+
+
     std::string getSensorID() const;
     // Mode d'emploi :
     // Retourne l'ID du capteur

@@ -13,6 +13,7 @@
 
 
 //--------------------------------------------------- Interfaces utilisées
+#include "User.h"
 #include "AirCleaner.h"
 #include <string>
 #include <list>
@@ -27,14 +28,15 @@
 //
 //------------------------------------------------------------------------
 
-class Provider
+class Provider : public User
 {
 //----------------------------------------------------------------- PUBLIC
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    std::list<AirCleaner> getMyCleaners(std::list<AirCleaner> cleaners) const; // peut être changer par vector
+    void addMyCleaners(const std::vector<AirCleaner> cleaners); // peut être changer par vector
 
+    std::vector<AirCleaner> getMyCleaners() const; // peut être changer par vector
     //------------------------------------------------- Surcharge d'opérateurs
     Provider & operator = ( const Provider & unProvider );
     // Mode d'emploi :
@@ -44,7 +46,7 @@ public:
 
 
 //-------------------------------------------- Constructeurs - destructeur
-    Provider (std::string providerID);
+    Provider (std::string userID, Role role);
     // Mode d'emploi :
     //
     // Contrat :
@@ -62,7 +64,7 @@ protected:
 //----------------------------------------------------- Méthodes protégées
 
 //----------------------------------------------------- Attributs protégés
-    std::string providerID;
+    std::vector<AirCleaner> myCleaners; // Liste des AirCleaners associés au Provider
 
 };
 

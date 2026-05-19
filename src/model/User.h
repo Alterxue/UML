@@ -37,6 +37,8 @@ public:
     //
     std::string getUserID() const;
 
+    Role getRole() const;
+
 //------------------------------------------------- Surcharge d'opérateurs
     User & operator = ( const User & unUser );
     // Mode d'emploi :

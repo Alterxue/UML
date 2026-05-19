@@ -19,7 +19,7 @@ using namespace std;
 //------------------------------------------------------ Include personnel
 #include "Measurement.h"
 #include "Sensor.h"
-
+using DateTime = std::chrono::system_clock::time_point;
 //------------------------------------------------------------- Constantes
 
 //----------------------------------------------------------------- PUBLIC
@@ -30,7 +30,25 @@ using namespace std;
 //
 //{
 //} //----- Fin de Méthode
+DateTime Measurement::getMeasureDate() const
+{
+    return this->measureDate;
+} //----- Fin de getMeasureDate
 
+Sensor* Measurement::getSensor() const
+{
+    return this->sensor;
+} //----- Fin de getSensor
+
+Attribute* Measurement::getAttribute() const
+{
+    return this->attribute;
+} //----- Fin de getAttribute
+
+double Measurement::getValue() const
+{
+    return this->value;
+} //----- Fin de getValue
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur

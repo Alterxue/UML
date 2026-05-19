@@ -31,7 +31,7 @@ void PrivateUser::incrementPoints(int pointsToAdd)
 
 void PrivateUser::addSensor(const Sensor & sensor)
 {
-    sensorsIDList.push_back(sensor);
+    sensorsList.push_back(sensor);
 }
 
 int PrivateUser::getPoints() const

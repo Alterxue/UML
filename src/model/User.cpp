@@ -12,6 +12,7 @@
 
 //-------------------------------------------------------- Include système
 #include <iostream>
+#include "Role.h"
 #include <string>
 using namespace std;
 
@@ -27,6 +28,11 @@ using namespace std;
 string User::getUserID() const
 {
     return userID;
+}
+
+Role User::getRole() const
+{
+    return role;
 }
 
 //------------------------------------------------- Surcharge d'opérateurs

@@ -25,19 +25,21 @@ using namespace std;
 
 //----------------------------------------------------- Méthodes publiques
 
-list<AirCleaner> Provider::getMyCleaners(list<AirCleaner> cleaners) const
+void Provider::addMyCleaners(const vector<AirCleaner> cleaners) 
 {
-    list<AirCleaner> myCleaners;
     for (const AirCleaner & cleaner : cleaners)
     {
         if (cleaner.isActive(std::chrono::system_clock::now()) && cleaner.getProvider() == this)
         {
-            myCleaners.push_back(cleaner);
+            this->myCleaners.push_back(cleaner);
         }
     }
-    return myCleaners;
 }
 
+vector<AirCleaner> Provider::getMyCleaners() const 
+{
+    return this->myCleaners;
+}
 
 //------------------------------------------------- Surcharge d'opérateurs
 Provider & Provider::operator = (const Provider & unProvider)
@@ -46,7 +48,7 @@ Provider & Provider::operator = (const Provider & unProvider)
 
 
 //-------------------------------------------- Constructeurs - destructeur
-Provider::Provider (string providerID) : providerID(providerID){}
+Provider::Provider(string userID, Role role) : User(userID,role){}
 
 Provider::~Provider ()
 {

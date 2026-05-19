@@ -34,6 +34,10 @@ class Measurement
 public:
 //----------------------------------------------------- Méthodes publiques
 
+    DateTime getMeasureDate() const;
+    Sensor* getSensor() const;
+    Attribute* getAttribute() const;
+    double getValue() const;
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur

@@ -15,6 +15,7 @@ using namespace std;
 #include <iostream>
 #include <string>
 #include <cmath>
+using namespace std;
 
 //------------------------------------------------------ Include personnel
 #include "Sensor.h"
@@ -24,6 +25,11 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
+vector<Measurement> Sensor::getMeasurements() const
+{
+    return this->measurements;
+} //----- Fin de getMeasurements
+
 string Sensor::getSensorID() const
 {
     return this->sensorID;

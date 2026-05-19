@@ -65,7 +65,7 @@ public:
 protected:
 //----------------------------------------------------- Méthodes protégées
     int points;
-    std::list<Sensor> sensorsIDList; // Liste des capteurs associés à l'utilisateur
+    std::vector<Sensor> sensorsList; // Liste des capteurs associés à l'utilisateur
 //----------------------------------------------------- Attributs protégés
 
 };
