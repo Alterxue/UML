@@ -27,7 +27,6 @@ using namespace std;
 //----------------------------------------------------- Méthodes publiques
 
 //----------------------------------------------------- Méthodes publiques
-
 void DataContainer::addAttribute(Attribute* ptr_attribute)
 {
     allAttributes[ptr_attribute->getAttributeID()] = ptr_attribute;
@@ -50,7 +49,33 @@ void DataContainer::addAirCleaner(AirCleaner* ptr_aircleaner)
 
 void DataContainer::addProvider(Provider* ptr_provider)
 {
-    allProviders[ptr_provider->getUserID()] = ptr_provider;
+    allProviders[ptr_provider->getUSerID()] = ptr_provider;
 } //----- Fin de addProvider
+
+const std::map<std::string, Attribute*>& DataContainer::getAllAttributes() const
+{
+    return allAttributes;
+} //----- Fin de getAllAttributes
+
+const std::map<std::string, Sensor*>& DataContainer::getAllSensors() const
+{
+    return allSensors;
+} //----- Fin de getAllSensors
+
+const std::map<std::string, PrivateUser*>& DataContainer::getAllUsers() const
+{
+    return allUsers;
+} //----- Fin de getAllUsers
+
+const std::vector<AirCleaner*>& DataContainer::getAllAirCleaners() const
+{
+    return allAirCleaners;
+} //----- Fin de getAllAirCleaners
+
+const std::map<std::string, Provider*>& DataContainer::getAllProviders() const
+{
+    return allProviders;
+} //----- Fin de getAllProviders
+
 
 

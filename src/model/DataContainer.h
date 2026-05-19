@@ -57,9 +57,25 @@ public:
     // Mode d'emploi :
     // Ajoute un fournisseur à la collection
 
-    std:: getAllAttributes
+    const std::map<std::string, Attribute*>& getAllAttributes() const;
+    // Mode d'emploi :
+    // Renvoie la collection des attributs
 
-    
+    const std::map<std::string, Sensor*>& getAllSensors() const;
+    // Mode d'emploi :
+    // Renvoie la collection des capteurs
+
+    const std::map<std::string, PrivateUser*>& getAllUsers() const;
+    // Mode d'emploi :
+    // Renvoie la collection des utilisateurs
+
+    const std::vector<AirCleaner*>& getAllAirCleaners() const;
+    // Mode d'emploi :
+    // Renvoie la collection des air cleaners
+
+    const std::map<std::string, Provider*>& getAllProviders() const;
+    // Mode d'emploi :
+    // Renvoie la collection des fournisseurs
 
 //------------------------------------------------- Surcharge d'opérateurs
 
