@@ -53,9 +53,11 @@ public:
     // Mode d'emploi :
     // Ajoute un air cleaner à la collection
 
-    void addProvider(Provider*);
+    void addProvider(Provider* ptr_provider);
     // Mode d'emploi :
     // Ajoute un fournisseur à la collection
+
+    std:: getAllAttributes
 
     
 
