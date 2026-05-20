@@ -45,9 +45,7 @@ vector<Sensor> PrivateUser::getSensorsList() const
 }
 
 //------------------------------------------------- Surcharge d'opérateurs
-PrivateUser & PrivateUser::operator = (const PrivateUser & unPrivateUser)
-{
-} //----- Fin de operator =
+
 
 
 //-------------------------------------------- Constructeurs - destructeur

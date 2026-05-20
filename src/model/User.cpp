@@ -36,11 +36,7 @@ Role User::getRole() const
 }
 
 //------------------------------------------------- Surcharge d'opérateurs
-User & User::operator = (const User & unUser)
-// Algorithme :
-//
-{
-} //----- Fin de operator =
+
 
 
 //-------------------------------------------- Constructeurs - destructeur

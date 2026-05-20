@@ -269,9 +269,9 @@ AirCleaner DataService::getCleanerById(string cleanerID) {
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         // Return default constructed AirCleaner
-        return AirCleaner("", nullptr, 0.0, 0.0, 
-                          chrono::system_clock::now(), 
-                          chrono::system_clock::now());
+        return AirCleaner("", 0.0, 0.0, 
+                  chrono::system_clock::now(), 
+                  chrono::system_clock::now());
     }
     
     const auto& cleaners = dataContainer->getAllAirCleaners();
@@ -283,7 +283,7 @@ AirCleaner DataService::getCleanerById(string cleanerID) {
     cout << "WARNING: Air Cleaner " << cleanerID << " not found" << endl;
     
     // Return default constructed AirCleaner if not found
-    return AirCleaner("", nullptr, 0.0, 0.0, 
+    return AirCleaner("", 0.0, 0.0, 
                       chrono::system_clock::now(), 
                       chrono::system_clock::now());
 }

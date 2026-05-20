@@ -48,7 +48,7 @@ bool AirWatcherSystem::setProvider(DataContainer& dc, std::string& id)
     return true;
 } //----- Fin de setProvdider
 
-bool AirWatcherSystem::setGovernmentAgency(DataContainer& dc, std::string& id)
+bool AirWatcherSystem::setGovernmentAgency(std::string& id)
 {
     currentGovernmentAgency = authService->loginGovernmentAgency(id);
     if (currentGovernmentAgency == nullptr){

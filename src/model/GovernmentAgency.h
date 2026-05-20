@@ -41,11 +41,6 @@ public:
     void manageSystem();
     void flagSensors(Sensor & sensor);
 //------------------------------------------------- Surcharge d'opérateurs
-    GovernmentAgency & operator = ( const GovernmentAgency & unGovernmentAgency );
-    // Mode d'emploi :
-    //
-    // Contrat :
-    //
 
 
 //-------------------------------------------- Constructeurs - destructeur

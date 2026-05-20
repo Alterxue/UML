@@ -41,6 +41,10 @@ public:
     // Mode d'emploi : 
     // Ajoute un attribut de mesure à la collection
 
+    void addMeasurement(Measurement* ptr_measurement);
+    // Mode d'emploi :
+    // Ajoute une mesure à la collection
+
     void addSensor(Sensor* ptr_sensor);
     // Mode d'emploi :
     // Ajoute un capteur à la collection
@@ -77,14 +81,20 @@ public:
     // Mode d'emploi :
     // Renvoie la collection des fournisseurs
 
-    Sensor * DataContainer::getSensorByID(const std::string& sensorID);
+    Sensor * getSensorByID(const std::string& sensorID);
     // Mode d'emploi :
     // Permet de récupérer un capteur à partir de son ID, retourne nullptr si le capteur n'est pas trouvé
 
-    AirCleaner * DataContainer::getAirCleanerByID(const std::string& airCleanerID);
+    AirCleaner * getAirCleanerByID(const std::string& airCleanerID);
     // Mode d'emploi :
-    // Permet de récupérer un air cleaner à partir de son ID, retourne nullptr si l
+    // Permet de récupérer un air cleaner à partir de son ID, retourne nullptr si l'air cleaner n'est pas trouvé
+
+    Attribute * getAttributeByID(const std::string& attributeID);
+    // Mode d'emploi :
+    // Permet de récupérer un attribut à partir de son ID, retourne nullptr si l'attribut n'est pas trouvé
+
 //------------------------------------------------- Surcharge d'opérateurs
+
 
 //-------------------------------------------- Constructeurs - destructeur
     DataContainer();
@@ -101,6 +111,7 @@ protected:
     std::map<std::string, PrivateUser*> allUsers;
     std::map<std::string, AirCleaner*> allAirCleaners;
     std::map<std::string, Provider*> allProviders; 
+    std::map<std::string, std::vector<Measurement*>> measurementsBySensor;
 };
 
 #endif // DATACONTAINER_H

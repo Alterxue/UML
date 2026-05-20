@@ -17,7 +17,19 @@ int main(){
     CSVDataManager * dataManager = new CSVDataManager();
 
     // Charger toutes les données du CSV data manager avant tout test de connexion
+    dataManager->loadAttributes(*dataContainer);
+    dataManager->loadSensors(*dataContainer);
+    dataManager->loadUsers(*dataContainer);
+    dataManager->loadCleaners(*dataContainer);
+    dataManager->loadProviders(*dataContainer);
 
+    cout << "Données chargées depuis les fichiers CSV." << endl;
+    cout << dataContainer->getAllSensors().size() << " capteurs chargés." << endl;
+    cout << dataContainer->getAllUsers().size() << " utilisateurs chargés." << endl;
+    cout << dataContainer->getAllAirCleaners().size() << " air cleaners chargés." << endl;
+    cout << dataContainer->getAllProviders().size() << " fournisseurs chargés." << endl;
+
+    cout << "" << endl;
     bool login = false;
     cout << "Bienvenue dans AirWatcherSystem !" << endl;
     int roleChoice;
@@ -43,7 +55,7 @@ int main(){
                 cout << "ID invalide, aucun fournisseur trouvé, veuillez réessayer." << endl;
             }
         } else if (roleChoice == 3) {
-            login = Application->setGovernmentAgency(*dataContainer,userID);
+            login = Application->setGovernmentAgency(userID);
             if (!login){
                 cout << "ID invalide, aucun agent gouvernemental trouvé, veuillez réessayer." << endl;
             }

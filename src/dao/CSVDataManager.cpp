@@ -16,6 +16,9 @@ using namespace std;
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 
 //------------------------------------------------------ Include personnel
 #include "CSVDataManager.h"
@@ -32,7 +35,6 @@ using namespace std;
 void CSVDataManager::loadSensors(DataContainer & container) const{
   // Algorithme :
   //
-  Sensor* sensor; 
   string sensorId;
   double lattitude;
   double longitude;
@@ -150,30 +152,37 @@ void CSVDataManager::loadMeasurements(DataContainer & container){
   string sensorId;
   Sensor* sensor;
   string stimestamp;
-  
-  istringstream stream;
-  using DateTime = std::chrono::system_clock::time_point;
+  DateTime measureDate;
   
   string attributeId;
   Attribute* attribute;
   double value;
-  istream file("../../data/measurements.csv");
+  ifstream file("../../data/measurements.csv");
   string valueStr;
   string lineRemainder;
   while(file.good()){
     std::getline(file, stimestamp, ';');
-    stream.clear();
-    stream.str(stimestamp);
-    std::chrono::from_stream (stream, "%Y-%d-%m %H:%M:%S", time);
+    if (stimestamp.empty()){
+      std::getline(file, lineRemainder);
+      continue;
+    }
+    std::tm tm = {};
+    std::istringstream stream(stimestamp);
+    stream >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    if (stream.fail()){
+      std::getline(file, lineRemainder);
+      continue;
+    }
+    measureDate = std::chrono::system_clock::from_time_t(std::mktime(&tm));
     std::getline(file, sensorId, ';');
-    sensor=container.getSensor(sensorId);
+    sensor=container.getSensorByID(sensorId);
     std::getline(file, attributeId, ';');
-    attibute=container.getAttribute(attributeId);
+    attribute =container.getAttributeByID(attributeId);
     
     std::getline(file, valueStr, ';');
     value = std::stod(valueStr);
-    measurement=new Mesurements(timestamp,sensor,attribute,value);
-    sensor.addMeasurement(measurement);
+    measurement= new Measurement(measureDate,sensor,attribute,value);
+    sensor->addMeasurement(*measurement);
     container.addMeasurement(measurement);
     
     

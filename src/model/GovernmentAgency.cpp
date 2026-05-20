@@ -34,9 +34,6 @@ void GovernmentAgency::flagSensors(Sensor & sensor)
 }
 
 //------------------------------------------------- Surcharge d'opérateurs
-GovernmentAgency & GovernmentAgency::operator = (const GovernmentAgency & unGovernmentAgency)
-{
-} //----- Fin de operator =
 
 
 //-------------------------------------------- Constructeurs - destructeur

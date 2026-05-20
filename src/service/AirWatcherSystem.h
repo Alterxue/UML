@@ -47,7 +47,7 @@ public:
 
     bool setProvider(DataContainer& dc, std::string& id);
 
-    bool setGovernmentAgency(DataContainer& dc, std::string& id);
+    bool setGovernmentAgency(std::string& id);
 
 //-------------------------------------------- Constructeurs - destructeur
     AirWatcherSystem();

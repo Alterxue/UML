@@ -30,6 +30,18 @@ void DataContainer::addAttribute(Attribute* ptr_attribute)
     allAttributes[ptr_attribute->getAttributeID()] = ptr_attribute;
 } //----- Fin de addAttribute
 
+void DataContainer::addMeasurement(Measurement* ptr_measurement)
+{
+    if (ptr_measurement == nullptr) {
+        return;
+    }
+    Sensor* sensor = ptr_measurement->getSensor();
+    if (sensor == nullptr) {
+        return;
+    }
+    measurementsBySensor[sensor->getSensorID()].push_back(ptr_measurement);
+} //----- Fin de addMeasurement
+
 void DataContainer::addSensor(Sensor* ptr_sensor)
 {
     allSensors[ptr_sensor->getSensorID()] = ptr_sensor;
@@ -68,6 +80,16 @@ AirCleaner * DataContainer::getAirCleanerByID(const std::string& airCleanerID)
         }
     }
     return nullptr; // Retourne nullptr si l'air cleaner n'est pas trouvé
+}
+
+Attribute * DataContainer::getAttributeByID(const std::string& attributeID)
+{
+    for (const auto& pair : this->allAttributes) {
+        if (pair.first == attributeID) {
+            return pair.second;
+        }
+    }
+    return nullptr; // Retourne nullptr si l'attribut n'est pas trouvé
 }
 
 const std::map<std::string, Attribute*>& DataContainer::getAllAttributes() const
