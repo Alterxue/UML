@@ -1,9 +1,9 @@
 /*************************************************************************
                            AirWatcherSystem  -  description
                              -------------------
-    début                : $DATE$
-    copyright            : (C) $YEAR$ par $AUTHOR$
-    e-mail               : $EMAIL$
+    début                : 19/05/2026
+    copyright            : (C) 19/05/2026 par tautret
+    e-mail               : tom.autret@insa-lyon.fr
 *************************************************************************/
 
 //---------- Interface de la classe <AirWatcherSystem> (fichier AirWatcherSystem.h) ----------------

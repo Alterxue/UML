@@ -1,9 +1,9 @@
 /*************************************************************************
                            AirWatcherSystem  -  description
                              -------------------
-    début                : $DATE$
-    copyright            : (C) $YEAR$ par $AUTHOR$
-    e-mail               : $EMAIL$
+    début                : 19/05/2026
+    copyright            : (C) 19/05/2026 par tautret
+    e-mail               : tom.autret@insa-lyon.fr
 *************************************************************************/
 
 //---------- Réalisation de la classe <AirWatcherSystem> (fichier AirWatcherSystem.cpp) ------------
@@ -37,7 +37,7 @@ bool AirWatcherSystem::setPrivateUser(DataContainer& dc, string& id)
         return false;
     }
     return true;
-}
+} //----- Fin de setPrivateUser
 
 bool AirWatcherSystem::setProvider(DataContainer& dc, std::string& id)
 {
@@ -46,8 +46,7 @@ bool AirWatcherSystem::setProvider(DataContainer& dc, std::string& id)
         return false;
     }
     return true;
-
-}
+} //----- Fin de setProvdider
 
 bool AirWatcherSystem::setGovernmentAgency(DataContainer& dc, std::string& id)
 {
@@ -56,7 +55,7 @@ bool AirWatcherSystem::setGovernmentAgency(DataContainer& dc, std::string& id)
         return false;
     }
     return true;
-}
+} //----- Fin de setGovernmentAgency
 
 //------------------------------------------------- Surcharge d'opérateurs
 
