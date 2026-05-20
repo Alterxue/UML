@@ -49,6 +49,8 @@ public:
     // Mode d'emploi : 
     // Renvoie le Provider de ce Aircleaner
 
+    void setProvider(Provider* a_provider);
+
     std::string getAirCleanerID() const;
     
     double getLattitude() const;
@@ -65,7 +67,7 @@ public:
     //
 
 //-------------------------------------------- Constructeurs - destructeur
-    AirCleaner(std::string a_cleanerID, Provider* a_provider, double a_lattitude, double a_longitude, DateTime a_startTime, DateTime a_stopTime);
+    AirCleaner(std::string a_cleanerID, double a_lattitude, double a_longitude, DateTime a_startTime, DateTime a_stopTime);
     // Mode d'emploi :
     // Constructeur du AirCleaner à partir des paramètres
 

@@ -54,6 +54,11 @@ TimeRange AirCleaner::getWorkingPeriod() const
     return workingPeriod;
 }
 
+void AirCleaner::setProvider(Provider* a_provider)
+{
+    provider = a_provider;
+}
+
 //------------------------------------------------- Surcharge d'opérateurs
 AirCleaner & AirCleaner::operator = (const AirCleaner & unAirCleaner)
 // Algorithme :
@@ -63,8 +68,8 @@ AirCleaner & AirCleaner::operator = (const AirCleaner & unAirCleaner)
 
 
 //-------------------------------------------- Constructeurs - destructeur
-AirCleaner::AirCleaner(string a_cleanerID, Provider* a_provider, double a_lattitude, double a_longitude, DateTime a_startTime, DateTime a_stopTime)
-: cleanerID(a_cleanerID), provider(a_provider), lattitude(a_lattitude), longitude(a_longitude), workingPeriod(TimeRange(a_startTime, a_stopTime))
+AirCleaner::AirCleaner(string a_cleanerID, double a_lattitude, double a_longitude, DateTime a_startTime, DateTime a_stopTime)
+: cleanerID(a_cleanerID), provider(nullptr), lattitude(a_lattitude), longitude(a_longitude), workingPeriod(TimeRange(a_startTime, a_stopTime))
 {
     #ifdef MAP
         cout << "Appel au constructeur de <AirCleaner>" << endl;

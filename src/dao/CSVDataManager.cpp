@@ -36,20 +36,20 @@ void CSVDataManager::loadSensors(DataContainer & container) const{
   string sensorId;
   double lattitude;
   double longitude;
-  bool isReliable=true;
-  //list<Measurement> mesures;
   ifstream file("../../data/sensor.csv");
-  while(file.good){
-    sensorId=getline(file,';');
-    lattitude=stod(getline(file,';'));
-    longitude=stod(getline(file,';'));
-    //mesures=loadMeasurementsBySensorID(sensorID);
-    container.addSensor(new Sensor(sensorId,lattitude,longitude,isReliable,mesures)));
-    getline(file,'\n');
+  string lattitudeStr;
+  string longitudeStr;
+  string lineRemainder;
+  while(file.good()){
+    std::getline(file, sensorId, ';');
+    std::getline(file, lattitudeStr, ';');
+    std::getline(file, longitudeStr, ';');
+    lattitude = std::stod(lattitudeStr);
+    longitude = std::stod(longitudeStr);
+    container.addSensor(new Sensor(sensorId,lattitude,longitude));
+    std::getline(file, lineRemainder);
     file.peek();
   }
-  return dicSensor;
-  
 }
 
 
@@ -59,15 +59,16 @@ void CSVDataManager::loadAttributes(DataContainer & container) const{
   string unit;
   string description;
   ifstream file("../../data/attributes.csv");
-  getline(file,'\n');
+  string lineRemainder;
+  std::getline(file, lineRemainder);
   while(file.good()){
-    attributeId=getline(file,';');
-    unit=getline(file,';');
-    description=getline(file,';');
+    std::getline(file, attributeId, ';');
+    std::getline(file, unit, ';');
+    std::getline(file, description, ';');
 
     container.addAttribute(new Attribute(attributeId,unit,description));
     
-    getline('\n');
+    std::getline(file, lineRemainder);
     file.peek();
   }  
   
@@ -79,14 +80,16 @@ void CSVDataManager::loadUsers(DataContainer & container) const{
   string sensorId;
   PrivateUser* user;
   ifstream file("../../data/users.csv");
+  string lineRemainder;
   while(file.good()){
-    userId=getline(file,';');
-    sensorId=getline(file,';');
+    std::getline(file, userId, ';');
+    std::getline(file, sensorId, ';');
     user=new PrivateUser(userId,PRIVATE_USER);
-    container.getSensor(sensorId)->setUser(user);
-    container.addUser(user);
+    container.getSensorByID(sensorId)->setOwner(user); // Associe le capteur à l'utilisateur
+    user->addSensor(*container.getSensorByID(sensorId)); // Associe l'utilisateur au capteur
+    container.addUser(user); // Ajoute l'utilisateur au conteneur de données
     
-    getline('\n');
+    std::getline(file, lineRemainder);
     file.peek();
   }
   
@@ -102,24 +105,22 @@ void CSVDataManager::loadCleaners(DataContainer & container) const{
   double longitude;
   DateTime dateD;
   DateTime dateF;
-  ifstream file("../../data/cleaners.csv")
+  ifstream file("../../data/cleaners.csv");
+  string lattitudeStr;
+  string longitudeStr;
+  string lineRemainder;
   while(file.good()){
-    cleanerId=getline(file,';');
-    lattitude=stod(getline(file,';'));
-    longitude=stod(getline(file,'\n'));
+    std::getline(file, cleanerId, ';');
+    std::getline(file, lattitudeStr, ';');
+    std::getline(file, longitudeStr);
+    lattitude = std::stod(lattitudeStr);
+    longitude = std::stod(longitudeStr);
     
     cleaner=new AirCleaner(cleanerId,lattitude,longitude,dateD,dateF);
-    container.addCleaner(cleaner);
-    getline('\n');
+    container.addAirCleaner(cleaner);
+    std::getline(file, lineRemainder);
     file.peek();
-  }
-  
-    
-
-    
-  
-  
-  
+  } 
 }
 
 void CSVDataManager::loadProviders(DataContainer & container) const{
@@ -128,16 +129,17 @@ void CSVDataManager::loadProviders(DataContainer & container) const{
   Provider* provider;
   AirCleaner* cleaner;
   ifstream file("../../data/providers.csv");
+  string lineRemainder;
   while(file.good()){
-    providerId=getline(file,';');
-    cleanerId=getline(file,';');
-    provider=new Provider(providerId);
-    cleaner=container.getCleaner(cleanerId);
-    provider->addCleaner(cleaner);
-    cleaner->addProvider(provider);
-    container.add(provider);
+    std::getline(file, providerId, ';');
+    std::getline(file, cleanerId, ';');
+    provider = new Provider(providerId, PROVIDER);
+    cleaner=container.getAirCleanerByID(cleanerId);
+    provider->addCleaners(cleaner);
+    cleaner->setProvider(provider);
+    container.addProvider(provider);
 
-    getline(file,'\n');
+    std::getline(file, lineRemainder);
     file.peek();
     
   }
@@ -150,38 +152,37 @@ void CSVDataManager::loadMeasurements(DataContainer & container){
   string stimestamp;
   
   istringstream stream;
-  DateTime <std::chrono::system_clock> time;
+  using DateTime = std::chrono::system_clock::time_point;
   
   string attributeId;
   Attribute* attribute;
   double value;
   istream file("../../data/measurements.csv");
+  string valueStr;
+  string lineRemainder;
   while(file.good()){
-    stream.str(getline(file,';'));
+    std::getline(file, stimestamp, ';');
+    stream.clear();
+    stream.str(stimestamp);
     std::chrono::from_stream (stream, "%Y-%d-%m %H:%M:%S", time);
-    sensorId=getline(file,';');
+    std::getline(file, sensorId, ';');
     sensor=container.getSensor(sensorId);
-    attributeId=getline(file,';');
+    std::getline(file, attributeId, ';');
     attibute=container.getAttribute(attributeId);
     
-    value=stod(getline(file,';'));
+    std::getline(file, valueStr, ';');
+    value = std::stod(valueStr);
     measurement=new Mesurements(timestamp,sensor,attribute,value);
     sensor.addMeasurement(measurement);
     container.addMeasurement(measurement);
     
     
-    getline(file,'\n');
+    std::getline(file, lineRemainder);
     file.peek();
   }
 }
 
 
-
-  
- 
-
-  
- 
 
 //------------------------------------------------- Surcharge d'opérateurs
 CSVDataManager & CSVDataManager::operator = ( const CSVDataManager & unCSVDataManager )

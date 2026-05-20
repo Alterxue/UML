@@ -25,15 +25,9 @@ using namespace std;
 
 //----------------------------------------------------- Méthodes publiques
 
-void Provider::addMyCleaners(const vector<AirCleaner> cleaners) 
+void Provider::addCleaners(const AirCleaner * cleaner) 
 {
-    for (const AirCleaner & cleaner : cleaners)
-    {
-        if (cleaner.isActive(std::chrono::system_clock::now()) && cleaner.getProvider() == this)
-        {
-            this->myCleaners.push_back(cleaner);
-        }
-    }
+    this->myCleaners.push_back(cleaner);
 }
 
 vector<AirCleaner> Provider::getMyCleaners() const 

@@ -50,6 +50,26 @@ void DataContainer::addProvider(Provider* ptr_provider)
     allProviders[ptr_provider->getUserID()] = ptr_provider;
 } //----- Fin de addProvider
 
+Sensor * DataContainer::getSensorByID(const std::string& sensorID)
+{
+    for (const auto& pair : this->allSensors) {
+        if (pair.first == sensorID) {
+            return pair.second;
+        }
+    }
+    return nullptr; // Retourne nullptr si le capteur n'est pas trouvé
+}
+
+AirCleaner * DataContainer::getAirCleanerByID(const std::string& airCleanerID)
+{
+    for (const auto& pair : this->allAirCleaners) {
+        if (pair.first == airCleanerID) {
+            return pair.second;
+        }
+    }
+    return nullptr; // Retourne nullptr si l'air cleaner n'est pas trouvé
+}
+
 const std::map<std::string, Attribute*>& DataContainer::getAllAttributes() const
 {
     return allAttributes;

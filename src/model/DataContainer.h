@@ -77,6 +77,13 @@ public:
     // Mode d'emploi :
     // Renvoie la collection des fournisseurs
 
+    Sensor * DataContainer::getSensorByID(const std::string& sensorID);
+    // Mode d'emploi :
+    // Permet de récupérer un capteur à partir de son ID, retourne nullptr si le capteur n'est pas trouvé
+
+    AirCleaner * DataContainer::getAirCleanerByID(const std::string& airCleanerID);
+    // Mode d'emploi :
+    // Permet de récupérer un air cleaner à partir de son ID, retourne nullptr si l
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
