@@ -25,7 +25,7 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-vector<Measurement> Sensor::getMeasurements() const
+const vector<Measurement>& Sensor::getMeasurements() const
 {
     return this->measurements;
 } //----- Fin de getMeasurements

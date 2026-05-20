@@ -29,7 +29,7 @@ void PrivateUser::incrementPoints(int pointsToAdd)
     points += pointsToAdd;
 }
 
-void PrivateUser::addSensor(const Sensor & sensor)
+void PrivateUser::addSensor(Sensor* sensor)
 {
     sensorsList.push_back(sensor);
 }
@@ -39,7 +39,7 @@ int PrivateUser::getPoints() const
     return points;
 }
 
-vector<Sensor> PrivateUser::getSensorsList() const
+const vector<Sensor*>& PrivateUser::getSensorsList() const
 {
     return sensorsList;
 }

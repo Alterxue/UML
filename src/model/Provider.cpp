@@ -25,12 +25,12 @@ using namespace std;
 
 //----------------------------------------------------- Méthodes publiques
 
-void Provider::addCleaners(const AirCleaner * cleaner) 
+void Provider::addCleaners(AirCleaner* cleaner) 
 {
     this->myCleaners.push_back(*cleaner);
 }
 
-vector<AirCleaner> Provider::getMyCleaners() const 
+const vector<AirCleaner*>& Provider::getMyCleaners() const 
 {
     return this->myCleaners;
 }

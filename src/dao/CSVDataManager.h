@@ -25,10 +25,11 @@
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types
+using DateTime = std::chrono::system_clock::time_point;
 
 //------------------------------------------------------------------------
 // Rôle de la classe <CSVDataManager>
-// va permettre de lire et parser les CSV avant de stocker les données
+// Va permettre de lire et parser les CSV avant de stocker les données
 // DataContainer
 //------------------------------------------------------------------------
 
@@ -38,17 +39,40 @@ class CSVDataManager
 
 public:
 //----------------------------------------------------- Méthodes publiques
-  void loadSensors(DataContainer & container) const;
-  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-  //
-  // Contrat :
-  //
+    void loadAttributes(DataContainer & container) const;
+    // Mode d'emploi :
+    // Charge les attributs de mesure et les stock dans DataContainer
+
+    void loadSensors(DataContainer & container) const;
+    // Mode d'emploi :
+    // Charge tous les sensors des fichiers dans le DataContainer
+
+    void loadUsers(DataContainer & container) const;
+    // Mode d'emploi :
+    // Charge les PrivateUser, les stocke et leur associe leur capteurs
+
+    void loadCleaners(DataContainer & container) const;
+    // Mode d'emploi :
+    // Charge les AirCleaners et les stocke
+
+    void loadProviders(DataContainer & container) const;
+    // Mode d'emploi :
+    // Charge tous les Provider et les stocke dans DataContainer
+
+    void loadMeasurements(DataContainer & container) const;
+    // Mode d'emploi : 
+    // Charges les mesures et les associe au bon capteur
+ 
+
+
+
+
   //std::list<Sensor> loadSensorsByUser(PrivateUser user)const;
   // Mode d'emploi :Renvoie la liste des Sensor appartenant a l'user en paramètre à l'appelant
   //
   // Contrat :
   //
-  Sensor loadSensorById(std::string sensorID);
+  // Sensor loadSensorById(std::string sensorID);
 
   //std::list<Measurement> loadMeasurements()const;
   // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
@@ -60,26 +84,10 @@ public:
   //
   // Contrat :
   // 
-  void loadUsers(DataContainer & container)const;
-  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-  //
-  // Contrat :
-  //
-  void loadAttributes(DataContainer & container)const;
-  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-  //
-  // Contrat :
-  //
-  void loadProviders(DataContainer & container)const;
-  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-  //
-  // Contrat :
-  //
-  void loadCleaners(DataContainer & container)const;
-  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-  //
-  // Contrat :
-  //
+
+  
+
+
 
   void loadMeasurements(DataContainer & container);
   // Mode d'emploi :Renvoie une liste de Sensor à l'appelant

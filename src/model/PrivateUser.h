@@ -14,8 +14,9 @@
 //--------------------------------------------------- Interfaces utilisées
 
 #include "User.h"
-#include "Sensor.h"
-#include <list>
+#include <vector>
+
+class Sensor;
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types
@@ -35,11 +36,11 @@ public:
 
     void incrementPoints(int pointsToAdd);
 
-    void addSensor(const Sensor & sensor);
+    void addSensor(Sensor* sensor);
 
     int getPoints() const;
 
-    std::vector<Sensor> getSensorsList() const;
+    const std::vector<Sensor*>& getSensorsList() const;
 
 //------------------------------------------------- Surcharge d'opérateurs
 
@@ -63,7 +64,7 @@ public:
 protected:
 //----------------------------------------------------- Méthodes protégées
     int points;
-    std::vector<Sensor> sensorsList; // Liste des capteurs associés à l'utilisateur
+    std::vector<Sensor*> sensorsList; // Liens non possédants vers les capteurs associés à l'utilisateur
 //----------------------------------------------------- Attributs protégés
 
 };

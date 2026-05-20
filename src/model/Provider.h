@@ -14,9 +14,10 @@
 
 //--------------------------------------------------- Interfaces utilisées
 #include "User.h"
-#include "AirCleaner.h"
 #include <string>
-#include <list>
+#include <vector>
+
+class AirCleaner;
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types
@@ -36,7 +37,7 @@ public:
 //----------------------------------------------------- Méthodes publiques
     void addCleaners(const AirCleaner * cleaner);
 
-    std::vector<AirCleaner> getMyCleaners() const; // peut être changer par vector
+    const std::vector<AirCleaner*>& getMyCleaners() const;
     //------------------------------------------------- Surcharge d'opérateurs
     Provider & operator = ( const Provider & unProvider );
     // Mode d'emploi :
@@ -64,8 +65,7 @@ protected:
 //----------------------------------------------------- Méthodes protégées
 
 //----------------------------------------------------- Attributs protégés
-    std::vector<AirCleaner> myCleaners; // Liste des AirCleaners associés au Provider
-
+    std::vector<AirCleaner*> myCleaners; // Liens non possédants vers les AirCleaners associés au Provider
 };
 
 //-------------------------------- Autres définitions dépendantes de <User>

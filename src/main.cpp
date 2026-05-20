@@ -4,17 +4,14 @@
 #include "model/Role.h"
 #include "model/GovernmentAgency.h"
 
+using namespace std;
 #include <iostream>
 #include <string>
 
-
-
-
 int main(){
-
-    AirWatcherSystem * Application = new AirWatcherSystem();
-    DataContainer * dataContainer = new DataContainer();
-    CSVDataManager * dataManager = new CSVDataManager();
+    AirWatcherSystem Application;
+    DataContainer dataContainer;
+    CSVDataManager dataManager;
 
     // Charger toutes les données du CSV data manager avant tout test de connexion
     dataManager->loadAttributes(*dataContainer);
@@ -45,12 +42,12 @@ int main(){
         cout << "Entrez votre ID : ";
         cin >> userID;
         if (roleChoice == 1) {
-            login = Application->setPrivateUser(*dataContainer,userID);
+            login = Application.setPrivateUser(dataContainer,userID);
             if (!login) {
                 cout << "ID invalide, aucun utilisateur trouvé, veuillez réessayer." << endl;
             }
         } else if (roleChoice == 2) {
-            login = Application->setProvider(*dataContainer,userID);
+            login = Application.setProvider(dataContainer,userID);
             if (!login) {
                 cout << "ID invalide, aucun fournisseur trouvé, veuillez réessayer." << endl;
             }
@@ -194,7 +191,5 @@ int main(){
                 cout << "Choix invalide, veuillez réessayer."<<endl;}
     } while (choice != 6);
     
-    delete Application;
-    delete dataContainer;
-    delete dataManager;
+    return 0;
 }

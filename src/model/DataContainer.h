@@ -15,11 +15,11 @@
 #include <vector>
 #include <map>
 
-#include "Attribute.h"
-#include "Sensor.h"
-#include "PrivateUser.h"
-#include "AirCleaner.h"
-#include "Provider.h"
+class Attribute;
+class Sensor;
+class PrivateUser;
+class AirCleaner;
+class Provider;
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types
