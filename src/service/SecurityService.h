@@ -43,22 +43,22 @@ public:
     // Core Fraud Detection Algorithm
     // Verifies if a specific sensor (usually private) produces reliable data
     // Returns true if sensor is reliable, false if fraudulent/faulty
-    static bool checkSensorReliability(User user, string sensorID);
+    static bool checkSensorReliability(const User& user, string sensorID);
 
     // Batch Fraud Detection
     // Identifies all malicious private users providing false data
     // Returns list of fraudulent users
-    static list<User> detectFraudulentUsers(User user);
+    static list<User> detectFraudulentUsers(const User& user);
 
     // Data Corruption Removal
     // Marks corrupted data as invalid and excludes from future calculations
     // Prevents pollution of statistical analysis
-    static void removeCorruptedData(User user);
+    static void removeCorruptedData(const User& user);
 
     // System Initialization
     // Performs secure database initialization or admin reset
     // Restores security baseline and clears corrupted states
-    static void initializeDatabase(User user);
+    static void initializeDatabase(const User& user);
 
 //-------------------------------------------- Constructeurs - destructeur
 

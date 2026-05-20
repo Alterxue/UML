@@ -14,6 +14,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "../model/Sensor.h"
 #include "../model/TimeRange.h"
@@ -40,21 +41,21 @@ class StatisticsService
 public:
 //----------------------------------------------------- Méthodes publiques
 
-    static double calculateAirQuality(User user, double lat, double lon, DateTime time);
+    static double calculateAirQuality(const User& user, double lat, double lon, DateTime time);
 
     static double estimateAirQuality(double lat, double lon);
 
-    static double viewCleanerImpact(User user, string cleanerID, TimeRange period);
+    static double viewCleanerImpact(const User& user, string cleanerID, TimeRange period);
 
-    static list<Sensor> compareSensorsBySimilarity(User user, string targetSensor, TimeRange period);
+    static vector<Sensor> compareSensorsBySimilarity(const User& user, string targetSensor, TimeRange period);
 
-    static double calculateAreaMean(User user, double lat, double lon, double radius, TimeRange period);
+    static double calculateAreaMean(const User& user, double lat, double lon, double radius, TimeRange period);
 
-    static double analyzeCleanerRadius(User user, string cleanerID);
+    static double analyzeCleanerRadius(const User& user, string cleanerID);
 
-    static string getZoneStatistic(User user, double lat, double lon, double radius, TimeRange period);
+    static string getZoneStatistic(const User& user, double lat, double lon, double radius, TimeRange period);
 
-    static double calculateLocalAQI(User user, double lat, double lon, double radius);
+    static double calculateLocalAQI(const User& user, double lat, double lon, double radius, TimeRange period);
 
     static double convertirVersIndiceATMO(map<string, double> moyennesEstimees);
 

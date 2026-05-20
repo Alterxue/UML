@@ -38,7 +38,7 @@ public:
 //----------------------------------------------------- Méthodes publiques
 
     // Sensor queries
-    static vector<Sensor*> getSensors(User user);
+    static vector<Sensor*> getSensors(const User& user);
     
     static vector<Sensor> getSensorsInArea(double lat, double lon, double radius);
     
@@ -49,7 +49,7 @@ public:
     static vector<Sensor*> getAllSensors();
     
     // Measurement queries
-    static vector<Measurement> getMeasurements(User user);
+    static vector<Measurement> getMeasurements(const User& user);
     
     static list<Measurement> getMeasurementsBySensor(string sensorID);
     
@@ -73,7 +73,7 @@ public:
     static void reloadAllData();
     
     // User history
-    static list<Measurement> getUserHistory(User user);
+    static list<Measurement> getUserHistory(const User& user);
 
     // Initialization
     static void initializeDataContainer(DataContainer* container);

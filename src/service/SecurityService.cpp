@@ -44,7 +44,7 @@ const time_t RELIABILITY_CHECK_PERIOD = 7 * 24 * 3600;  // 7 days for analysis
 
 // Algorithm 4: Fraud Detection - Check if a sensor is reliable
 // Returns true if sensor is reliable, false if fraudulent
-bool SecurityService::checkSensorReliability(User user, string targetSensorID) {
+bool SecurityService::checkSensorReliability(const User& user, string targetSensorID) {
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Get all sensors and measurements
@@ -172,13 +172,13 @@ bool SecurityService::checkSensorReliability(User user, string targetSensorID) {
 
 
 // Find all fraudulent users
-list<User> SecurityService::detectFraudulentUsers(User user) {
+list<User> SecurityService::detectFraudulentUsers(const User& user) {
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     list<User> fraudulentUsers;
     
     // 1. Authentication: Only GovernmentAgency
-    GovernmentAgency* agency = dynamic_cast<GovernmentAgency*>(&user);
+    const GovernmentAgency* agency = dynamic_cast<const GovernmentAgency*>(&user);
     if (agency == nullptr) {
         cout << "ERROR: Only Government Agency can detect fraudulent users" << endl;
         return fraudulentUsers;
@@ -219,11 +219,11 @@ list<User> SecurityService::detectFraudulentUsers(User user) {
 }
 
 // Data corruption removal: Mark corrupted data as invalid
-void SecurityService::removeCorruptedData(User user) {
+void SecurityService::removeCorruptedData(const User& user) {
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Authentication
-    GovernmentAgency* agency = dynamic_cast<GovernmentAgency*>(&user);
+    const GovernmentAgency* agency = dynamic_cast<const GovernmentAgency*>(&user);
     if (agency == nullptr) {
         cout << "ERROR: Only Government Agency can remove corrupted data" << endl;
         return;
@@ -267,11 +267,11 @@ void SecurityService::removeCorruptedData(User user) {
 
 
 // System initialization: Restore security baseline
-void SecurityService::initializeDatabase(User user) {
+void SecurityService::initializeDatabase(const User& user) {
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Authentication: Only system admin or high-level government
-    GovernmentAgency* agency = dynamic_cast<GovernmentAgency*>(&user);
+    const GovernmentAgency* agency = dynamic_cast<const GovernmentAgency*>(&user);
     if (agency == nullptr) {
         cout << "ERROR: Only System Administrator can initialize database" << endl;
         return;

@@ -39,7 +39,15 @@ public:
     // Mode d'emploi :
     //
     // Contrat :
-    
+    SecurityService * getSecurityService();
+    StatisticsService * getStatisticsService();
+    DataService * getDataService();
+
+    User * getCurrentUser();
+    PrivateUser * getCurrentPrivateUser();
+    Provider * getCurrentProvider();
+    GovernmentAgency * getCurrentGovernmentAgency();
+
     bool setPrivateUser(DataContainer& dc,std::string& id);
     // Mode d'emploi :
     // Va initialiser le PrivateUser courrant si il existe
@@ -73,6 +81,7 @@ protected:
     SecurityService* securityService;
     DataService* dataService;
     AuthenticateService* authService;
+    User* currentUser;
 };
 
 

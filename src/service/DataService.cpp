@@ -55,7 +55,7 @@ DataContainer* DataService::getDataContainer() {
 // ==================== SENSOR QUERY METHODS ====================
 
 // Get all sensors owned by a user or all public government sensors
-vector<Sensor*> DataService::getSensors(User user) {
+vector<Sensor*> DataService::getSensors(const User& user) {
     vector<Sensor*> result;
     
     if (dataContainer == nullptr) {
@@ -64,13 +64,13 @@ vector<Sensor*> DataService::getSensors(User user) {
     }
     
     // If user is GovernmentAgency, return all sensors
-    GovernmentAgency* agency = dynamic_cast<GovernmentAgency*>(&user);
+    const GovernmentAgency* agency = dynamic_cast<const GovernmentAgency*>(&user);
     if (agency != nullptr) {
         return getAllSensors();
     }
     
     // If user is PrivateUser, return only their sensors
-    PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
+    const PrivateUser* privateUser = dynamic_cast<const PrivateUser*>(&user);
     if (privateUser != nullptr) {
         return privateUser->getSensorsList(); 
     }
@@ -126,7 +126,7 @@ Sensor DataService::getSensorById(string sensorID) {
 // ==================== MEASUREMENT QUERY METHODS ====================
 
 // Get all measurements for a user's sensors
-vector<Measurement> DataService::getMeasurements(User user) {
+vector<Measurement> DataService::getMeasurements(const User& user) {
     vector<Measurement> result;
     
     if (dataContainer == nullptr) {
@@ -135,7 +135,7 @@ vector<Measurement> DataService::getMeasurements(User user) {
     }
     
     // If GovernmentAgency, return all measurements
-    GovernmentAgency* agency = dynamic_cast<GovernmentAgency*>(&user);
+    const GovernmentAgency* agency = dynamic_cast<const GovernmentAgency*>(&user);
     if (agency != nullptr) {
         list<Measurement> allMeasurements = getAllMeasurements();
         for (const auto& m : allMeasurements) {
@@ -145,7 +145,7 @@ vector<Measurement> DataService::getMeasurements(User user) {
     }
     
     // If PrivateUser, return measurements from their sensors only
-    PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
+    const PrivateUser* privateUser = dynamic_cast<const PrivateUser*>(&user);
     if (privateUser != nullptr) {
         vector<Sensor*> userSensors = privateUser->getSensorsList();
         list<Measurement> allMeasurements = getAllMeasurements();
@@ -226,10 +226,10 @@ void DataService::addMeasurement(DateTime a_measureDate, Sensor* a_sensor, Attri
 // ==================== USER QUERY METHODS ====================
 
 // Get user history (all measurements they submitted)
-list<Measurement> DataService::getUserHistory(User user) {
+list<Measurement> DataService::getUserHistory(const User& user) {
     list<Measurement> result;
     
-    PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
+    const PrivateUser* privateUser = dynamic_cast<const PrivateUser*>(&user);
     if (privateUser == nullptr) {
         cout << "ERROR: Only PrivateUsers have history" << endl;
         return result;

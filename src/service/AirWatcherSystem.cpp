@@ -18,17 +18,43 @@ using namespace std;
 //------------------------------------------------------ Include personnel
 #include "AirWatcherSystem.h"
 #include "../model/DataContainer.h"
+#include "../model/PrivateUser.h"
+#include "../model/Provider.h"
+#include "../model/GovernmentAgency.h"
 
 //------------------------------------------------------------- Constantes
 
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-// Nom de la méthode
-// Algorithme :
-//
-// {
-// } //----- Fin de méthode
+
+StatisticsService * AirWatcherSystem::getStatisticsService() {
+    return statsService;
+}
+
+SecurityService * AirWatcherSystem::getSecurityService() {
+    return securityService;
+}
+
+DataService * AirWatcherSystem::getDataService() {
+    return dataService;
+}
+
+PrivateUser * AirWatcherSystem::getCurrentPrivateUser() {
+    return currentPrivateUser;
+}
+
+Provider * AirWatcherSystem::getCurrentProvider() {
+    return currentProvider;
+}
+
+GovernmentAgency * AirWatcherSystem::getCurrentGovernmentAgency() {
+    return currentGovernmentAgency;
+}
+
+User * AirWatcherSystem::getCurrentUser() {
+    return currentUser;
+}
 
 bool AirWatcherSystem::setPrivateUser(DataContainer& dc, string& id)
 {
@@ -36,6 +62,7 @@ bool AirWatcherSystem::setPrivateUser(DataContainer& dc, string& id)
     if (currentPrivateUser == nullptr){
         return false;
     }
+    currentUser = currentPrivateUser;
     return true;
 } //----- Fin de setPrivateUser
 
@@ -45,6 +72,7 @@ bool AirWatcherSystem::setProvider(DataContainer& dc, std::string& id)
     if (currentProvider == nullptr){
         return false;
     }
+    currentUser = currentProvider;
     return true;
 } //----- Fin de setProvdider
 
@@ -54,6 +82,7 @@ bool AirWatcherSystem::setGovernmentAgency(std::string& id)
     if (currentGovernmentAgency == nullptr){
         return false;
     }
+    currentUser = currentGovernmentAgency;
     return true;
 } //----- Fin de setGovernmentAgency
 

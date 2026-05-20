@@ -1,12 +1,51 @@
 #include "dao/CSVDataManager.h"
 #include "model/DataContainer.h"
 #include "service/AirWatcherSystem.h"
+#include "service/DataService.h"
 #include "model/Role.h"
 #include "model/GovernmentAgency.h"
 
 using namespace std;
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <string>
+#include <chrono>
+
+using DateTime = std::chrono::system_clock::time_point;
+
+static bool parseDateTime(const string& input, DateTime& output)
+{
+    std::tm tm = {};
+    std::istringstream stream(input);
+    stream >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    if (stream.fail()) {
+        return false;
+    }
+    output = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    return true;
+}
+
+static bool readDateTime(const string& prompt, DateTime& output)
+{
+    cout << prompt;
+    string input;
+    getline(cin >> std::ws, input);
+    if (!parseDateTime(input, output)) {
+        cout << "Format invalide. Utilisez YYYY-MM-DD HH:MM:SS" << endl;
+        return false;
+    }
+    return true;
+}
+
+static string formatDateTime(const DateTime& value)
+{
+    std::time_t t = std::chrono::system_clock::to_time_t(value);
+    std::tm tm = *std::localtime(&t);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return oss.str();
+}
 
 int main(){
     AirWatcherSystem Application;
@@ -20,11 +59,15 @@ int main(){
     dataManager.loadCleaners(dataContainer);
     dataManager.loadProviders(dataContainer);
 
+    DataService::initializeDataContainer(&dataContainer);
+
     cout << "Données chargées depuis les fichiers CSV." << endl;
     cout << dataContainer.getAllSensors().size() << " capteurs chargés." << endl;
     cout << dataContainer.getAllUsers().size() << " utilisateurs chargés." << endl;
     cout << dataContainer.getAllAirCleaners().size() << " air cleaners chargés." << endl;
     cout << dataContainer.getAllProviders().size() << " fournisseurs chargés." << endl;
+
+
 
     cout << "" << endl;
     bool login = false;
@@ -72,17 +115,101 @@ int main(){
 
         switch (choice) {
             case 1:
-                // Logic to display nearby sensors
+            {
+                cout << "Choisissez un capteur a analyser (ID) : " << endl;
+                string sensorID;
+                cin >> sensorID;
+
+                Sensor* sensor = dataContainer.getSensorByID(sensorID);
+                User* currentUser = Application.getCurrentUser();
+                if (sensor == nullptr) {
+                    cout << "Capteur non trouve, veuillez reessayer." << endl;
+                    break;
+                }
+                DateTime startTime;
+                DateTime endTime;
+                if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
+                    break;
+                }
+                if (!readDateTime("Fin (YYYY-MM-DD HH:MM:SS): ", endTime)) {
+                    break;
+                }
+
+                double radiusKm = 0.0;
+                cout << "Rayon (km): ";
+                cin >> radiusKm;
+
+                double radiusMeters = radiusKm * 1000.0;
+                TimeRange period(startTime, endTime);
+                double aqi = StatisticsService::calculateLocalAQI(*currentUser, sensor->getLattitude(), sensor->getLongitude(), radiusMeters, period);
+                cout << "AQI local: " << aqi << endl;
                 break;
+            }
             case 2:
-                // Logic to display measurements of a sensor
+            {
+                User* currentUser = Application.getCurrentUser();
+                double lat = 0.0;
+                double lon = 0.0;
+                cout << "Latitude: ";
+                cin >> lat;
+                cout << "Longitude: ";
+                cin >> lon;
+
+                DateTime time;
+                if (!readDateTime("Date (YYYY-MM-DD HH:MM:SS): ", time)) {
+                    break;
+                }
+
+                double aqi = StatisticsService::calculateAirQuality(*currentUser, lat, lon, time);
+                cout << "AQI calcule: " << aqi << endl;
                 break;
+            }
             case 3:
-                // Logic for provider to manage sensors
+            {
+                User* currentUser = Application.getCurrentUser();
+                if (currentUser == nullptr) {
+                    cout << "Utilisateur non initialise." << endl;
+                    break;
+                }
+
+                string targetSensorID;
+                cout << "ID du capteur cible: ";
+                cin >> targetSensorID;
+
+                DateTime startTime;
+                DateTime endTime;
+                if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
+                    break;
+                }
+                if (!readDateTime("Fin (YYYY-MM-DD HH:MM:SS): ", endTime)) {
+                    break;
+                }
+
+                TimeRange period(startTime, endTime);
+                vector<Sensor> similaires = StatisticsService::compareSensorsBySimilarity(*currentUser, targetSensorID, period);
+                if (similaires.empty()) {
+                    cout << "Aucun capteur similaire trouve." << endl;
+                } else {
+                    cout << "Capteurs similaires:" << endl;
+                    for (const auto& sensor : similaires) {
+                        cout << "- " << sensor.getSensorID() << endl;
+                    }
+                }
                 break;
+            }
             case 4:
-                // Logic for government agency to manage the system
+            {
+                double lat = 0.0;
+                double lon = 0.0;
+                cout << "Latitude: ";
+                cin >> lat;
+                cout << "Longitude: ";
+                cin >> lon;
+
+                double aqi = StatisticsService::estimateAirQuality(lat, lon);
+                cout << "AQI estime: " << aqi << endl;
                 break;
+            }
             case 5:
                 if (roleChoice == 1) {
                     int particularChoice;
@@ -98,20 +225,108 @@ int main(){
 
                         switch (particularChoice) {
                             case 6:
-                                //Application->getPrivateUser()->getPoints();
+                                cout << "Votre solde de points : "
+                                     << Application.getCurrentPrivateUser()->getPoints() << " points" << endl;
                                 break;
                             case 7:
-                                // Logic to calculate average AQI in user's area
+                            {
+                                double lat = 0.0;
+                                double lon = 0.0;
+                                double radius = 0.0;
+                                cout << "Latitude: ";
+                                cin >> lat;
+                                cout << "Longitude: ";
+                                cin >> lon;
+                                cout << "Rayon (km): ";
+                                cin >> radius;
+
+                                DateTime startTime;
+                                DateTime endTime;
+                                if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
+                                    break;
+                                }
+                                if (!readDateTime("Fin (YYYY-MM-DD HH:MM:SS): ", endTime)) {
+                                    break;
+                                }
+
+                                TimeRange period(startTime, endTime);
+                                double aqi = StatisticsService::calculateAreaMean(*Application.getCurrentPrivateUser(), lat, lon, radius, period);
+                                cout << "AQI moyen: " << aqi << endl;
                                 break;
+                            }
                             case 8:
-                                // Logic to compare sensors in the neighborhood
+                            {
+                                string targetSensorID;
+                                cout << "ID du capteur cible: ";
+                                cin >> targetSensorID;
+
+                                DateTime startTime;
+                                DateTime endTime;
+                                if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
+                                    break;
+                                }
+                                if (!readDateTime("Fin (YYYY-MM-DD HH:MM:SS): ", endTime)) {
+                                    break;
+                                }
+
+                                TimeRange period(startTime, endTime);
+                                vector<Sensor> similaires = StatisticsService::compareSensorsBySimilarity(*Application.getCurrentPrivateUser(), targetSensorID, period);
+                                if (similaires.empty()) {
+                                    cout << "Aucun capteur similaire trouve." << endl;
+                                } else {
+                                    cout << "Capteurs similaires:" << endl;
+                                    for (const auto& sensor : similaires) {
+                                        cout << "- " << sensor.getSensorID() << endl;
+                                    }
+                                }
                                 break;
+                            }
                             case 9:
-                                // Logic to input sensor measurements
+                            {
+                                string sensorID;
+                                string attributeID;
+                                double value = 0.0;
+
+                                cout << "ID du capteur: ";
+                                cin >> sensorID;
+                                cout << "ID de l'attribut (ex: O3, NO2, SO2, PM10): ";
+                                cin >> attributeID;
+                                cout << "Valeur: ";
+                                cin >> value;
+
+                                DateTime measureTime;
+                                if (!readDateTime("Date (YYYY-MM-DD HH:MM:SS): ", measureTime)) {
+                                    break;
+                                }
+
+                                Sensor* sensor = dataContainer.getSensorByID(sensorID);
+                                Attribute* attribute = dataContainer.getAttributeByID(attributeID);
+                                if (sensor == nullptr || attribute == nullptr) {
+                                    cout << "Capteur ou attribut invalide." << endl;
+                                    break;
+                                }
+
+                                DataService::addMeasurement(measureTime, sensor, attribute, value);
+                                cout << "Mesure ajoutee." << endl;
                                 break;
+                            }
                             case 10:
-                                // Logic to consult contribution history
+                            {
+                                cout << "Affichage de l'historique de vos contributions..." << endl;
+                                list<Measurement> userHistory = DataService::getUserHistory(*Application.getCurrentPrivateUser());
+                                if (userHistory.empty()) {
+                                    cout << "Aucune contribution." << endl;
+                                    break;
+                                }
+                                for (const auto& measurement : userHistory) {
+                                    cout << "- " << measurement.getSensor()->getSensorID()
+                                         << " | " << measurement.getAttribute()->getAttributeID()
+                                         << " | " << measurement.getValue()
+                                         << " | " << formatDateTime(measurement.getMeasureDate())
+                                         << endl;
+                                }
                                 break;
+                            }
                             case 11:
                                 break;
                             default:

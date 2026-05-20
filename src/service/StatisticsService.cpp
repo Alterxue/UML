@@ -34,7 +34,7 @@ using namespace std;
 
 //----------------------------------------------------- Méthodes publiques
 
-static double calculateAirQuality(User user, double lat, double lon, DateTime time){
+double StatisticsService::calculateAirQuality(const User& user, double lat, double lon, DateTime time){
     // commencer a compter le temps
     auto tempsDebut = chrono::high_resolution_clock::now();
     
@@ -82,7 +82,7 @@ static double calculateAirQuality(User user, double lat, double lon, DateTime ti
     return indiceGlobal;
 }
 
-static double calculateAreaMean(User user, double lat, double lon, double radius, TimeRange period){
+double StatisticsService::calculateAreaMean(const User& user, double lat, double lon, double radius, TimeRange period){
     //le temps de début
     auto tempsDebut = chrono::high_resolution_clock::now();
     
@@ -146,7 +146,7 @@ static double calculateAreaMean(User user, double lat, double lon, double radius
 }
 
 
-static vector<Sensor> compareSensorsBySimilarity(User user, string targetSensor, TimeRange period){
+vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, string targetSensor, TimeRange period){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     //Récupération de toutes les données
@@ -242,7 +242,7 @@ static vector<Sensor> compareSensorsBySimilarity(User user, string targetSensor,
 }
 
 
-static double analyzeCleanerRadius(User user, string cleanerID){
+double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerID){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     AirCleaner cleaner = DataService::getCleanerById(cleanerID);
@@ -290,7 +290,7 @@ static double analyzeCleanerRadius(User user, string cleanerID){
 }
 
 
-static string getZoneStatistic(User user, double lat, double lon, double radius, TimeRange period){
+string StatisticsService::getZoneStatistic(const User& user, double lat, double lon, double radius, TimeRange period){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // Get all sensors in the area
@@ -370,7 +370,7 @@ static string getZoneStatistic(User user, double lat, double lon, double radius,
 }
 
 
-static double viewCleanerImpact(User user, string cleanerID, TimeRange period){
+double StatisticsService::viewCleanerImpact(const User& user, string cleanerID, TimeRange period){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     AirCleaner cleaner = DataService::getCleanerById(cleanerID);
@@ -419,7 +419,7 @@ static double viewCleanerImpact(User user, string cleanerID, TimeRange period){
 // Estimer la qualité de l'air à une position précise (même sans capteur)
 // Utilise l'interpolation spatiale basée sur les capteurs voisins
 // Cette fonction est similaire à calculateAirQuality mais sans paramètre User
-static double estimateAirQuality(double lat, double lon){
+double StatisticsService::estimateAirQuality(double lat, double lon){
     // Enregistrer le temps de début
     auto tempsDebut = chrono::high_resolution_clock::now();
     
@@ -473,7 +473,7 @@ static double estimateAirQuality(double lat, double lon){
 
 
     
-static double calculateLocalAQI(User user, double lat, double lon, double radius, TimeRange period){
+double StatisticsService::calculateLocalAQI(const User& user, double lat, double lon, double radius, TimeRange period){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Récupération du capteur le plus proche (normalement à distance ~0)
@@ -540,7 +540,7 @@ static double calculateLocalAQI(User user, double lat, double lon, double radius
     
 
 
-double convertirVersIndiceATMO(map<string, double> moyennesEstimees) {
+double StatisticsService::convertirVersIndiceATMO(map<string, double> moyennesEstimees) {
     double indiceMax = 0;
 
     // Pour chaque polluant (O3, NO2, SO2, PM10)
