@@ -50,6 +50,11 @@ double Measurement::getValue() const
     return this->value;
 } //----- Fin de getValue
 
+bool Measurement::getIsValid() const
+{
+    return this->isValid;
+} //----- Fin de isvalid
+
 void Measurement::setIsValid(bool valid)
 {
     this->isValid = valid;

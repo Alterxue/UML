@@ -72,7 +72,7 @@ vector<Sensor> DataService::getSensors(User user) {
     // If user is PrivateUser, return only their sensors
     PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
     if (privateUser != nullptr) {
-        return privateUser->sensorsList;
+        return privateUser->getSensorsList();
     }
     
     return result;
@@ -90,7 +90,7 @@ vector<Sensor> DataService::getAllSensors() {
     const auto& sensors = dataContainer->getAllSensors(); // pas de copie
     result.reserve(sensors.size());
     for (const auto& [id, ptr] : sensors) {
-        if (ptr) result.push_back(*ptr); // copie
+        if (ptr != nullptr) result.push_back(*ptr); // copie
     }
     
     return result;
@@ -116,9 +116,11 @@ vector<Sensor> DataService::getSensorsInArea(double lat, double lon, double radi
 Sensor DataService::getSensorById(string sensorID) {
     const auto& sensorsMap = dataContainer->getAllSensors();
     auto it = sensorsMap.find(sensorID);
-    if (it != sensorsMap.end()) return it->second;
+    if (it != sensorsMap.end() && it->second != nullptr) {
+        return *it->second;
+    }
     cout << "WARNING: Sensor " << sensorID << " not found" << endl;
-    return nullptr;
+    return Sensor("", 0.0, 0.0);
 }
 
 // ==================== MEASUREMENT QUERY METHODS ====================
@@ -135,18 +137,22 @@ vector<Measurement> DataService::getMeasurements(User user) {
     // If GovernmentAgency, return all measurements
     GovernmentAgency* agency = dynamic_cast<GovernmentAgency*>(&user);
     if (agency != nullptr) {
-        return getAllMeasurements();
+        list<Measurement> allMeasurements = getAllMeasurements();
+        for (const auto& m : allMeasurements) {
+            result.push_back(m);
+        }
+        return result;
     }
     
     // If PrivateUser, return measurements from their sensors only
     PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
     if (privateUser != nullptr) {
-        vector<Sensor> userSensors = privateUser->sensorsList;
+        vector<Sensor> userSensors = privateUser->getSensorsList();
         list<Measurement> allMeasurements = getAllMeasurements();
         
         for (const auto& measurement : allMeasurements) {
             for (const auto& sensor : userSensors) {
-                if (measurement.sensor->sensorID == sensor.sensorID) {
+                if (measurement.getSensor()->getSensorID() == sensor.getSensorID()) {
                     result.push_back(measurement);
                     break;
                 }
@@ -214,7 +220,7 @@ void DataService::addMeasurement(DateTime a_measureDate, Sensor* a_sensor, Attri
     // Add measurement to sensor
     a_sensor->addMeasurement(measurement);
     
-    cout << "Measurement added: " << measurement << endl;
+    cout << "Measurement added for sensor " << a_sensor->getSensorID() << endl;
 }
 
 // ==================== USER QUERY METHODS ====================
@@ -229,7 +235,12 @@ list<Measurement> DataService::getUserHistory(User user) {
         return result;
     }
     
-    return getMeasurements(user);
+    vector<Measurement> measurements = getMeasurements(user);
+    for (const auto& m : measurements) {
+        result.push_back(m);
+    }
+    
+    return result;
 }
 
 // Get all private users
@@ -343,7 +354,8 @@ void DataService::clearCorruptionFlags() {
 
         vector<Measurement> sensorMeasurements = sensorPtr->getMeasurements();
         for (auto& measurement : sensorMeasurements) {
-            if (!measurement.isValid()) {
+            // Check if measurement is marked as invalid and restore it
+            if (!measurement.getIsValid()) {
                 measurement.setIsValid(true);
                 clearedCount++;
             }

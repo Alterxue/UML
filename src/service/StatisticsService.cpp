@@ -403,6 +403,7 @@ static double viewCleanerImpact(User user, string cleanerID, TimeRange period){
     return impactRelatif;
 }
 
+
 // Estimer la qualité de l'air à une position précise (même sans capteur)
 // Utilise l'interpolation spatiale basée sur les capteurs voisins
 // Cette fonction est similaire à calculateAirQuality mais sans paramètre User

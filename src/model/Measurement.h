@@ -38,7 +38,7 @@ public:
     Sensor* getSensor() const;
     Attribute* getAttribute() const;
     double getValue() const;
-
+    bool getIsValid() const;
     void setIsValid(bool valid);
 //------------------------------------------------- Surcharge d'opérateurs
 
