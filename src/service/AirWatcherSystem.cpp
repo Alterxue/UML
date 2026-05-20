@@ -32,8 +32,8 @@ using namespace std;
 
 bool AirWatcherSystem::setPrivateUser(DataContainer& dc, string& id)
 {
-    PrivateUser* privateUser = authService->loginPrivate(dc, id);
-    if (privateUser == nullptr){
+    currentPrivateUser = authService->loginPrivate(dc, id);
+    if (currentPrivateUser == nullptr){
         return false;
     }
     return true;
@@ -41,8 +41,8 @@ bool AirWatcherSystem::setPrivateUser(DataContainer& dc, string& id)
 
 bool AirWatcherSystem::setProvider(DataContainer& dc, std::string& id)
 {
-    Provider* provider = authService->loginProvider(dc, id);
-    if (provider == nullptr){
+    currentProvider = authService->loginProvider(dc, id);
+    if (currentProvider == nullptr){
         return false;
     }
     return true;
@@ -50,8 +50,8 @@ bool AirWatcherSystem::setProvider(DataContainer& dc, std::string& id)
 
 bool AirWatcherSystem::setGovernmentAgency(DataContainer& dc, std::string& id)
 {
-    GovernmentAgency* govagency = authService->loginGovernmentAgency(id);
-    if (govagency == nullptr){
+    currentGovernmentAgency = authService->loginGovernmentAgency(id);
+    if (currentGovernmentAgency == nullptr){
         return false;
     }
     return true;
@@ -82,12 +82,7 @@ AirWatcherSystem::~AirWatcherSystem ( )
     #ifdef MAP
         cout << "Appel au destructeur de <AirWatcherSystem>" << endl;
     #endif
-    if (currentPrivateUser != nullptr){
-        delete currentPrivateUser;
-    }
-    if (currentProvider != nullptr){
-        delete currentProvider;
-    }
+    
     if (currentGovernmentAgency != nullptr){
         delete currentGovernmentAgency;
     }

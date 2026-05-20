@@ -41,7 +41,9 @@ public:
     // Contrat :
     
     bool setPrivateUser(DataContainer& dc,std::string& id);
-    // appelle le loginprivate du auth et va set en fonction de l'objet renvoyé par le login de auth
+    // Mode d'emploi :
+    // Va initialiser le PrivateUser courrant si il existe
+    // et renvoyer true si la connexion a réussi
 
     bool setProvider(DataContainer& dc, std::string& id);
 

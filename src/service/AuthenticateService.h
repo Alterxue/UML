@@ -44,8 +44,7 @@ public:
 
     GovernmentAgency* loginGovernmentAgency(std::string& id);
     // Mode d'emploi :
-    // Renvoie l'objet ' correspondant à l'id si il existe et nullptr
-    // sinon 
+    // Créer une instance de GovernmentAgency
 
 //------------------------------------------------- Surcharge d'opérateurs
 

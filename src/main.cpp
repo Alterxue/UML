@@ -14,7 +14,9 @@ int main(){
 
     AirWatcherSystem * Application = new AirWatcherSystem();
     DataContainer * dataContainer = new DataContainer();
-    //CSVDataManager * dataManager = new CSVDataManager();
+    CSVDataManager * dataManager = new CSVDataManager();
+
+    // Charger toutes les données du CSV data manager avant tout test de connexion
 
     bool login = false;
     cout << "Bienvenue dans AirWatcherSystem !" << endl;
@@ -41,13 +43,13 @@ int main(){
                 cout << "ID invalide, aucun fournisseur trouvé, veuillez réessayer." << endl;
             }
         } else if (roleChoice == 3) {
-            if (userID == "admin") {
-                login = Application->setGovernmentAgency(*dataContainer,userID);
-            } else {
+            login = Application->setGovernmentAgency(*dataContainer,userID);
+            if (!login){
                 cout << "ID invalide, aucun agent gouvernemental trouvé, veuillez réessayer." << endl;
             }
         }
-    }while(!login);
+    } while(!login);
+
     int choice;
     do {
         cout << "-- Menu principal AirWatcher --" << endl;
@@ -178,5 +180,9 @@ int main(){
                 break;
             default:
                 cout << "Choix invalide, veuillez réessayer."<<endl;}
-    }while (choice != 6);
+    } while (choice != 6);
+    
+    delete Application;
+    delete dataContainer;
+    delete dataManager;
 }

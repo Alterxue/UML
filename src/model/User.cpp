@@ -46,25 +46,27 @@ User & User::operator = (const User & unUser)
 //-------------------------------------------- Constructeurs - destructeur
 User::User (const User & unUser)
 // Algorithme :
-//
 {
-#ifdef MAP
-    cout << "Appel au constructeur de copie de <User>" << endl;
-#endif
+    #ifdef MAP
+        cout << "Appel au constructeur de copie de <User>" << endl;
+    #endif
 } //----- Fin de User (constructeur de copie)
 
 
 
-User::User(string userID, Role role) : userID(userID),role(role){}
-
+User::User(string userID, Role role) : userID(userID),role(role)
+{
+    #ifdef MAP
+        cout << "Appel au constructeur de <User>" << endl;
+    #endif
+}
 
 User::~User ()
 // Algorithme :
-//
 {
-#ifdef MAP
-    cout << "Appel au destructeur de <User>" << endl;
-#endif
+    #ifdef MAP
+        cout << "Appel au destructeur de <User>" << endl;
+    #endif
 } //----- Fin de ~User
 
 

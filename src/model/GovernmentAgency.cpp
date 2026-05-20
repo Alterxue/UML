@@ -23,8 +23,6 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-
-
 void GovernmentAgency::manageSystem()
 {
     // Implementation for managing the system
@@ -35,7 +33,6 @@ void GovernmentAgency::flagSensors(Sensor & sensor)
     sensor.setReliability(false);
 }
 
-
 //------------------------------------------------- Surcharge d'opérateurs
 GovernmentAgency & GovernmentAgency::operator = (const GovernmentAgency & unGovernmentAgency)
 {
@@ -43,13 +40,18 @@ GovernmentAgency & GovernmentAgency::operator = (const GovernmentAgency & unGove
 
 
 //-------------------------------------------- Constructeurs - destructeur
-GovernmentAgency::GovernmentAgency (string userID,Role role,string agencyID) : User(userID, role), agencyID(agencyID){}
+GovernmentAgency::GovernmentAgency (string userID, Role role,string a_agencyID) : User(userID, role), agencyID(a_agencyID)
+{
+    #ifdef MAP
+        cout << "Appel au constructeur de <GovernmentAgency>" << endl;
+    #endif
+}
 
 GovernmentAgency::~GovernmentAgency ()
 {
-#ifdef MAP
-    cout << "Appel au destructeur de <GovernmentAgency>" << endl;
-#endif
+    #ifdef MAP
+        cout << "Appel au destructeur de <GovernmentAgency>" << endl;
+    #endif
 } //----- Fin de ~GovernmentAgency
 
 

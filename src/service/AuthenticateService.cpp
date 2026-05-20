@@ -26,7 +26,7 @@ using namespace std;
 //----------------------------------------------------- Méthodes publiques
 PrivateUser* AuthenticateService::loginPrivate(DataContainer& dc, string& id)
 {
-    map<string, PrivateUser*> listPrivateUser = dc.getAllUsers();
+    const map<string, PrivateUser*>& listPrivateUser = dc.getAllUsers();
     map<string, PrivateUser*>::const_iterator it = listPrivateUser.find(id);
 
     if (it != listPrivateUser.end()){
@@ -39,7 +39,7 @@ PrivateUser* AuthenticateService::loginPrivate(DataContainer& dc, string& id)
 
 Provider* AuthenticateService::loginProvider(DataContainer& dc, string& id)
 {
-    map<string, Provider*> listProvider = dc.getAllProviders();
+    const map<string, Provider*>& listProvider = dc.getAllProviders();
     map<string, Provider*>::const_iterator it = listProvider.find(id);
 
     if (it != listProvider.end()){
@@ -52,8 +52,14 @@ Provider* AuthenticateService::loginProvider(DataContainer& dc, string& id)
 
 GovernmentAgency* AuthenticateService::loginGovernmentAgency(string& id)
 {
-    return new GovernmentAgency("admin", GOVERNMENT_AGENCY,"admin");
+    if (id == "admin"){
+        return new GovernmentAgency(id, GOVERNMENT_AGENCY,"GovernmentAgency");
+    }
+    else {
+        return nullptr;
+    }
 }
+    
 
 
 //-------------------------------------------- Constructeurs - destructeur

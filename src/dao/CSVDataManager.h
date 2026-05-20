@@ -1,9 +1,9 @@
 /*************************************************************************
                            CSVDataManager  -  description
                              -------------------
-    début                : $DATE$
-    copyright            : (C) $YEAR$ par $AUTHOR$
-    e-mail               : $EMAIL$
+    début                : 19/05/2026
+    copyright            : (C) 2026 par scabias
+    e-mail               : simon.cabias@insa-lyon.fr
 *************************************************************************/
 
 //---------- Interface de la classe <CSVDataManager> (fichier CSVDataManager.h) ----------------
@@ -28,8 +28,8 @@
 
 //------------------------------------------------------------------------
 // Rôle de la classe <CSVDataManager>
-//
-//
+// va permettre de lire et parser les CSV avant de stocker les données
+// DataContainer
 //------------------------------------------------------------------------
 
 class CSVDataManager
@@ -38,71 +38,71 @@ class CSVDataManager
 
 public:
 //----------------------------------------------------- Méthodes publiques
-  void loadSensors(DataContainer & container)const;
-    // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-    //
-    // Contrat :
-    //
-  //std::list<Sensor> loadSensorsByUser(PrivateUser user)const;
-    // Mode d'emploi :Renvoie la liste des Sensor appartenant a l'user en paramètre à l'appelant
-    //
-    // Contrat :
-    //
-  Sensor loadSensorById(std::string sensorID);
-  
-  //std::list<Measurement> loadMeasurements()const;
-    // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-    //
-    // Contrat :
-    //
-  std::vector<Measurement> loadMeasurementsBySensorID(std::string sensorID);
-    // Mode d'emploi : Renvoie une liste de mesure associé au Sensor dont l'ID est en parametre
+  void loadSensors(DataContainer & container) const;
+  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
   //
-    // Contrat :
-    // 
+  // Contrat :
+  //
+  //std::list<Sensor> loadSensorsByUser(PrivateUser user)const;
+  // Mode d'emploi :Renvoie la liste des Sensor appartenant a l'user en paramètre à l'appelant
+  //
+  // Contrat :
+  //
+  Sensor loadSensorById(std::string sensorID);
+
+  //std::list<Measurement> loadMeasurements()const;
+  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
+  //
+  // Contrat :
+  //
+  std::vector<Measurement> loadMeasurementsBySensorID(std::string sensorID);
+  // Mode d'emploi : Renvoie une liste de mesure associé au Sensor dont l'ID est en parametre
+  //
+  // Contrat :
+  // 
   void loadUsers(DataContainer & container)const;
-    // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-    //
-    // Contrat :
-    //
+  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
+  //
+  // Contrat :
+  //
   void loadAttributes(DataContainer & container)const;
-    // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-    //
-    // Contrat :
-    //
+  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
+  //
+  // Contrat :
+  //
   void loadProviders(DataContainer & container)const;
-    // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-    //
-    // Contrat :
-    //
+  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
+  //
+  // Contrat :
+  //
   void loadCleaners(DataContainer & container)const;
-    // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-    //
-    // Contrat :
-    //
-  
+  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
+  //
+  // Contrat :
+  //
+
 
 
   void appendNewSensor(const Sensor& sensor,const PrivateUser& user);
-    // Mode d'emploi :
-    //
-    // Contrat :
-    //
+  // Mode d'emploi :
+  //
+  // Contrat :
+  //
   //void appendNewSensor(Sensor sensor);
-    // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-    //
-    // Contrat :
-    //
+  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
+  //
+  // Contrat :
+  //
   //void appendNewSensor(Sensor sensor);
-    // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-    //
-    // Contrat :
-    //
+  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
+  //
+  // Contrat :
+  //
   void updateSensorStatus();
-    // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-    //
-    // Contrat :
-    //
+  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
+  //
+  // Contrat :
+  //
     
   
 

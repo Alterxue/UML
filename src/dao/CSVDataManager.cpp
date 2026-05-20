@@ -1,9 +1,9 @@
 /*************************************************************************
                            CSVDataManager  -  description
                              -------------------
-    début                : $DATE$
-    copyright            : (C) $YEAR$ par $AUTHOR$
-    e-mail               : $EMAIL$
+    début                : 19/05/2026
+    copyright            : (C) 2026 par scabias
+    e-mail               : simon.cabias@insa-lyon.fr
 *************************************************************************/
 
 //---------- Réalisation de la classe <CSVDataManager> (fichier CSVDataManager.cpp) ------------
