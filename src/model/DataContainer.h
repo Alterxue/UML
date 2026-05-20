@@ -15,11 +15,11 @@
 #include <vector>
 #include <map>
 
-#include "Attribute.h"
-#include "Sensor.h"
-#include "PrivateUser.h"
-#include "AirCleaner.h"
-#include "Provider.h"
+class Attribute;
+class Sensor;
+class PrivateUser;
+class AirCleaner;
+class Provider;
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types
@@ -77,13 +77,14 @@ public:
     // Mode d'emploi :
     // Renvoie la collection des fournisseurs
 
-    Sensor * DataContainer::getSensorByID(const std::string& sensorID);
+    Sensor* getSensorByID(const std::string& sensorID);
     // Mode d'emploi :
     // Permet de récupérer un capteur à partir de son ID, retourne nullptr si le capteur n'est pas trouvé
 
-    AirCleaner * DataContainer::getAirCleanerByID(const std::string& airCleanerID);
+    AirCleaner* getAirCleanerByID(const std::string& airCleanerID);
     // Mode d'emploi :
-    // Permet de récupérer un air cleaner à partir de son ID, retourne nullptr si l
+    // Permet de récupérer un air cleaner à partir de son ID, retourne nullptr si l'air cleaner n'est pas trouvé
+    
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur

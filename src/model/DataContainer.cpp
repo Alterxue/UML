@@ -19,6 +19,11 @@ using namespace std;
 
 //------------------------------------------------------ Include personnel
 #include "DataContainer.h"
+#include "Attribute.h"
+#include "Sensor.h"
+#include "PrivateUser.h"
+#include "AirCleaner.h"
+#include "Provider.h"
 
 //------------------------------------------------------------- Constantes
 
@@ -52,7 +57,7 @@ void DataContainer::addProvider(Provider* ptr_provider)
 
 Sensor * DataContainer::getSensorByID(const std::string& sensorID)
 {
-    for (const auto& pair : this->allSensors) {
+    for (const map<std::string, Sensor*>::value_type& pair : allSensors) {
         if (pair.first == sensorID) {
             return pair.second;
         }
@@ -62,7 +67,7 @@ Sensor * DataContainer::getSensorByID(const std::string& sensorID)
 
 AirCleaner * DataContainer::getAirCleanerByID(const std::string& airCleanerID)
 {
-    for (const auto& pair : this->allAirCleaners) {
+    for (const map<std::string, AirCleaner*>::value_type& pair : allAirCleaners) {
         if (pair.first == airCleanerID) {
             return pair.second;
         }
@@ -108,29 +113,29 @@ DataContainer::~DataContainer()
    #ifdef MAP
         cout <<"Appel au destructeur de <DataContainer>"<< endl;
     #endif 
-   for (std::map<std::string, AirCleaner*>::iterator it = allAirCleaners.begin(); it != allAirCleaners.end(); ++it) {
-       delete it->second;
-       it->second = nullptr;
+   for (std::map<std::string, AirCleaner*>::value_type& pair : allAirCleaners) {
+       delete pair.second;
+       pair.second = nullptr;
    }
 
-   for (std::map<std::string, Sensor*>::iterator it = allSensors.begin(); it != allSensors.end(); ++it) {
-       delete it->second;
-       it->second = nullptr;
+   for (std::map<std::string, Sensor*>::value_type& pair : allSensors) {
+       delete pair.second;
+       pair.second = nullptr;
    }
 
-   for (std::map<std::string, Provider*>::iterator it = allProviders.begin(); it != allProviders.end(); ++it) {
-       delete it->second;
-       it->second = nullptr;
+   for (std::map<std::string, Provider*>::value_type& pair : allProviders) {
+       delete pair.second;
+       pair.second = nullptr;
    }
 
-   for (std::map<std::string, PrivateUser*>::iterator it = allUsers.begin(); it != allUsers.end(); ++it) {
-       delete it->second;
-       it->second = nullptr;
+   for (std::map<std::string, PrivateUser*>::value_type& pair : allUsers) {
+       delete pair.second;
+       pair.second = nullptr;
    }
 
-   for (std::map<std::string, Attribute*>::iterator it = allAttributes.begin(); it != allAttributes.end(); ++it) {
-       delete it->second;
-       it->second = nullptr;
+   for (std::map<std::string, Attribute*>::value_type& pair : allAttributes) {
+       delete pair.second;
+       pair.second = nullptr;
    }
 
    allAirCleaners.clear();

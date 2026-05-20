@@ -17,7 +17,8 @@
 #include <vector>
 
 #include "Measurement.h"
-#include "User.h"
+
+class User;
 
 //------------------------------------------------------------- Constantes
 
@@ -41,7 +42,8 @@ public:
     // Contrat :
     //
 
-    std::vector<Measurement> getMeasurements() const;
+    std::vector<Measurement>& getMeasurements();
+    const std::vector<Measurement>& getMeasurements() const;
     // Mode d'emploi :
     // Retourne la liste des mesures du capteur
 

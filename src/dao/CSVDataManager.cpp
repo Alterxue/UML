@@ -28,84 +28,110 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-
-void CSVDataManager::loadSensors(DataContainer & container) const{
-  // Algorithme :
-  //
-  Sensor* sensor; 
-  string sensorId;
-  double lattitude;
-  double longitude;
-  ifstream file("../../data/sensor.csv");
-  string lattitudeStr;
-  string longitudeStr;
-  string lineRemainder;
-  while(file.good()){
-    std::getline(file, sensorId, ';');
-    std::getline(file, lattitudeStr, ';');
-    std::getline(file, longitudeStr, ';');
-    lattitude = std::stod(lattitudeStr);
-    longitude = std::stod(longitudeStr);
-    container.addSensor(new Sensor(sensorId,lattitude,longitude));
-    std::getline(file, lineRemainder);
-    file.peek();
-  }
-}
-
-
-
-void CSVDataManager::loadAttributes(DataContainer & container) const{
-  string attributeId;
-  string unit;
-  string description;
+void CSVDataManager::loadAttributes(DataContainer & container) const
+{
   ifstream file("../../data/attributes.csv");
-  string lineRemainder;
-  std::getline(file, lineRemainder);
-  while(file.good()){
-    std::getline(file, attributeId, ';');
-    std::getline(file, unit, ';');
-    std::getline(file, description, ';');
+  string line;
+  getline(file, line); // Saute la première ligne de attributes.csv
 
-    container.addAttribute(new Attribute(attributeId,unit,description));
-    
-    std::getline(file, lineRemainder);
-    file.peek();
-  }  
-  
-}
+  while(getline(file, line))
+  {
+    istringstream iss(line);
 
+    string attributeId;
+    string unit;
+    string description;
 
-void CSVDataManager::loadUsers(DataContainer & container) const{
-  string userId;
-  string sensorId;
-  PrivateUser* user;
-  ifstream file("../../data/users.csv");
-  string lineRemainder;
-  while(file.good()){
-    std::getline(file, userId, ';');
-    std::getline(file, sensorId, ';');
-    user=new PrivateUser(userId,PRIVATE_USER);
-    container.getSensorByID(sensorId)->setOwner(user); // Associe le capteur à l'utilisateur
-    user->addSensor(*container.getSensorByID(sensorId)); // Associe l'utilisateur au capteur
-    container.addUser(user); // Ajoute l'utilisateur au conteneur de données
-    
-    std::getline(file, lineRemainder);
-    file.peek();
+    getline(iss, attributeId, ';');
+    getline(iss, unit, ';');
+    getline(iss, description, ';');
+    container.addAttribute(new Attribute(attributeId, unit, description));
   }
-  
-  
-}
+} //----- Fin de loadAttributes
+
+void CSVDataManager::loadSensors(DataContainer & container) const
+// Algorithme :
+{
+  ifstream file("../../data/sensor.csv");
+  string line;
+
+  while (getline(file, line)) {
+    istringstream iss(line);
+
+    string sensorId;
+    string lattitudeStr;
+    string longitudeStr;
+
+    getline(iss, sensorId, ';');
+    getline(iss, lattitudeStr, ';');
+    getline(iss, longitudeStr, ';');
+
+    double lattitude = stod(lattitudeStr);
+    double longitude = stod(longitudeStr);
+
+    container.addSensor(new Sensor(sensorId, lattitude, longitude));
+  }
+} //----- Fin de loadSensors
+
+void CSVDataManager::loadUsers(DataContainer & container) const
+// Algorithme :
+{
+  ifstream file("../../data/users.csv");
+  string line;
+
+  while(getline(file, line)) {
+    istringstream iss(line);
+
+    string userId;
+    string sensorId;
+
+    getline(iss, userId, ';');
+    getline(iss, sensorId, ';');
+
+    PrivateUser* user = new PrivateUser(userId, PRIVATE_USER);
+    Sensor* sensor = container.getSensorByID(sensorId);
+    
+    if (sensor != nullptr) {
+      sensor->setOwner(user); // Associe le capteur à l'utilisateur
+      user->addSensor(sensor); // Associe l'utilisateur au capteur
+    }
+    
+    container.addUser(user); // Ajoute l'utilisateur au conteneur de données
+  }
+} //----- Fin de loadUsers 
 
 
-void CSVDataManager::loadCleaners(DataContainer & container) const{
-  AirCleaner* cleaner;
-  string cleanerId;
-  
-  double lattitude;
-  double longitude;
-  DateTime dateD;
-  DateTime dateF;
+void CSVDataManager::loadCleaners(DataContainer & container) const
+// Algorithme :
+{
   ifstream file("../../data/cleaners.csv");
+  string line;
+
+  while(getline(file, line)) {
+    istringstream iss(line);
+
+    string cleanerId;
+    string lattitudeStr;
+    string longitudeStr;
+    string dateDStr;
+    string dateFStr;
+
+    getline(iss, cleanerId, ';');
+    getline(iss, lattitudeStr, ';');
+    getline(iss, longitudeStr, ';');
+    getline(iss, dateDStr, ';');
+    getline(iss, dateFStr, ';');
+
+    double lattitude = stod(lattitudeStr);
+    double longitude = stod(longitudeStr);
+
+    // Faire le parsing des dates de début et de fin pour bien avoir un dateTime
+    // A finir
+
+
+
+  }
+
   string lattitudeStr;
   string longitudeStr;
   string lineRemainder;
@@ -123,7 +149,9 @@ void CSVDataManager::loadCleaners(DataContainer & container) const{
   } 
 }
 
-void CSVDataManager::loadProviders(DataContainer & container) const{
+void CSVDataManager::loadProviders(DataContainer & container) const
+// Algorithme :
+{
   string providerId;
   string cleanerId;
   Provider* provider;
@@ -141,11 +169,12 @@ void CSVDataManager::loadProviders(DataContainer & container) const{
 
     std::getline(file, lineRemainder);
     file.peek();
-    
   }
 }
 
-void CSVDataManager::loadMeasurements(DataContainer & container){
+void CSVDataManager::loadMeasurements(DataContainer & container) const
+// Algorithme :
+{
   Measurement* measurement;
   string sensorId;
   Sensor* sensor;
@@ -195,11 +224,10 @@ CSVDataManager & CSVDataManager::operator = ( const CSVDataManager & unCSVDataMa
 //-------------------------------------------- Constructeurs - destructeur
 CSVDataManager::CSVDataManager ( const CSVDataManager & unCSVDataManager )
 // Algorithme :
-//
 {
-#ifdef MAP
-    cout << "Appel au constructeur de copie de <CSVDataManager>" << endl;
-#endif
+  #ifdef MAP
+      cout << "Appel au constructeur de copie de <CSVDataManager>" << endl;
+  #endif
 } //----- Fin de CSVDataManager (constructeur de copie)
 
 
