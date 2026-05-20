@@ -16,7 +16,8 @@
 
 #include "Sensor.h"
 #include "TimeRange.h"
-#include "Provider.h"
+
+class Provider;
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types

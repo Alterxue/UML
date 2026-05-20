@@ -75,14 +75,7 @@ int Sensor::calculateDistance(double userLatitude, double userLongitude) const
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
-Sensor::Sensor (const Sensor & unSensor)
-// Algorithme :
-//
-{
-#ifdef MAP
-    cout << "Appel au constructeur de copie de <Sensor>" << endl;
-#endif
-} //----- Fin de Sensor (constructeur de copie)
+
 
 
 Sensor::Sensor(string a_sensorID, double a_lattitude, double a_longitude) : sensorID(a_sensorID), lattitude(a_lattitude), longitude(a_longitude)

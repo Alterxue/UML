@@ -83,6 +83,7 @@ int main(){
                         cout << "9. Saisir des mesures de capteur privé" << endl;
                         cout << "10. Voir l'historique de mes contributions" << endl;
                         cout << "11. Retour au menu principal" << endl;
+                        cin >> particularChoice;
 
                         switch (particularChoice) {
                             case 6:
@@ -115,8 +116,7 @@ int main(){
                         cout << "8. Comparer les capteurs par similarité" << endl;
                         cout << "9. Analyser le rayon de purification" << endl;
                         cout << "10. Consulter les statistiques de zone" << endl;
-                        cout << "11. Retour au menu principal" << endl;
-                        
+                        cout << "11. Retour au menu principal" << endl;                        
                         switch (particularChoice) {
                             case 6:
                                 // Logic to display the impact of a sensor
@@ -149,6 +149,7 @@ int main(){
                         cout << "8. Identifier les comportements frauduleux" << endl;
                         cout << "9. Exclure les données corrompues" << endl;
                         cout << "10. Retour au menu principal" << endl;
+                        cin >> particularChoice;
                         
 
                         switch (particularChoice) {
@@ -177,5 +178,5 @@ int main(){
                 break;
             default:
                 cout << "Choix invalide, veuillez réessayer."<<endl;}
-    } while (choice != 6);
+    }while (choice != 6);
 }

@@ -9,6 +9,10 @@ BUILD_DIR := build
 
 SRC_DIRS := src src/dao src/model src/service
 SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
+
+ifeq ($(SKIP_CSV),1)
+SRCS := $(filter-out src/dao/CSVDataManager.cpp,$(SRCS))
+endif
 OBJS := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 
 .PHONY: all clean

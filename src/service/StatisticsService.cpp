@@ -69,7 +69,7 @@ static double calculateAirQuality(User user, double lat, double lon, DateTime ti
     }
 
     double indiceGlobal = 0.0;
-    indiceGlobal = convertirVersIndiceATMO(moyennesEstimees);
+    indiceGlobal = StatisticsService::convertirVersIndiceATMO(moyennesEstimees);
     
     auto tempsFin = chrono::high_resolution_clock::now();
     auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
@@ -128,7 +128,7 @@ static double calculateAreaMean(User user, double lat, double lon, double radius
     }
     
     double indiceGlobal = 0.0;
-    indiceGlobal = convertirVersIndiceATMO(moyennes);
+    indiceGlobal = StatisticsService::convertirVersIndiceATMO(moyennes);
 
     auto tempsFin = chrono::high_resolution_clock::now();
     auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
@@ -313,7 +313,7 @@ static string getZoneStatistic(User user, double lat, double lon, double radius,
     for (const auto& mesure : mesuresZone) {
         map<string, double> mesureMap;
         mesureMap[mesure.getAttribute()->getAttributeID()] = mesure.getValue();
-        double aqiActuel = convertirVersIndiceATMO(mesureMap);
+        double aqiActuel = StatisticsService::convertirVersIndiceATMO(mesureMap);
         
         if (aqiActuel > maxAQI) {
             maxAQI = aqiActuel;
@@ -447,7 +447,7 @@ static double estimateAirQuality(double lat, double lon){
         }
     }
     
-    double indiceGlobal = convertirVersIndiceATMO(moyennesEstimees);
+    double indiceGlobal = StatisticsService::convertirVersIndiceATMO(moyennesEstimees);
 
     auto tempsFin = chrono::high_resolution_clock::now();
     auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
@@ -511,7 +511,7 @@ static double calculateLocalAQI(User user, double lat, double lon, double radius
     }
     
     // 4. Conversion en indice ATMO final
-    double indiceGlobal = convertirVersIndiceATMO(moyennesParAttribut);
+    double indiceGlobal = StatisticsService::convertirVersIndiceATMO(moyennesParAttribut);
     
     // Enregistrer le temps de fin
     auto tempsFin = chrono::high_resolution_clock::now();

@@ -75,8 +75,6 @@ public:
     // User history
     static list<Measurement> getUserHistory(User user);
 
-    static list<PrivateUser> getAllPrivateUsers();
-
     // Initialization
     static void initializeDataContainer(DataContainer* container);
     
