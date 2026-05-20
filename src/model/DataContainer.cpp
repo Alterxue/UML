@@ -24,6 +24,7 @@ using namespace std;
 #include "PrivateUser.h"
 #include "AirCleaner.h"
 #include "Provider.h"
+#include "Measurement.h"
 
 //------------------------------------------------------------- Constantes
 

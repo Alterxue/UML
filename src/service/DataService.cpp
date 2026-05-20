@@ -55,8 +55,8 @@ DataContainer* DataService::getDataContainer() {
 // ==================== SENSOR QUERY METHODS ====================
 
 // Get all sensors owned by a user or all public government sensors
-vector<Sensor> DataService::getSensors(User user) {
-    vector<Sensor> result;
+vector<Sensor*> DataService::getSensors(User user) {
+    vector<Sensor*> result;
     
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
@@ -72,15 +72,15 @@ vector<Sensor> DataService::getSensors(User user) {
     // If user is PrivateUser, return only their sensors
     PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
     if (privateUser != nullptr) {
-        return privateUser->getSensorsList();
+        return privateUser->getSensorsList(); 
     }
     
     return result;
 }
 
 // Get all sensors in the system
-vector<Sensor> DataService::getAllSensors() {
-    vector<Sensor> result;
+vector<Sensor*> DataService::getAllSensors() {
+    vector<Sensor*> result;
     
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
@@ -90,7 +90,7 @@ vector<Sensor> DataService::getAllSensors() {
     const auto& sensors = dataContainer->getAllSensors(); // pas de copie
     result.reserve(sensors.size());
     for (const auto& [id, ptr] : sensors) {
-        if (ptr != nullptr) result.push_back(*ptr); // copie
+        if (ptr != nullptr) result.push_back(ptr);
     }
     
     return result;
@@ -99,13 +99,13 @@ vector<Sensor> DataService::getAllSensors() {
 // Get sensors within a geographical area (circle)
 vector<Sensor> DataService::getSensorsInArea(double lat, double lon, double radius) {
     vector<Sensor> result;
-    vector<Sensor> allSensors = getAllSensors();
+    vector<Sensor*> allSensors = getAllSensors();
     
     // Filter sensors by distance
     for (const auto& sensor : allSensors) {
-        double distance = sensor.calculateDistance(lat, lon);
+        double distance = sensor->calculateDistance(lat, lon);
         if (distance <= radius) {
-            result.push_back(sensor);
+            result.push_back(*sensor);
         }
     }
     
@@ -147,12 +147,12 @@ vector<Measurement> DataService::getMeasurements(User user) {
     // If PrivateUser, return measurements from their sensors only
     PrivateUser* privateUser = dynamic_cast<PrivateUser*>(&user);
     if (privateUser != nullptr) {
-        vector<Sensor> userSensors = privateUser->getSensorsList();
+        vector<Sensor*> userSensors = privateUser->getSensorsList();
         list<Measurement> allMeasurements = getAllMeasurements();
         
         for (const auto& measurement : allMeasurements) {
             for (const auto& sensor : userSensors) {
-                if (measurement.getSensor()->getSensorID() == sensor.getSensorID()) {
+                if (measurement.getSensor()->getSensorID() == sensor->getSensorID()) {
                     result.push_back(measurement);
                     break;
                 }
@@ -172,9 +172,9 @@ list<Measurement> DataService::getAllMeasurements() {
         return result;
     }
     
-    vector<Sensor> allSensors = getAllSensors();
+    vector<Sensor*> allSensors = getAllSensors();
     for (const auto& sensor : allSensors) {
-        vector<Measurement> sensorMeasurements = sensor.getMeasurements();
+        vector<Measurement> sensorMeasurements = sensor->getMeasurements();
         for (const auto& measurement : sensorMeasurements) {
             result.push_back(measurement);
         }

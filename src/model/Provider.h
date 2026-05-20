@@ -35,7 +35,7 @@ class Provider : public User
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    void addCleaners(const AirCleaner * cleaner);
+    void addCleaners( AirCleaner * cleaner);
 
     const std::vector<AirCleaner*>& getMyCleaners() const;
     //------------------------------------------------- Surcharge d'opérateurs

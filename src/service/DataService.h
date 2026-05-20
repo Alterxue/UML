@@ -38,7 +38,7 @@ public:
 //----------------------------------------------------- Méthodes publiques
 
     // Sensor queries
-    static vector<Sensor> getSensors(User user);
+    static vector<Sensor*> getSensors(User user);
     
     static vector<Sensor> getSensorsInArea(double lat, double lon, double radius);
     
@@ -46,7 +46,7 @@ public:
     
     static vector<Sensor> getSensorsByUser(string userID);
     
-    static vector<Sensor> getAllSensors();
+    static vector<Sensor*> getAllSensors();
     
     // Measurement queries
     static vector<Measurement> getMeasurements(User user);

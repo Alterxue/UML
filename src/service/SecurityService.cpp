@@ -48,15 +48,15 @@ bool SecurityService::checkSensorReliability(User user, string targetSensorID) {
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Get all sensors and measurements
-    vector<Sensor> tousCapteurs = DataService::getSensors(user);
+    vector<Sensor*> tousCapteurs = DataService::getSensors(user);
     vector<Measurement> toutesMesures = DataService::getMeasurements(user);
     
     // 2. Find the target sensor to analyze
-    Sensor capteurAAnalyser("", 0.0, 0.0);
+    Sensor* capteurAAnalyser = nullptr;
     bool capteurTrouve = false;
     
     for (const auto& capteur : tousCapteurs) {
-        if (capteur.getSensorID() == targetSensorID) {
+        if (capteur != nullptr && capteur->getSensorID() == targetSensorID) {
             capteurAAnalyser = capteur;
             capteurTrouve = true;
             break;
@@ -69,11 +69,11 @@ bool SecurityService::checkSensorReliability(User user, string targetSensorID) {
     }
     
     // 3. Get nearby reliable sensors (within 10km radius)
-    vector<Sensor> capteursVoisinsFiables;
+    vector<Sensor*> capteursVoisinsFiables;
     
     for (const auto& capteur : tousCapteurs) {
-        if (capteur.getReliability() == true && capteur.getSensorID() != targetSensorID) {
-            double distance = capteur.calculateDistance(capteurAAnalyser.getLattitude(), capteurAAnalyser.getLongitude());
+        if (capteur != nullptr && capteur->getReliability() == true && capteur->getSensorID() != targetSensorID) {
+            double distance = capteur->calculateDistance(capteurAAnalyser->getLattitude(), capteurAAnalyser->getLongitude());
             if (distance <= 10000.0) {  // 10km in meters
                 capteursVoisinsFiables.push_back(capteur);
             }
@@ -113,7 +113,7 @@ bool SecurityService::checkSensorReliability(User user, string targetSensorID) {
         
         for (const auto& capteurVoisin : capteursVoisinsFiables) {
             for (const auto& mesureVoisin : toutesMesures) {
-                if (mesureVoisin.getSensor()->getSensorID() == capteurVoisin.getSensorID() &&
+                if (capteurVoisin != nullptr && mesureVoisin.getSensor()->getSensorID() == capteurVoisin->getSensorID() &&
                     mesureVoisin.getMeasureDate() == mesure.getMeasureDate() &&
                     mesureVoisin.getAttribute()->getAttributeID() == mesure.getAttribute()->getAttributeID()) {
                     
@@ -189,13 +189,13 @@ list<User> SecurityService::detectFraudulentUsers(User user) {
     
     // 3. For each private user, check their sensors
     for (const auto& privateUser : allPrivateUsers) {
-        vector<Sensor> userSensors = privateUser.getSensorsList();
+        vector<Sensor*> userSensors = privateUser.getSensorsList();
         
         bool userIsFraudulent = false;
         
         // 4. Check reliability of each user's sensor
         for (const auto& sensor : userSensors) {
-            if (!checkSensorReliability(user, sensor.getSensorID())) {
+            if (sensor != nullptr && !checkSensorReliability(user, sensor->getSensorID())) {
                 userIsFraudulent = true;
                 break;  // If even one sensor is unreliable, mark user as fraudulent
             }
@@ -230,12 +230,12 @@ void SecurityService::removeCorruptedData(User user) {
     }
     
     // 2. Find all unreliable sensors
-    vector<Sensor> allSensors = DataService::getAllSensors();
+    vector<Sensor*> allSensors = DataService::getAllSensors();
     list<string> unreliableSensorIds;
     
     for (const auto& sensor : allSensors) {
-        if (sensor.getReliability() == false) {
-            unreliableSensorIds.push_back(sensor.getSensorID());
+        if (sensor != nullptr && sensor->getReliability() == false) {
+            unreliableSensorIds.push_back(sensor->getSensorID());
         }
     }
     
@@ -284,15 +284,17 @@ void SecurityService::initializeDatabase(User user) {
     DataService::reloadAllData();
     
     // 3. Build security baseline: Mark all government sensors as reliable
-    vector<Sensor> allSensors = DataService::getAllSensors();
+    vector<Sensor*> allSensors = DataService::getAllSensors();
     int reliableSensorCount = 0;
     int unreliableSensorCount = 0;
     
     for (const auto& sensor : allSensors) {
         // Note: Sensors in the actual system would have a type attribute
         // For now, we mark all as needing verification
-        DataService::updateSensorStatus(sensor.getSensorID(), true);
-        reliableSensorCount++;
+        if (sensor != nullptr) {
+            DataService::updateSensorStatus(sensor->getSensorID(), true);
+            reliableSensorCount++;
+        }
     }
     
     cout << "Reliable Sensors (initialized): " << reliableSensorCount << endl;

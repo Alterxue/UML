@@ -20,6 +20,7 @@ class Sensor;
 class PrivateUser;
 class AirCleaner;
 class Provider;
+class Measurement;
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types

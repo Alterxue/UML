@@ -85,8 +85,6 @@ public:
   // Contrat :
   // 
 
-  
-
 
 
   void loadMeasurements(DataContainer & container);

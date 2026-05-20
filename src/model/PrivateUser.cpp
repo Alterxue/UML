@@ -39,7 +39,7 @@ int PrivateUser::getPoints() const
     return points;
 }
 
-const vector<Sensor*>& PrivateUser::getSensorsList() const
+const std::vector<Sensor*>& PrivateUser::getSensorsList() const
 {
     return sensorsList;
 }

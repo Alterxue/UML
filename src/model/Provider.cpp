@@ -27,7 +27,7 @@ using namespace std;
 
 void Provider::addCleaners(AirCleaner* cleaner) 
 {
-    this->myCleaners.push_back(*cleaner);
+    this->myCleaners.push_back(cleaner);
 }
 
 const vector<AirCleaner*>& Provider::getMyCleaners() const 
