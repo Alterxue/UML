@@ -13,11 +13,14 @@
 //-------------------------------------------------------- Include système
 using namespace std;
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 //------------------------------------------------------ Include personnel
 #include "CSVDataManager.h"
 #include "../model/Role.h"
-#include "../model/CSVDataContainer.h"
+#include "../model/DataContainer.h"
 
 
 //------------------------------------------------------------- Constantes
@@ -26,7 +29,7 @@ using namespace std;
 
 //----------------------------------------------------- Méthodes publiques
 
-void CSVDataManager::loadSensors(CSVDataContainer container){
+void CSVDataManager::loadSensors(DataContainer & container) const{
   // Algorithme :
   //
   Sensor* sensor; 
@@ -41,7 +44,7 @@ void CSVDataManager::loadSensors(CSVDataContainer container){
     lattitude=stod(getline(file,';'));
     longitude=stod(getline(file,';'));
     //mesures=loadMeasurementsBySensorID(sensorID);
-    container.(new Sensor(sensorId,lattitude,longitude,isReliable,mesures)));
+    container.addSensor(new Sensor(sensorId,lattitude,longitude,isReliable,mesures)));
     getline(file,'\n');
     file.peek();
   }
@@ -51,7 +54,7 @@ void CSVDataManager::loadSensors(CSVDataContainer container){
 
 
 
-void CSVDataManager::loadAttributes(CSVDataContainer & container){
+void CSVDataManager::loadAttributes(DataContainer & container) const{
   string attributeId;
   string unit;
   string description;
@@ -71,7 +74,7 @@ void CSVDataManager::loadAttributes(CSVDataContainer & container){
 }
 
 
-void CSVDataManager::loadUsers(CSVDataContainer & container){
+void CSVDataManager::loadUsers(DataContainer & container) const{
   string userId;
   string sensorId;
   PrivateUser* user;
@@ -91,7 +94,7 @@ void CSVDataManager::loadUsers(CSVDataContainer & container){
 }
 
 
-void CSVDataManager::loadCleaners(CsvDataContainer & container){
+void CSVDataManager::loadCleaners(DataContainer & container) const{
   AirCleaner* cleaner;
   string cleanerId;
   
@@ -119,7 +122,7 @@ void CSVDataManager::loadCleaners(CsvDataContainer & container){
   
 }
 
-void CSVDataManager::loadProviders(CSVDataContainer & container){
+void CSVDataManager::loadProviders(DataContainer & container) const{
   string providerId;
   string cleanerId;
   Provider* provider;
@@ -140,7 +143,7 @@ void CSVDataManager::loadProviders(CSVDataContainer & container){
   }
 }
 
-void CSVDataManager::loadMeasurements(CSVDataContainer & container){
+void CSVDataManager::loadMeasurements(DataContainer & container){
   Measurement* measurement;
   string sensorId;
   Sensor* sensor;

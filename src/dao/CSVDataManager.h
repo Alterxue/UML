@@ -20,6 +20,7 @@
 #include "../model/Provider.h"
 #include "../model/AirCleaner.h"
 #include "../model/PrivateUser.h"
+#include "../model/DataContainer.h"
 
 //------------------------------------------------------------- Constantes
 
@@ -37,7 +38,7 @@ class CSVDataManager
 
 public:
 //----------------------------------------------------- Méthodes publiques
-  void loadSensors(CSVDataContainer & container)const;
+  void loadSensors(DataContainer & container)const;
     // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
     //
     // Contrat :
@@ -59,22 +60,22 @@ public:
   //
     // Contrat :
     // 
-  void loadUsers(CSVDataContainer & container)const;
+  void loadUsers(DataContainer & container)const;
     // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
     //
     // Contrat :
     //
-  void loadAttributes(CSVDataContainer & container)const;
+  void loadAttributes(DataContainer & container)const;
     // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
     //
     // Contrat :
     //
-  void loadProviders(CSVDataContainer & container)const;
+  void loadProviders(DataContainer & container)const;
     // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
     //
     // Contrat :
     //
-  void loadCleaners(CSVDataContainer & container)const;
+  void loadCleaners(DataContainer & container)const;
     // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
     //
     // Contrat :
@@ -97,7 +98,7 @@ public:
     //
     // Contrat :
     //
-  void updateSensorStatus()
+  void updateSensorStatus();
     // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
     //
     // Contrat :
@@ -106,7 +107,7 @@ public:
   
 
 //------------------------------------------------- Surcharge d'opérateurs
-    CSVDataManager & operator = ( const CSVDataManager & unCSVDataManager );
+    CSVDataManager & operator = ( const CSVDataManager & unCSVDataManager ); 
     // Mode d'emploi :
     //
     // Contrat :
