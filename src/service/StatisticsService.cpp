@@ -40,7 +40,7 @@ double StatisticsService::calculateAirQuality(const User& user, double lat, doub
     
     // obtenir les listes de capteurs et mesures
     vector<Sensor*> tousCapteurs = DataService::getSensors(user);
-    vector<Measurement> toutesMesures = DataService::getMeasurements(user);
+    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
     
     map<string, double> sommesPonderees;  
     map<string, double> sommePoids;      
@@ -51,10 +51,10 @@ double StatisticsService::calculateAirQuality(const User& user, double lat, doub
         if (capteur->getReliability() == true){
             double distance = capteur->calculateDistance(lat,lon);
             double poids = (distance < 0.1) ? 100 : 1 / (distance * distance);
-            for(Measurement mesure: toutesMesures){
-                if(mesure.getSensor()->getSensorID() == capteur->getSensorID() && mesure.getMeasureDate() == time){
-                    string attrID = mesure.getAttribute()->getAttributeID();
-                    sommesPonderees[attrID] += (mesure.getValue() * poids);
+            for(const auto& mesure : toutesMesures){
+                if(mesure != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID() && mesure->getMeasureDate() == time){
+                    string attrID = mesure->getAttribute()->getAttributeID();
+                    sommesPonderees[attrID] += (mesure->getValue() * poids);
                     sommePoids[attrID] += poids;
                 }
             }
@@ -88,7 +88,7 @@ double StatisticsService::calculateAreaMean(const User& user, double lat, double
     
     // Récupération de toutes les données via DataService
     vector<Sensor*> tousCapteurs = DataService::getSensors(user);
-    vector<Measurement> toutesMesures = DataService::getMeasurements(user);
+    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
     
     // Filtrage spatial et fiabilité - récupérer les capteurs dans la zone
     vector<Sensor*> capteursZone;
@@ -110,11 +110,11 @@ double StatisticsService::calculateAreaMean(const User& user, double lat, double
     
     for (const auto& capteur : capteursZone) {
         for (const auto& mesure : toutesMesures) {
-            if (capteur != nullptr && mesure.getSensor()->getSensorID() == capteur->getSensorID() && 
-                period.contains(mesure.getMeasureDate())) {
+            if (capteur != nullptr && mesure != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID() && 
+                period.contains(mesure->getMeasureDate())) {
 
-                string attrID = mesure.getAttribute()->getAttributeID();
-                sommesAttributs[attrID] += mesure.getValue();
+                string attrID = mesure->getAttribute()->getAttributeID();
+                sommesAttributs[attrID] += mesure->getValue();
                 comptesAttributs[attrID] += 1;
 
             }
@@ -151,13 +151,13 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
     
     //Récupération de toutes les données
     vector<Sensor*> tousCapteurs = DataService::getSensors(user);
-    vector<Measurement> toutesMesures = DataService::getMeasurements(user);
+    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
     
     // Extraction des données du capteur cible pour la période
-    vector<Measurement> donneesCible;
+    vector<Measurement*> donneesCible;
     
     for (const auto& mesure : toutesMesures) {
-        if (mesure.getSensor()->getSensorID() == targetSensor && period.contains(mesure.getMeasureDate())) {
+        if (mesure != nullptr && mesure->getSensor()->getSensorID() == targetSensor && period.contains(mesure->getMeasureDate())) {
             donneesCible.push_back(mesure);
         }
     }
@@ -175,9 +175,9 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
         }
         
         //Extraction des données du capteur actuel pour la période
-        vector<Measurement> donneesAComparer;
+        vector<Measurement*> donneesAComparer;
         for (const auto& mesure : toutesMesures) {
-            if (mesure.getSensor()->getSensorID() == capteur->getSensorID() && period.contains(mesure.getMeasureDate())) {
+            if (mesure != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID() && period.contains(mesure->getMeasureDate())) {
                 donneesAComparer.push_back(mesure);
             }
         }
@@ -191,11 +191,12 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
             bool trouve = false;
             
             for (const auto& mesureAComparer : donneesAComparer) {
-                if (mesureAComparer.getMeasureDate() == mesureCible.getMeasureDate() && 
-                    mesureAComparer.getAttribute()->getAttributeID() == mesureCible.getAttribute()->getAttributeID()) {
+                if (mesureAComparer != nullptr && mesureCible != nullptr &&
+                    mesureAComparer->getMeasureDate() == mesureCible->getMeasureDate() && 
+                    mesureAComparer->getAttribute()->getAttributeID() == mesureCible->getAttribute()->getAttributeID()) {
                     
                     // Calculer la différence absolue entre les deux valeurs
-                    double difference = abs(mesureCible.getValue() - mesureAComparer.getValue());
+                    double difference = abs(mesureCible->getValue() - mesureAComparer->getValue());
                     differenceTotale += difference;
                     pointsCommuns += 1;
                     trouve = true;
@@ -245,8 +246,12 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
 double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerID){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
-    AirCleaner cleaner = DataService::getCleanerById(cleanerID);
-    TimeRange workingPeriod = cleaner.getWorkingPeriod();
+    AirCleaner* cleaner = DataService::getCleanerById(cleanerID);
+    if (cleaner == nullptr) {
+        cout << "ERROR: Cleaner " << cleanerID << " not found" << endl;
+        return 0.0;
+    }
+    TimeRange workingPeriod = cleaner->getWorkingPeriod();
     DateTime startTime = workingPeriod.getStart();
     DateTime stopTime = workingPeriod.getEnd();
     auto dureeFonctionnement = stopTime - startTime;
@@ -259,8 +264,8 @@ double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerI
     
     for (double rayon = 1.0; rayon <= 10.0; rayon += 1.0) {
         // la qualite avant activation de aircleaner
-        double aqiAvant = calculateAreaMean(user, cleaner.getLattitude(), cleaner.getLongitude(), rayon, periodeAvant);
-        double aqiPendant = calculateAreaMean(user, cleaner.getLattitude(), cleaner.getLongitude(), rayon, periodePendant);
+        double aqiAvant = calculateAreaMean(user, cleaner->getLattitude(), cleaner->getLongitude(), rayon, periodeAvant);
+        double aqiPendant = calculateAreaMean(user, cleaner->getLattitude(), cleaner->getLongitude(), rayon, periodePendant);
         
         if (aqiPendant < aqiAvant) {
             double amelioration = ((aqiAvant - aqiPendant) / aqiAvant) * 100.0;
@@ -294,14 +299,15 @@ string StatisticsService::getZoneStatistic(const User& user, double lat, double 
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // Get all sensors in the area
-    vector<Sensor> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
-    vector<Measurement> toutesMesures = DataService::getMeasurements(user);
+    vector<Sensor*> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
+    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
     
     // Filter measurements by sensor and time period
-    vector<Measurement> mesuresZone;
+    vector<Measurement*> mesuresZone;
     for (const auto& mesure : toutesMesures) {
+        if (mesure == nullptr) continue;
         for (const auto& capteur : listeCapteurs) {
-            if (mesure.getSensor()->getSensorID() == capteur.getSensorID() && period.contains(mesure.getMeasureDate())) {
+            if (capteur != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID() && period.contains(mesure->getMeasureDate())) {
                 mesuresZone.push_back(mesure);
             }
         }
@@ -320,8 +326,9 @@ string StatisticsService::getZoneStatistic(const User& user, double lat, double 
     double minAQI = 10.0;
     
     for (const auto& mesure : mesuresZone) {
+        if (mesure == nullptr) continue;
         map<string, double> mesureMap;
-        mesureMap[mesure.getAttribute()->getAttributeID()] = mesure.getValue();
+        mesureMap[mesure->getAttribute()->getAttributeID()] = mesure->getValue();
         double aqiActuel = StatisticsService::convertirVersIndiceATMO(mesureMap);
         
         if (aqiActuel > maxAQI) {
@@ -337,8 +344,9 @@ string StatisticsService::getZoneStatistic(const User& user, double lat, double 
     map<string, int> comptesPolluants;
     
     for (const auto& mesure : mesuresZone) {
-        string attrID = mesure.getAttribute()->getAttributeID();
-        sommesPolluants[attrID] += mesure.getValue();
+        if (mesure == nullptr) continue;
+        string attrID = mesure->getAttribute()->getAttributeID();
+        sommesPolluants[attrID] += mesure->getValue();
         comptesPolluants[attrID] += 1;
     }
     
@@ -373,11 +381,15 @@ string StatisticsService::getZoneStatistic(const User& user, double lat, double 
 double StatisticsService::viewCleanerImpact(const User& user, string cleanerID, TimeRange period){
     auto tempsDebut = chrono::high_resolution_clock::now();
     
-    AirCleaner cleaner = DataService::getCleanerById(cleanerID);
+    AirCleaner* cleaner = DataService::getCleanerById(cleanerID);
+    if (cleaner == nullptr) {
+        cout << "ERROR: Cleaner " << cleanerID << " not found" << endl;
+        return 0.0;
+    }
     double rayonEffet = 5.0;    
-    double cleaner_lat = cleaner.getLattitude();     
-    double cleaner_lon = cleaner.getLongitude();       
-    DateTime cleanerStartTime = cleaner.getWorkingPeriod().getStart();          
+    double cleaner_lat = cleaner->getLattitude();     
+    double cleaner_lon = cleaner->getLongitude();       
+    DateTime cleanerStartTime = cleaner->getWorkingPeriod().getStart();          
 
     //Identifier les capteurs impactés (dans le rayon d'action du purificateur)
     vector<Sensor*> tousCapteurs = DataService::getSensors(user);
@@ -425,7 +437,7 @@ double StatisticsService::estimateAirQuality(double lat, double lon){
     
     // Récupérer tous les capteurs et mesures (sans filtrage par utilisateur
     vector<Sensor*> tousCapteurs = DataService::getAllSensors();
-    list<Measurement> toutesMesures = DataService::getAllMeasurements();
+    vector<Measurement*> toutesMesures = DataService::getAllMeasurements();
     
     // Initialiser les structures pour l'interpolation spatiale (IDW)
     map<string, double> sommesPonderees;  // {attributeID: somme_valeurs_pondérées}
@@ -446,9 +458,9 @@ double StatisticsService::estimateAirQuality(double lat, double lon){
             
             // Chercher les mesures de ce capteur
             for (const auto& mesure : toutesMesures) {
-               if (mesure.getSensor()->getSensorID() == capteur->getSensorID()) {
-                    string attrID = mesure.getAttribute()->getAttributeID();
-                    sommesPonderees[attrID] += (mesure.getValue() * poids);
+               if (mesure != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID()) {
+                    string attrID = mesure->getAttribute()->getAttributeID();
+                    sommesPonderees[attrID] += (mesure->getValue() * poids);
                     sommePoids[attrID] += poids;
                 }
             }
@@ -477,7 +489,7 @@ double StatisticsService::calculateLocalAQI(const User& user, double lat, double
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Récupération du capteur le plus proche (normalement à distance ~0)
-    vector<Sensor> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
+    vector<Sensor*> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
     
     // Si aucun capteur dans la zone, retourner erreur
     if (listeCapteurs.empty()) {
@@ -487,13 +499,13 @@ double StatisticsService::calculateLocalAQI(const User& user, double lat, double
     
     // 2. Récupération des mesures pour ce capteur précis sur la période
     // On prend le capteur le plus proche (le premier de la liste)
-    Sensor capteurLocal = listeCapteurs.front();
-    vector<Measurement> mesures = DataService::getMeasurements(user);
+    Sensor* capteurLocal = listeCapteurs.front();
+    vector<Measurement*> mesures = DataService::getMeasurements(user);
     
     // Filtrer les mesures pour ce capteur spécifique et cette période
-    vector<Measurement> mesuresLocales;
+    vector<Measurement*> mesuresLocales;
     for (const auto& mesure : mesures) {
-        if (mesure.getSensor()->getSensorID() == capteurLocal.getSensorID() && period.contains(mesure.getMeasureDate())) {
+        if (mesure != nullptr && capteurLocal != nullptr && mesure->getSensor()->getSensorID() == capteurLocal->getSensorID() && period.contains(mesure->getMeasureDate())) {
             mesuresLocales.push_back(mesure);
         }
     }
@@ -509,9 +521,11 @@ double StatisticsService::calculateLocalAQI(const User& user, double lat, double
     map<string, int> comptesAttributs;
     
     for (const auto& mesure : mesuresLocales) {
-        string attrID = mesure.getAttribute()->getAttributeID();
-        sommeAttributs[attrID] += mesure.getValue();
-        comptesAttributs[attrID] += 1;
+        if (mesure != nullptr) {
+            string attrID = mesure->getAttribute()->getAttributeID();
+            sommeAttributs[attrID] += mesure->getValue();
+            comptesAttributs[attrID] += 1;
+        }
     }
     
     // Calculer les moyennes simples
@@ -533,7 +547,9 @@ double StatisticsService::calculateLocalAQI(const User& user, double lat, double
     auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
     cout << "Temps d'exécution calculateLocalAQI : " << duree.count() << " ms" << endl;
-    cout << "Local AQI for sensor " << capteurLocal.getSensorID()<< " : " << indiceGlobal << endl;
+    if (capteurLocal != nullptr) {
+        cout << "Local AQI for sensor " << capteurLocal->getSensorID()<< " : " << indiceGlobal << endl;
+    }
     
     return indiceGlobal;
 }

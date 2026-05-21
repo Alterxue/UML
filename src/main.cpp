@@ -310,20 +310,20 @@ int main(){
                             }
                             case 10:
                             {
-                                cout << "Affichage de l'historique de vos contributions..." << endl;
-                                list<Measurement> userHistory = DataService::getUserHistory(*Application.getCurrentPrivateUser());
-                                if (userHistory.empty()) {
-                                    cout << "Aucune contribution." << endl;
-                                    break;
-                                }
-                                for (const auto& measurement : userHistory) {
-                                    cout << "- " << measurement.getSensor()->getSensorID()
-                                         << " | " << measurement.getAttribute()->getAttributeID()
-                                         << " | " << measurement.getValue()
-                                         << " | " << formatDateTime(measurement.getMeasureDate())
-                                         << endl;
-                                }
-                                break;
+                                // cout << "Affichage de l'historique de vos contributions..." << endl;
+                                // list<Measurement> userHistory = DataService::getUserHistory(*Application.getCurrentPrivateUser());
+                                // if (userHistory.empty()) {
+                                //     cout << "Aucune contribution." << endl;
+                                //     break;
+                                // }
+                                // for (const auto& measurement : userHistory) {
+                                //     cout << "- " << measurement.getSensor()->getSensorID()
+                                //          << " | " << measurement.getAttribute()->getAttributeID()
+                                //          << " | " << measurement.getValue()
+                                //          << " | " << formatDateTime(measurement.getMeasureDate())
+                                //          << endl;
+                                // }
+                                // break;
                             }
                             case 11:
                                 break;

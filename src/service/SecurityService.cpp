@@ -49,7 +49,7 @@ bool SecurityService::checkSensorReliability(const User& user, string targetSens
     
     // 1. Get all sensors and measurements
     vector<Sensor*> tousCapteurs = DataService::getSensors(user);
-    vector<Measurement> toutesMesures = DataService::getMeasurements(user);
+    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
     
     // 2. Find the target sensor to analyze
     Sensor* capteurAAnalyser = nullptr;
@@ -86,9 +86,9 @@ bool SecurityService::checkSensorReliability(const User& user, string targetSens
     }
     
     // 4. Extract measurements for target sensor
-    vector<Measurement> mesuresCible;
+    vector<Measurement*> mesuresCible;
     for (const auto& mesure : toutesMesures) {
-        if (mesure.getSensor()->getSensorID() == targetSensorID) {
+        if (mesure != nullptr && mesure->getSensor()->getSensorID() == targetSensorID) {
             mesuresCible.push_back(mesure);
         }
     }
@@ -113,11 +113,12 @@ bool SecurityService::checkSensorReliability(const User& user, string targetSens
         
         for (const auto& capteurVoisin : capteursVoisinsFiables) {
             for (const auto& mesureVoisin : toutesMesures) {
-                if (capteurVoisin != nullptr && mesureVoisin.getSensor()->getSensorID() == capteurVoisin->getSensorID() &&
-                    mesureVoisin.getMeasureDate() == mesure.getMeasureDate() &&
-                    mesureVoisin.getAttribute()->getAttributeID() == mesure.getAttribute()->getAttributeID()) {
+                if (capteurVoisin != nullptr && mesureVoisin != nullptr &&
+                    mesureVoisin->getSensor()->getSensorID() == capteurVoisin->getSensorID() &&
+                    mesureVoisin->getMeasureDate() == mesure->getMeasureDate() &&
+                    mesureVoisin->getAttribute()->getAttributeID() == mesure->getAttribute()->getAttributeID()) {
                     
-                    sommValeurs += mesureVoisin.getValue();
+                    sommValeurs += mesureVoisin->getValue();
                     compteMesures++;
                 }
             }
@@ -129,7 +130,7 @@ bool SecurityService::checkSensorReliability(const User& user, string targetSens
             totalMesures++;
             
             // Calculate absolute deviation
-            double ecartAbsolu = abs(mesure.getValue() - valeurReference);
+            double ecartAbsolu = abs(mesure->getValue() - valeurReference);
             
             // Check if deviation exceeds tolerance threshold
             if (ecartAbsolu > (valeurReference * SEUIL_TOLERANCE)) {
@@ -185,11 +186,13 @@ list<User> SecurityService::detectFraudulentUsers(const User& user) {
     }
     
     // 2. Get all private users
-    list<PrivateUser> allPrivateUsers = DataService::getAllPrivateUsers();
+    vector<PrivateUser*> allPrivateUsers = DataService::getAllPrivateUsers();
     
     // 3. For each private user, check their sensors
-    for (const auto& privateUser : allPrivateUsers) {
-        vector<Sensor*> userSensors = privateUser.getSensorsList();
+    for (const auto& privateUserPtr : allPrivateUsers) {
+        if (privateUserPtr == nullptr) continue;
+        
+        vector<Sensor*> userSensors = privateUserPtr->getSensorsList();
         
         bool userIsFraudulent = false;
         
@@ -203,8 +206,8 @@ list<User> SecurityService::detectFraudulentUsers(const User& user) {
         
         // 5. Collect fraudulent users
         if (userIsFraudulent) {
-            fraudulentUsers.push_back(privateUser);
-            cout << "Fraudulent user detected: " << privateUser.getUserID() << endl;
+            fraudulentUsers.push_back(*privateUserPtr);
+            cout << "Fraudulent user detected: " << privateUserPtr->getUserID() << endl;
         }
     }
     
@@ -243,12 +246,14 @@ void SecurityService::removeCorruptedData(const User& user) {
     int corruptedRecordsCount = 0;
     
     for (const auto& sensorID : unreliableSensorIds) {
-        list<Measurement> measurements = DataService::getMeasurementsBySensor(sensorID);
+        vector<Measurement*> measurements = DataService::getMeasurementsBySensor(sensorID);
         
         for (const auto& measurement : measurements) {
-            // Mark measurement as corrupted (soft delete)
-            DataService::markMeasurementAsInvalid(measurement);
-            corruptedRecordsCount++;
+            if (measurement != nullptr) {
+                // Mark measurement as corrupted (soft delete)
+                DataService::markMeasurementAsInvalid(*measurement);
+                corruptedRecordsCount++;
+            }
         }
         
         cout << "Marked sensor " << sensorID << " and its " << measurements.size() << " measurements as invalid" << endl;
@@ -286,7 +291,6 @@ void SecurityService::initializeDatabase(const User& user) {
     // 3. Build security baseline: Mark all government sensors as reliable
     vector<Sensor*> allSensors = DataService::getAllSensors();
     int reliableSensorCount = 0;
-    int unreliableSensorCount = 0;
     
     for (const auto& sensor : allSensors) {
         // Note: Sensors in the actual system would have a type attribute
@@ -308,7 +312,7 @@ void SecurityService::initializeDatabase(const User& user) {
     
     // 6. Verify data integrity
     cout << "Verifying data integrity..." << endl;
-    list<Measurement> allMeasurements = DataService::getAllMeasurements();
+    vector<Measurement*> allMeasurements = DataService::getAllMeasurements();
     cout << "Total Measurements in System: " << allMeasurements.size() << endl;
     
     // 7. Log completion

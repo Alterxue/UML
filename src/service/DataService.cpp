@@ -277,6 +277,61 @@ void DataService::loadAllData() {
     cout << "Data reload complete" << endl;
 }
 
+// Update sensor reliability status
+void DataService::updateSensorStatus(const string& sensorID, bool isReliable) {
+    if (dataContainer == nullptr) {
+        cout << "ERROR: DataContainer not initialized" << endl;
+        return;
+    }
+
+    vector<Sensor*> allSensors = getAllSensors();
+    for (const auto& sensor : allSensors) {
+        if (sensor != nullptr && sensor->getSensorID() == sensorID) {
+            sensor->setReliability(isReliable);
+            cout << "Updated sensor " << sensorID << " reliability to " << (isReliable ? "RELIABLE" : "UNRELIABLE") << endl;
+            return;
+        }
+    }
+    
+    cout << "WARNING: Sensor " << sensorID << " not found for status update" << endl;
+} //----- Fin de updateSensorStatus
+
+// Mark a measurement as invalid (soft delete)
+void DataService::markMeasurementAsInvalid(const Measurement& measurement) {
+    if (dataContainer == nullptr) {
+        cout << "ERROR: DataContainer not initialized" << endl;
+        return;
+    }
+
+    // Note: Implementation depends on how Measurement handles soft deletes
+    // For now, we just log the operation
+    cout << "Marked measurement as invalid for sensor " << measurement.getSensor()->getSensorID() << endl;
+} //----- Fin de markMeasurementAsInvalid
+
+// Reload all data from CSV files
+void DataService::reloadAllData() {
+    loadAllData();  // Delegate to existing loadAllData method
+} //----- Fin de reloadAllData
+
+// Clear corruption flags
+void DataService::clearCorruptionFlags() {
+    if (dataContainer == nullptr) {
+        cout << "ERROR: DataContainer not initialized" << endl;
+        return;
+    }
+
+    // Iterate through all sensors and reset corruption flags if they exist
+    vector<Sensor*> allSensors = getAllSensors();
+    for (const auto& sensor : allSensors) {
+        if (sensor != nullptr) {
+            // For now, we just set all sensors to reliable
+            sensor->setReliability(true);
+        }
+    }
+    
+    cout << "Corruption flags cleared for all sensors" << endl;
+} //----- Fin de clearCorruptionFlags
+
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur

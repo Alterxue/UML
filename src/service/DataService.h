@@ -9,7 +9,7 @@
 //---------- Interface de la classe <DataService> (fichier DataService.h) ----------------
 #if ! defined ( DATASERVICE_H )
 #define DATASERVICE_H
-
+using namespace std;
 #include <vector>
 #include <ctime>
 #include <string>
@@ -91,6 +91,22 @@ public:
     
     // =============== Requêtes de maintenance ===============
     static void loadAllData();
+    
+    static void updateSensorStatus(const string& sensorID, bool isReliable);
+    // Mode d'emploi :
+    // Met à jour le statut de fiabilité d'un capteur en base de données
+    
+    static void markMeasurementAsInvalid(const Measurement& measurement);
+    // Mode d'emploi :
+    // Marque une mesure comme invalide (soft delete)
+    
+    static void reloadAllData();
+    // Mode d'emploi :
+    // Recharge toutes les données depuis les fichiers CSV
+    
+    static void clearCorruptionFlags();
+    // Mode d'emploi :
+    // Réinitialise les drapeaux de corruption temporaires
 
 //-------------------------------------------- Constructeurs - destructeur
     DataService ();
