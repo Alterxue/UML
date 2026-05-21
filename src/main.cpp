@@ -393,12 +393,12 @@ int main(){
                                     }
                                 }
                                 break;}
-                            case 8:{
+                            case 8:
                                 SecurityService::removeCorruptedData(*Application.getCurrentGovernmentAgency());
-                                break;}
-                            case 9:{
+                                break;
+                            case 9:
                                 SecurityService::initializeDatabase(*Application.getCurrentGovernmentAgency());
-                                break;}
+                                break;
                             case 10:
                                 break;
                             default:
