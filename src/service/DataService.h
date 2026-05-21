@@ -90,7 +90,6 @@ public:
     static AirCleaner* getCleanerById(const std::string& cleanerID);
     
     // =============== Requêtes de maintenance ===============
-    static void loadAllData();
     
     static void updateSensorStatus(const string& sensorID, bool isReliable);
     // Mode d'emploi :

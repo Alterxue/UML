@@ -258,7 +258,7 @@ AirCleaner* DataService::getCleanerById(const string& cleanerID) {
 }
 
 // =============== Requêtes de maintenance ===============
-void DataService::loadAllData() {
+void DataService::reloadAllData() {
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return;
@@ -308,10 +308,7 @@ void DataService::markMeasurementAsInvalid(const Measurement& measurement) {
     cout << "Marked measurement as invalid for sensor " << measurement.getSensor()->getSensorID() << endl;
 } //----- Fin de markMeasurementAsInvalid
 
-// Reload all data from CSV files
-void DataService::reloadAllData() {
-    loadAllData();  // Delegate to existing loadAllData method
-} //----- Fin de reloadAllData
+
 
 // Clear corruption flags
 void DataService::clearCorruptionFlags() {
