@@ -87,14 +87,6 @@ public:
 
 
 
-  void loadMeasurements(DataContainer & container);
-  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-  //
-  // Contrat :
-  //
-
-
-
   void appendNewSensor(const Sensor& sensor,const PrivateUser& user);
   // Mode d'emploi :
   //
