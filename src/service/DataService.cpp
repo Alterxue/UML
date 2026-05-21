@@ -202,21 +202,47 @@ vector<Measurement*> DataService::getMeasurementsBySensor(const string& sensorID
         }
     } 
     else {
-        cout << "WARNING: Sensor " << sensorID << " not found" << endl;
+        cout << "AVERTISSEMENT: Capteur " << sensorID << " non trouvé." << endl;
     }
     
     return result;
 } //----- Fin de getMeasurementsBySensor
 
+list<Measurement> DataService::getUserHistory(const PrivateUser& user)
+{
+    list<Measurement> result;
+
+    if (dataContainer == nullptr) {
+        cout << "ERREUR: DataContainer non initialisé" << endl;
+        return result;
+    }
+
+    const vector<Sensor*>& sensors = user.getSensorsList();
+    for (const Sensor* sensor : sensors) {
+        if (sensor == nullptr) {
+            continue;
+        }
+
+        const vector<Measurement*>& measurements = sensor->getMeasurements();
+        for (const Measurement* measurement : measurements) {
+            if (measurement != nullptr) {
+                result.push_back(*measurement);
+            }
+        }
+    }
+
+    return result;
+} //----- Fin de getUserHistory
+
 // Add a new measurement
 void DataService::addMeasurement(DateTime measureDate, Sensor* sensor, Attribute* attribute, double value) {
     if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
+        cout << "ERREUR: DataContainer non initialisé" << endl;
         return;
     }
 
     if (sensor == nullptr || attribute == nullptr) {
-        cout << "ERROR: Cannot add measurement with null sensor or attribute" << endl;
+        cout << "ERREUR: Impossible d'ajouter une mesure avec un capteur ou un attribut nul" << endl;
         return;
     }
 
@@ -236,11 +262,11 @@ vector<PrivateUser*> DataService::getAllPrivateUsers() {
         return result;
     }
 
-    const auto& users = dataContainer->getAllUsers();
+    const map<string, PrivateUser*>& users = dataContainer->getAllUsers();
     result.reserve(users.size());
-    for (const auto& [id, privateUser] : users) {
-        if (privateUser) {
-            result.push_back(privateUser);
+    for (const map<string, PrivateUser*>::value_type& pair : users) {
+        if (pair.second != nullptr) {
+            result.push_back(pair .second);
         }
     }
 

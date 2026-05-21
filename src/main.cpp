@@ -53,13 +53,8 @@ int main(){
     CSVDataManager dataManager;
 
     // Charger toutes les données du CSV data manager avant tout test de connexion
-    dataManager.loadAttributes(dataContainer);
-    dataManager.loadSensors(dataContainer);
-    dataManager.loadUsers(dataContainer);
-    dataManager.loadCleaners(dataContainer);
-    dataManager.loadProviders(dataContainer);
-
     DataService::initializeDataContainer(&dataContainer);
+    DataService::loadAllData();
 
     cout << "Données chargées depuis les fichiers CSV." << endl;
     cout << dataContainer.getAllSensors().size() << " capteurs chargés." << endl;
@@ -95,7 +90,7 @@ int main(){
         } else if (roleChoice == 3) {
             login = Application.setGovernmentAgency(userID);
             if (!login){
-                cout << "ID invalide, aucun agent gouvernemental trouvé, veuillez réessayer." << endl;
+                cout << "ID invalide pour l'agence gouvernementale, veuillez réessayer." << endl;
             }
         }
     } while(!login);
@@ -368,28 +363,39 @@ int main(){
                     int particularChoice;
                     do {
                         cout << "-- MENU AGENCE GOUVERNEMENTALE --" << endl;
-                        cout << "6. Initialiser les bases de données" << endl;
-                        cout << "7. Vérifier si un capteur est défectueux" << endl;
-                        cout << "8. Identifier les comportements frauduleux" << endl;
-                        cout << "9. Exclure les données corrompues" << endl;
-                        cout << "10. Retour au menu principal" << endl;
+                        cout << "6. Vérifier si un capteur est défectueux" << endl;
+                        cout << "7. Identifier les comportements frauduleux" << endl;
+                        cout << "8. Exclure les données corrompues" << endl;
+                        cout << "9. Retour au menu principal" << endl;
                         cin >> particularChoice;
                         
 
                         switch (particularChoice) {
-                            case 6:
-                                // Logic to display the impact of a sensor
-                                break;
-                            case 7:
-                                // Logic to calculate average AQI in a zone
-                                break;
-                            case 8:
-                                // Logic to compare sensors by similarity
-                                break;
+                            case 6:{
+                                string targetSensorID;
+                                cout << "ID du capteur à vérifier: ";
+                                cin >> targetSensorID;
+                                if (SecurityService::checkSensorReliability(*Application.getCurrentGovernmentAgency(), targetSensorID)) {
+                                    cout << "Le capteur " << targetSensorID << " est fiable." << endl;
+                                } else {
+                                    cout << "Le capteur " << targetSensorID << " est défectueux ou frauduleux." << endl;
+                                }
+                                break;}
+                            case 7:{
+                                vector<PrivateUser*> fraudulentUsers = SecurityService::detectFraudulentUsers(*Application.getCurrentGovernmentAgency());
+                                if (fraudulentUsers.empty()) {
+                                    cout << "Aucun utilisateur frauduleux détecté." << endl;
+                                } else {
+                                    cout << "Utilisateurs frauduleux détectés:" << endl;
+                                    for (const auto& user : fraudulentUsers) {
+                                        cout << "- " << user->getUserID() << endl;
+                                    }
+                                }
+                                break;}
+                            case 8:{
+                                SecurityService::removeCorruptedData(*Application.getCurrentGovernmentAgency());
+                                break;}
                             case 9:
-                                // Logic to analyze purification radius
-                                break;
-                            case 10:
                                 break;
                             default:
                                 cout << "Choix invalide, veuillez réessayer." << endl;

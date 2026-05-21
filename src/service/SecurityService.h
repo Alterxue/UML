@@ -26,12 +26,9 @@ using namespace std;
 
 //------------------------------------------------------------------------
 // Role de la classe <SecurityService>
-//
-// Provides core security functions for fraud detection, sensor validation,
-// and data integrity management in the AirWatcher system.
-//
+// Apporte des fonctions de sécurité pour la détection de fraudes, la validation des capteurs,
+// et la gestion de l'intégrité des données dans le système AirWatcher
 //------------------------------------------------------------------------
-
 
 class SecurityService
 {
@@ -39,21 +36,24 @@ class SecurityService
 
 public:
 //----------------------------------------------------- Méthodes publiques
-
-    // Core Fraud Detection Algorithm
-    // Verifies if a specific sensor (usually private) produces reliable data
-    // Returns true if sensor is reliable, false if fraudulent/faulty
     static bool checkSensorReliability(const User& user, string sensorID);
+    // Mode d'emploi :
+    // - Seule une agence gouvernementale peut vérifier la fiabilité d'un capteur
+    // - Analyse les mesures du capteur sur une période donnée pour détecter des anomalies
+    // - Compare les mesures du capteur avec des capteurs de référence
+    // - Marque le capteur ainsi que ses mesurescomme fiable ou non fiable dans le DataContainer
+    
+    static vector<PrivateUser*> detectFraudulentUsers(const User& user);
+    // Mode d'emploi :
+    // - Seule une agence gouvernementale peut détecter les utilisateurs frauduleux
+    // - Renvoie un vecteur de pointeurs vers les utilisateurs privés marqués comme frauduleux, basé sur la fiabilité de leurs capteurs associés
 
-    // Batch Fraud Detection
-    // Identifies all malicious private users providing false data
-    // Returns list of fraudulent users
-    static list<User> detectFraudulentUsers(const User& user);
-
-    // Data Corruption Removal
-    // Marks corrupted data as invalid and excludes from future calculations
-    // Prevents pollution of statistical analysis
     static void removeCorruptedData(const User& user);
+    // Mode d'emploi :
+    // - Seule une agence gouvernementale peut supprimer les données corrompues
+    // - Récupère tous les capteurs marqués comme non fiables et marque leurs données comme invalides
+    // - suppression douce : les données restent dans le système mais sont exclues des calculs et analyses futures
+
 
     // System Initialization
     // Performs secure database initialization or admin reset

@@ -29,191 +29,196 @@ using namespace std;
 #include "../model/GovernmentAgency.h"
 #include "../model/PrivateUser.h"
 #include "../model/Measurement.h"
+#include "../model/Role.h"
 using namespace std;
 
 
 //------------------------------------------------------------- Constantes
-
-const double ANOMALY_THRESHOLD = 0.3;  //tolerance for 30 percent
-const double ANOMALY_RATE_THRESHOLD = 0.5;  // 50% anomaly rate to mark unreliable
+const double SEUIL_TOLERANCE = 0.30;  // 30% de tolérance
+const double SEUIL_FRAUDE = 0.50;     // 50% d'anomalies pour marquer comme frauduleux
 const time_t RELIABILITY_CHECK_PERIOD = 7 * 24 * 3600;  // 7 days for analysis
+
 
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-
-// Algorithm 4: Fraud Detection - Check if a sensor is reliable
-// Returns true if sensor is reliable, false if fraudulent
-bool SecurityService::checkSensorReliability(const User& user, string targetSensorID) {
-    auto tempsDebut = chrono::high_resolution_clock::now();
-    
-    // 1. Get all sensors and measurements
-    vector<Sensor*> tousCapteurs = DataService::getSensors(user);
-    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
-    
-    // 2. Find the target sensor to analyze
-    Sensor* capteurAAnalyser = nullptr;
-    bool capteurTrouve = false;
-    
-    for (const auto& capteur : tousCapteurs) {
-        if (capteur != nullptr && capteur->getSensorID() == targetSensorID) {
-            capteurAAnalyser = capteur;
-            capteurTrouve = true;
-            break;
-        }
+bool SecurityService::checkSensorReliability(const User& user, string targetSensorID) 
+// Algorithme
+// 1. Vérifier que l'utilisateur est une agence gouvernementale
+// 2. Récupérer le capteur à analyser et ses mesures
+// 3. Récupérer les capteurs voisins fiables et leurs mesures associées
+// 4. Pour chaque mesure du capteur à analyser, calculer une valeur de référence à partir des capteurs voisins pour la même date et le même attribut
+// Si l'écart entre la mesure du capteur à analyser et la valeur de référence dépasse un seuil de tolérance, marquer la mesure comme anomalie
+// 5. Déterminer si le capteur est fiable en fonction du taux d'anomalies
+// 6. Journaliser le temps d'exécution et les résultats
+{
+    std::chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
+    // 1. Seule une agence gouvernementale peut vérifier la fiabilité d'un capteur
+    if (user.getRole() != GOVERNMENT_AGENCY) {
+        cout << "ERREUR : Seules les agences gouvernementales peuvent vérifier la fiabilité d'un capteur." << endl;
+        return false;
     }
-    
-    if (!capteurTrouve) {
-        cout << "ERROR: Sensor " << targetSensorID << " not found" << endl;
+
+    // 2. Récupérer le capteur à analyser et ses mesures
+    Sensor* capteurAAnalyser = DataService::getDataContainer()->getSensorByID(targetSensorID);
+    if (capteurAAnalyser == nullptr) {
+        cout << "ERREUR: Capteur " << targetSensorID << " non trouvé." << endl;
+        return false;
+    }
+
+    vector<Measurement*> mesuresCible = DataService::getMeasurementsBySensor(targetSensorID);
+    if (mesuresCible.empty()) {
+        cout << "ERREUR: Aucune mesure trouvée pour le capteur " << targetSensorID << endl;
         return false;
     }
     
-    // 3. Get nearby reliable sensors (within 10km radius)
+    // 3. Récupérer les capteurs voisins fiables et les mesures fiables associées (moins de 10 km et marqués comme fiables)
+    vector<Sensor*> tousCapteurs = DataService::getSensors(user);
+    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
+
     vector<Sensor*> capteursVoisinsFiables;
-    
-    for (const auto& capteur : tousCapteurs) {
+    for (const vector<Sensor*>::value_type& capteur : tousCapteurs) {
         if (capteur != nullptr && capteur->getReliability() == true && capteur->getSensorID() != targetSensorID) {
             double distance = capteur->calculateDistance(capteurAAnalyser->getLattitude(), capteurAAnalyser->getLongitude());
-            if (distance <= 10000.0) {  // 10km in meters
+            if (distance <= 10) {  // 10km
                 capteursVoisinsFiables.push_back(capteur);
             }
         }
     }
     
     if (capteursVoisinsFiables.empty()) {
-        cout << "WARNING: No reliable nearby sensors found. " << targetSensorID << " is reliable." << endl;
+        cout << "AVERTISSEMENT : Aucun capteur fiable à proximité trouvé. Le capteur " << targetSensorID << " est considéré comme fiable." << endl;
+        capteurAAnalyser->setReliability(true);
         return true;
     }
-    
-    // 4. Extract measurements for target sensor
-    vector<Measurement*> mesuresCible;
-    for (const auto& mesure : toutesMesures) {
-        if (mesure != nullptr && mesure->getSensor()->getSensorID() == targetSensorID) {
-            mesuresCible.push_back(mesure);
+
+    vector<Measurement*> mesuresFiablesVoisins;
+    for (const vector<Sensor*>::value_type& capteurVoisin : capteursVoisinsFiables) {
+        for (const vector<Measurement*>::value_type& mesure : capteurVoisin->getMeasurements()) {
+            if (mesure != nullptr && mesure->getIsValid() == true) {
+                mesuresFiablesVoisins.push_back(mesure);
+            }
         }
     }
-    
-    if (mesuresCible.empty()) {
-        cout << "ERROR: No measurements found for sensor " << targetSensorID << endl;
-        return false;
-    }
-    
-    // 5. Analyze anomalies
-    const double SEUIL_TOLERANCE = 0.30;  // 30% tolerance
-    const double SEUIL_FRAUDE = 0.50;     // 50% fraud threshold
-    
+
+    // 4. Pour chaque mesure du capteur à analyser, calculer une valeur de référence à partir des capteurs voisins pour la même date et le même attribut
     int anomaliesDetectees = 0;
     int totalMesures = 0;
     
-    // For each measurement of the target sensor
-    for (const auto& mesure : mesuresCible) {
-        // Calculate reference value from nearby reliable sensors at same timestamp and pollutant
+    // Pour chaque mesure du capteur à analyser
+    for (const vector<Measurement*>::value_type& mesure : mesuresCible) {
+        // Calculer la valeur de référence à partir des capteurs voisins fiables pour la même date et le même attribut
         double sommValeurs = 0.0;
         int compteMesures = 0;
         
-        for (const auto& capteurVoisin : capteursVoisinsFiables) {
-            for (const auto& mesureVoisin : toutesMesures) {
-                if (capteurVoisin != nullptr && mesureVoisin != nullptr &&
-                    mesureVoisin->getSensor()->getSensorID() == capteurVoisin->getSensorID() &&
+        for (const vector<Sensor*>::value_type& capteurVoisin : capteursVoisinsFiables) {
+            for (const vector<Measurement*>::value_type& mesureVoisin : mesuresFiablesVoisins) {
+                if (capteurVoisin != nullptr && mesureVoisin->getSensor()->getSensorID() == capteurVoisin->getSensorID() &&
                     mesureVoisin->getMeasureDate() == mesure->getMeasureDate() &&
                     mesureVoisin->getAttribute()->getAttributeID() == mesure->getAttribute()->getAttributeID()) {
                     
+                    sommValeurs += mesureVoisin->getValue();
                     sommValeurs += mesureVoisin->getValue();
                     compteMesures++;
                 }
             }
         }
         
-        // If we have reference values to compare
+        // Si on a des mesures de référence, calculer la valeur de référence et détecter les anomalies
         if (compteMesures > 0) {
             double valeurReference = sommValeurs / compteMesures;
             totalMesures++;
-            
-            // Calculate absolute deviation
+
+            // Calculer l'écart absolu
             double ecartAbsolu = abs(mesure->getValue() - valeurReference);
-            
-            // Check if deviation exceeds tolerance threshold
+
+            // Vérifier si l'écart dépasse le seuil de tolérance
             if (ecartAbsolu > (valeurReference * SEUIL_TOLERANCE)) {
+                cout << "ANOMALIE DÉTECTÉE : La mesure du capteur " << targetSensorID << " diffère fortement de la valeur de référence." << endl;
+                mesure->setIsValid(false);
                 anomaliesDetectees++;
             }
         }
     }
     
-    // 6. Decision: Mark unreliable if anomaly rate > 50%
+    // 5. Décision : marquer comme non fiable si le taux d'anomalies > 50 %
     bool estFiable = true;
-    
     if (totalMesures > 0) {
-        double tauxAnomalies = (double)anomaliesDetectees / totalMesures;
+        double tauxAnomalies = (double) anomaliesDetectees / totalMesures;
         
         if (tauxAnomalies > SEUIL_FRAUDE) {
             estFiable = false;
-            
-            // Update sensor status in persistent storage
-            DataService::updateSensorStatus(targetSensorID, false);
+
+            // Mettre à jour le statut du capteur dans le stockage persistant
+            DataService::getDataContainer()->getSensorByID(targetSensorID)->setReliability(false);
         }
     }
     
-    // 7. Log execution time and results
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
-    
-    cout << "=== Sensor Reliability Check ===" << endl;
-    cout << "Sensor ID: " << targetSensorID << endl;
-    cout << "Nearby Reliable Sensors: " << capteursVoisinsFiables.size() << endl;
-    cout << "Total Measurements Analyzed: " << totalMesures << endl;
-    cout << "Anomalies Detected: " << anomaliesDetectees << endl;
+    // 6. Journaliser le temps d'exécution et les résultats
+    chrono::high_resolution_clock::time_point tempsFin = chrono::high_resolution_clock::now();
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+
+    cout << "=== Vérification de la fiabilité du capteur ===" << endl;
+    cout << "ID du capteur : " << targetSensorID << endl;
+    cout << "Capteurs fiables à proximité : " << capteursVoisinsFiables.size() << endl;
+    cout << "Nombre total de mesures analysées : " << totalMesures << endl;
+    cout << "Anomalies détectées : " << anomaliesDetectees << endl;
     if (totalMesures > 0) {
-        cout << "Anomaly Rate: " << ((double)anomaliesDetectees / totalMesures * 100.0) << "%" << endl;
+        cout << "Taux d'anomalies : " << ((double)anomaliesDetectees / totalMesures * 100.0) << "%" << endl;
     }
-    cout << "Result: " << (estFiable ? "RELIABLE" : "FRAUDULENT") << endl;
-    cout << "Temps d'exécution checkSensorReliability : " << duree.count() << " ms" << endl;
+    cout << "Résultat : " << (estFiable ? "FIABLE" : "FRAUDULEUX") << endl;
+    cout << "Temps d'exécution de checkSensorReliability : " << duree.count() << " ms" << endl;
     
     return estFiable;
 }
 
-
-// Find all fraudulent users
-list<User> SecurityService::detectFraudulentUsers(const User& user) {
-    auto tempsDebut = chrono::high_resolution_clock::now();
+vector<PrivateUser*> SecurityService::detectFraudulentUsers(const User& user) 
+// Algorithme :
+// 1. Vérifier que l'utilisateur est une agence gouvernementale
+// 2. Récupérer tous les utilisateurs privés 
+// 3. Pour chaque utilisateur privé, récupérer et vérifier la fiabilité de chacun de ses capteurs
+// 4. Pour chaque capteur, vérifier sa fiabilité avec checkSensorReliability
+// 5. Si un utilisateur a au moins un capteur non fiable, le marquer comme frauduleux
+// 6. Journaliser le temps d'exécution et les résultats
+{
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
     
-    list<User> fraudulentUsers;
+    vector<PrivateUser*> fraudulentUsers;
     
-    // 1. Authentication: Only GovernmentAgency
-    const GovernmentAgency* agency = dynamic_cast<const GovernmentAgency*>(&user);
-    if (agency == nullptr) {
-        cout << "ERROR: Only Government Agency can detect fraudulent users" << endl;
+    // 1. Seule une agence gouvernementale peut détecter les utilisateurs frauduleux
+    if (user.getRole() != GOVERNMENT_AGENCY) {
+        cout << "ERREUR : Seules les agences gouvernementales peuvent détecter les utilisateurs frauduleux." << endl;
         return fraudulentUsers;
     }
-    
-    // 2. Get all private users
+  
+    // 2. Récupérer tous les utilisateurs privés
     vector<PrivateUser*> allPrivateUsers = DataService::getAllPrivateUsers();
-    
-    // 3. For each private user, check their sensors
-    for (const auto& privateUserPtr : allPrivateUsers) {
-        if (privateUserPtr == nullptr) continue;
-        
-        vector<Sensor*> userSensors = privateUserPtr->getSensorsList();
+
+    // 3. Pour chaque utilisateur privé, récupérer et vérifier la fiabilité de chacun de ses capteurs
+    for (const vector<PrivateUser*>::value_type& privateUser : allPrivateUsers) {
+        vector<Sensor*> userSensors = privateUser->getSensorsList();
         
         bool userIsFraudulent = false;
         
-        // 4. Check reliability of each user's sensor
-        for (const auto& sensor : userSensors) {
+        // 4. Pour chaque capteur, vérifier sa fiabilité avec checkSensorReliability
+        for (const vector<Sensor*>::value_type& sensor : userSensors) {
             if (sensor != nullptr && !checkSensorReliability(user, sensor->getSensorID())) {
                 userIsFraudulent = true;
-                break;  // If even one sensor is unreliable, mark user as fraudulent
+                break; // Si un capteur est non fiable, on peut arrêter de vérifier les autres capteurs de cet utilisateur
             }
         }
         
-        // 5. Collect fraudulent users
+        // 5. Si un utilisateur a au moins un capteur non fiable, le marquer comme frauduleux
         if (userIsFraudulent) {
-            fraudulentUsers.push_back(*privateUserPtr);
-            cout << "Fraudulent user detected: " << privateUserPtr->getUserID() << endl;
+            privateUser->setIsFraudulent(true);
+            fraudulentUsers.push_back(privateUser);
+            cout << "Fraudulent user detected: " << privateUser->getUserID() << endl;
         }
     }
     
-    // 6. Return results
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+    // 6. Journaliser le temps d'exécution et les résultats
+    chrono::high_resolution_clock::time_point tempsFin = chrono::high_resolution_clock::now();
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
     cout << "Temps d'exécution detectFraudulentUsers : " << duree.count() << " ms" << endl;
     cout << "Total Fraudulent Users Found: " << fraudulentUsers.size() << endl;
@@ -222,63 +227,67 @@ list<User> SecurityService::detectFraudulentUsers(const User& user) {
 }
 
 // Data corruption removal: Mark corrupted data as invalid
-void SecurityService::removeCorruptedData(const User& user) {
-    auto tempsDebut = chrono::high_resolution_clock::now();
+void SecurityService::removeCorruptedData(const User& user) 
+// Algorithme :
+// 1. Vérifier que l'utilisateur est une agence gouvernementale
+// 2. Récupérer tous les capteurs marqués comme non fiables
+// 3. Pour chaque capteur non fiable, marquer ses données comme invalides (suppression douce)
+// 4. Journaliser le temps d'exécution
+{
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Authentication
-    const GovernmentAgency* agency = dynamic_cast<const GovernmentAgency*>(&user);
-    if (agency == nullptr) {
-        cout << "ERROR: Only Government Agency can remove corrupted data" << endl;
+    if (user.getRole() != GOVERNMENT_AGENCY) {
+        cout << "ERREUR : Seules les agences gouvernementales peuvent supprimer les données corrompues." << endl;
         return;
     }
     
-    // 2. Find all unreliable sensors
+    // 2. Trouver tous les capteurs marqués comme non fiables
     vector<Sensor*> allSensors = DataService::getAllSensors();
-    list<string> unreliableSensorIds;
+    vector<Sensor*> unreliableSensors;
     
-    for (const auto& sensor : allSensors) {
+    for (const vector<Sensor*>::value_type& sensor : allSensors) {
         if (sensor != nullptr && sensor->getReliability() == false) {
-            unreliableSensorIds.push_back(sensor->getSensorID());
+            unreliableSensors.push_back(sensor);
         }
     }
     
-    // 3. For each unreliable sensor, mark its data as invalid (soft delete)
+    // 3. Pour chaque capteur non fiable, marquer ses données comme invalides (suppression douce)
     int corruptedRecordsCount = 0;
-    
-    for (const auto& sensorID : unreliableSensorIds) {
-        vector<Measurement*> measurements = DataService::getMeasurementsBySensor(sensorID);
+    for (const vector<Sensor*>::value_type& sensor : unreliableSensors) {
+        vector<Measurement*> measurements = DataService::getMeasurementsBySensor(sensor->getSensorID());
         
-        for (const auto& measurement : measurements) {
-            if (measurement != nullptr) {
-                // Mark measurement as corrupted (soft delete)
-                DataService::markMeasurementAsInvalid(*measurement);
+        for (const vector<Measurement*>::value_type& measurement : measurements) {
+            if (measurement != nullptr && measurement->getIsValid() == true) {
+                measurement->setIsValid(false);
                 corruptedRecordsCount++;
             }
         }
         
-        cout << "Marked sensor " << sensorID << " and its " << measurements.size() << " measurements as invalid" << endl;
+        cout << "Marquage du capteur " << sensor->getSensorID() << " et de ses " << measurements.size() << " mesures comme invalides" << endl;
     }
     
-    // 4. Clear any cached data
-    cout << "Clearing corrupted data cache..." << endl;
+    // 4. Journaliser le temps d'exécution
+    cout << "Nettoyage des données corrompues..." << endl;
+    chrono::high_resolution_clock::time_point tempsFin = chrono::high_resolution_clock::now();
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
-    // 5. Log execution
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
-    
-    cout << "Total Corrupted Records Marked: " << corruptedRecordsCount << endl;
+    cout << "Nombre de mesures corrompues marquées : " << corruptedRecordsCount << endl;
     cout << "Temps d'exécution removeCorruptedData : " << duree.count() << " ms" << endl;
+    return;
 }
 
 
 // System initialization: Restore security baseline
-void SecurityService::initializeDatabase(const User& user) {
-    auto tempsDebut = chrono::high_resolution_clock::now();
+void SecurityService::initializeDatabase(const User& user) 
+// Algorithme
+// 1. Vérifier que l'utilisateur est une agence gouvernementale
+{
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
     
-    // 1. Authentication: Only system admin or high-level government
-    const GovernmentAgency* agency = dynamic_cast<const GovernmentAgency*>(&user);
-    if (agency == nullptr) {
-        cout << "ERROR: Only System Administrator can initialize database" << endl;
+    // 1. Seule une agence gouvernementale peut initialiser la base de données
+    if (user.getRole() != GOVERNMENT_AGENCY) {
+        cout << "ERREUR : Seules les agences gouvernementales peuvent initialiser la base de données." << endl;
         return;
     }
     
@@ -286,7 +295,7 @@ void SecurityService::initializeDatabase(const User& user) {
     
     // 2. Reload all data from CSV files via DataService
     cout << "Loading initial state from CSV files..." << endl;
-    DataService::reloadAllData();
+    DataService::loadAllData();
     
     // 3. Build security baseline: Mark all government sensors as reliable
     vector<Sensor*> allSensors = DataService::getAllSensors();
@@ -317,7 +326,7 @@ void SecurityService::initializeDatabase(const User& user) {
     
     // 7. Log completion
     auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
     cout << "=== Database Initialization Complete ===" << endl;
     cout << "Temps d'exécution initializeDatabase : " << duree.count() << " ms" << endl;
@@ -327,16 +336,18 @@ void SecurityService::initializeDatabase(const User& user) {
 
 //-------------------------------------------- Constructeurs - destructeur
 
-SecurityService::SecurityService () {
-#ifdef MAP
-    cout << "Appel au constructeur de <SecurityService>" << endl;
-#endif
+SecurityService::SecurityService () 
+{
+    #ifdef MAP
+        cout << "Appel au constructeur de <SecurityService>" << endl;
+    #endif
 }  // ----- Fin de SecurityService
 
-SecurityService::~SecurityService ( ) {
-#ifdef MAP
-    cout << "Appel au destructeur de <SecurityService>" << endl;
-#endif
+SecurityService::~SecurityService () 
+{
+    #ifdef MAP
+        cout << "Appel au destructeur de <SecurityService>" << endl;
+    #endif
 }  // ----- Fin de ~SecurityService
 
 //------------------------------------------------------------------ PRIVE

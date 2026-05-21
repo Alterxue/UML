@@ -46,45 +46,49 @@ public:
     // Permet d'accéder au DataContainer global, utilisé principalement pour les tests unitaires
 
     // =============== Requête de sur les capteurs ===============
-    static vector<Sensor*> getAllSensors();
+    static std::vector<Sensor*> getAllSensors();
     // Mode d'emploi :
     // Renvoie tous les capteurs présents dans le DataContainer, sans filtrage.
 
-    static vector<Sensor*> getSensors(const User& user);
+    static std::vector<Sensor*> getSensors(const User& user);
     // Mode d'emploi :
     // Renvoie les capteurs visibles pour un utilisateur donné.
     // - Agence gouvernementale : tous les capteurs
     // - Utilisateur privé : ses capteurs
     // - Autre rôle : ensemble vide
 
-    static vector<Sensor*> getSensorsByUser(const std::string& userID);
+    static std::vector<Sensor*> getSensorsByUser(const std::string& userID);
     // Mode d'emploi :
     // Renvoie les capteurs appartenant à l'utilisateur identifié par userID.
     // Cette méthode effectue un accès direct par identifiant, sans logique de rôle.
 
-    static vector<Sensor*> getSensorsInArea(double lat, double lon, double radiusKM);
+    static std::vector<Sensor*> getSensorsInArea(double lat, double lon, double radiusKM);
     // Mode d'emploi :
     // Renvoie les capteurs situés dans un rayon donné autour d'une position géographique
     
     // =============== Requêtes sur les mesures ===============
-    static vector<Measurement*> getAllMeasurements();
+    static std::vector<Measurement*> getAllMeasurements();
     // Mode d'emploi :
     // Renvoie toutes les mesures de tous les capteurs, sans filtrage
 
-    static vector<Measurement*> getMeasurements(const User& user);
+    static std::vector<Measurement*> getMeasurements(const User& user);
     // Mode d'emploi :
     // Renvoie les mesures visibles pour un utilisateur donné, en fonction de ses capteurs accessibles
     
-    static vector<Measurement*> getMeasurementsBySensor(const string& sensorID);
+    static std::vector<Measurement*> getMeasurementsBySensor(const std::string& sensorID);
     // Mode d'emploi :
     // Renvoie la liste des mesures associées au capteur identifié par sensorID
+
+    static std::list<Measurement> getUserHistory(const PrivateUser& user);
+    // Mode d'emploi :
+    // Renvoie l'historique des contributions du PrivateUser à partir de ses capteurs
     
     static void addMeasurement(DateTime measureDate, Sensor* sensor, Attribute* attribute, double value);
     // Mode d'emploi :
     // Permet d'ajouter une nouvelle mesure pour un capteur donné, avec un attribut et une valeur
     
     // =============== Requêtes sur les utilisateurs ===============
-    static vector<PrivateUser*> getAllPrivateUsers();
+    static std::vector<PrivateUser*> getAllPrivateUsers();
     
     // =============== Requêtes sur les AirCleaners ===============
     static AirCleaner* getCleanerById(const std::string& cleanerID);
