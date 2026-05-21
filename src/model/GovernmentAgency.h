@@ -22,8 +22,8 @@
 
 //------------------------------------------------------------------------
 // Rôle de la classe <GovernmentAgency>
-//
-//
+// Représente une agence gouvernementale qui peut gérer le système et 
+// signaler les capteurs défectueux
 //------------------------------------------------------------------------
 
 class GovernmentAgency : public User
