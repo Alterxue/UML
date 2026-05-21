@@ -25,14 +25,9 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-vector<Measurement>& Sensor::getMeasurements()
+const std::vector<Measurement*>& Sensor::getMeasurements() const
 {
-    return this->measurements;
-} //----- Fin de getMeasurements
-
-const vector<Measurement>& Sensor::getMeasurements() const
-{
-    return this->measurements;
+    return this->myMeasurements;
 } //----- Fin de getMeasurements
 
 bool Sensor::getReliability() const
@@ -65,9 +60,11 @@ void Sensor::setOwner(User* a_owner)
     owner = a_owner;
 } //----- Fin de setOwner
 
-void Sensor::addMeasurement(const Measurement& measure)
+void Sensor::addMeasurement(Measurement* measure)
 {
-    measurements.push_back(measure);
+    if (measure != nullptr) {
+        myMeasurements.push_back(measure);
+    }
 } //----- Fin de addMeasurement
 
 int Sensor::calculateDistance(double userLatitude, double userLongitude) const
@@ -96,11 +93,12 @@ Sensor::Sensor(string a_sensorID, double a_lattitude, double a_longitude) : sens
 
 Sensor::~Sensor ()
 // Algorithme :
-//
 {
-#ifdef MAP
-    cout << "Appel au destructeur de <Sensor>" << endl;
-#endif
+
+    myMeasurements.clear();
+    #ifdef MAP
+        cout << "Appel au destructeur de <Sensor>" << endl;
+    #endif
 } //----- Fin de ~Sensor
 
 

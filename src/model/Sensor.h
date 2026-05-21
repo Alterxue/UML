@@ -42,8 +42,7 @@ public:
     // Contrat :
     //
 
-    std::vector<Measurement>& getMeasurements();
-    const std::vector<Measurement>& getMeasurements() const;
+    const std::vector<Measurement*>& getMeasurements() const;
     // Mode d'emploi :
     // Retourne la liste des mesures du capteur
 
@@ -71,9 +70,9 @@ public:
     // Mode d'emploi :
     // Affecte le PrivateUser au capteur
 
-    void addMeasurement(const Measurement& measure);
+    void addMeasurement(Measurement* measure);
     // Mode d'emploi :
-    // Ajoute la maseaure à la liste des mesures du capteur
+    // Ajoute la measure à la liste des mesures du capteur
 
     int calculateDistance(double userLatitude, double userLongitude) const;
     // Mode d'emploi : 
@@ -100,7 +99,7 @@ protected:
     double longitude;
     bool isReliable;
     User* owner;
-    std::vector<Measurement> measurements;
+    std::vector<Measurement*> myMeasurements; // Liens non possédants vers les mesures associées au capteur
 
 //----------------------------------------------------- Attributs protégés
 

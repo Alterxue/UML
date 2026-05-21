@@ -64,7 +64,7 @@ public:
 protected:
 //----------------------------------------------------- Méthodes protégées
     int points;
-    std::vector<Sensor*> sensorsList; // Liens non possédants vers les capteurs associés à l'utilisateur
+    std::vector<Sensor*> mySensors; // Liens non possédants vers les capteurs associés à l'utilisateur
 //----------------------------------------------------- Attributs protégés
 
 };
