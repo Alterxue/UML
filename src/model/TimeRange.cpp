@@ -1,5 +1,5 @@
 /*************************************************************************
-                           Attribute  -  description
+                           TimeRange  -  description
                              -------------------
     début                : 08/05/2026
     copyright            : (C) 2026 par tautret
@@ -33,12 +33,12 @@ Seconds TimeRange::getDuration() const
     return chrono::duration_cast<Seconds>(end - start);
 } //----- Fin de getDuration
 
-DateTime TimeRange::getStart()
+DateTime TimeRange::getStart() const
 {
     return start;
 } //----- Fin de getStart
 
-DateTime TimeRange::getEnd()
+DateTime TimeRange::getEnd() const
 {
     return end;
 } //----- Fin de getEnd
@@ -49,7 +49,7 @@ DateTime TimeRange::getEnd()
 TimeRange::TimeRange(const DateTime a_start, const DateTime a_end): start(a_start), end(a_end)
 {
     #ifdef MAP
-        cout << "Appel au constructeur de <Attribute>" << endl;
+        cout << "Appel au constructeur de <TimeRange>" << endl;
     #endif
 } //----- Fin de TimeRange
 

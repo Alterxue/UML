@@ -23,13 +23,13 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-void PrivateUser::incrementPoints(int pointsToAdd)
+bool PrivateUser::incrementPoints(int pointsToAdd)
 {
     if (isFraudulent) {
-        cout << "Utilisateur frauduleux, les points ne peuvent pas être incrémentés." << endl;
-        return;
+        return false;
     }
     points += pointsToAdd;
+    return true;
 } //----- Fin de incrementPoints
 
 void PrivateUser::addSensor(Sensor* sensor)
@@ -39,10 +39,6 @@ void PrivateUser::addSensor(Sensor* sensor)
 
 int PrivateUser::getPoints() const
 {
-    if (isFraudulent) {
-        cout << "Utilisateur frauduleux, les points ne sont pas disponibles." << endl;
-        return 0;
-    }
     return points;
 } //----- Fin de getPoints
 

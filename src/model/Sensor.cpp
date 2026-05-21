@@ -104,8 +104,6 @@ Sensor::Sensor(string a_sensorID, double a_lattitude, double a_longitude) : sens
 
 Sensor::~Sensor ()
 {
-
-    myMeasurements.clear();
     #ifdef MAP
         cout << "Appel au destructeur de <Sensor>" << endl;
     #endif

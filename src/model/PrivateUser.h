@@ -35,7 +35,7 @@ class PrivateUser : public User
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    void incrementPoints(int pointsToAdd);
+    bool incrementPoints(int pointsToAdd);
     // Mode d'emploi :
     // Permet d'ajouter des points à l'utilisateur privé, utilisés pour le système de récompense
 

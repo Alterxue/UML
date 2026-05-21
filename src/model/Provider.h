@@ -34,7 +34,7 @@ class Provider : public User
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    void addCleaners( AirCleaner * cleaner);
+    void addAirCleaner(AirCleaner * cleaner);
     // Mode d'emploi :
     // Ajoute un AirCleaner à la liste des Cleaners associés au Provider.
 

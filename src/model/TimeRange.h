@@ -1,12 +1,12 @@
 /*************************************************************************
-                           Attribute  -  description
+                           TimeRange  -  description
                              -------------------
     début                : 08/05/2026
     copyright            : (C) 2026 par tautret
     e-mail               : tom.autret@insa-lyon.fr
 *************************************************************************/
 
-//---------- Interface de la classe <Attribute> (fichier Attribute.h) ----------------
+//---------- Interface de la classe <TimeRange> (fichier TimeRange.h) ----------------
 #if ! defined ( TIMERANGE_H )
 #define TIMERANGE_H
 
@@ -38,11 +38,11 @@ public:
     // Mode d'emploi :
     // Retourne la durée (en s) entre le début et la fin précis à la seconde
 
-    DateTime getStart();
+    DateTime getStart() const;
     // Mode d'emploi :
     // Retourne le début du TimeRange
 
-    DateTime getEnd();
+    DateTime getEnd() const;
     // Mode d'emploi :
     // Retourne la fin du TimeRange
 

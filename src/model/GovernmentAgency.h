@@ -14,7 +14,7 @@
 
 //--------------------------------------------------- Interfaces utilisées
 #include "User.h"
-#include "Sensor.h"
+
 #include <string>
 //------------------------------------------------------------- Constantes
 
@@ -22,8 +22,7 @@
 
 //------------------------------------------------------------------------
 // Rôle de la classe <GovernmentAgency>
-// Représente une agence gouvernementale qui peut gérer le système et 
-// signaler les capteurs défectueux
+// Représente une agence gouvernementale
 //------------------------------------------------------------------------
 
 class GovernmentAgency : public User
