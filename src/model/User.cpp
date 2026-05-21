@@ -11,45 +11,32 @@
 //---------------------------------------------------------------- INCLUDE
 
 //-------------------------------------------------------- Include système
-#include <iostream>
-#include "Role.h"
-#include <string>
 using namespace std;
+#include <iostream>
+#include <string>
 
 //------------------------------------------------------ Include personnel
 #include "User.h"
+#include "Role.h"
 
 //------------------------------------------------------------- Constantes
 
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-
 string User::getUserID() const
 {
     return userID;
-}
+} //----- Fin de getUserID
 
 Role User::getRole() const
 {
     return role;
-}
+} //----- Fin de getRole
 
 //------------------------------------------------- Surcharge d'opérateurs
 
-
-
 //-------------------------------------------- Constructeurs - destructeur
-User::User (const User & unUser)
-// Algorithme :
-{
-    #ifdef MAP
-        cout << "Appel au constructeur de copie de <User>" << endl;
-    #endif
-} //----- Fin de User (constructeur de copie)
-
-
-
 User::User(string userID, Role role) : userID(userID),role(role)
 {
     #ifdef MAP
@@ -58,13 +45,11 @@ User::User(string userID, Role role) : userID(userID),role(role)
 }
 
 User::~User ()
-// Algorithme :
 {
     #ifdef MAP
         cout << "Appel au destructeur de <User>" << endl;
     #endif
 } //----- Fin de ~User
-
 
 //------------------------------------------------------------------ PRIVE
 

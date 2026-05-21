@@ -28,13 +28,20 @@ class Attribute
 //----------------------------------------------------------------- PUBLIC
 public:
 //----------------------------------------------------- Méthodes publiques
-
     std::string getAttributeID() const;
+    // Mode d'emploi :
+    // Retourne le code de l'attribut
 
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
     Attribute(const std::string a_attributeID, const std::string a_unit, const std::string a_description);
+    // Mode d'emploi :
+    // Construit un attribut à partir de son code, son unité et sa description
+
+    ~Attribute();
+    // Mode d'emploi :
+    // Destructeur de la classe Attribute
 
 //------------------------------------------------------------------ PRIVE
 protected:

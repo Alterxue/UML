@@ -10,12 +10,11 @@
 #if ! defined ( PROVIDER_H )
 #define PROVIDER_H
 
-
-
 //--------------------------------------------------- Interfaces utilisées
-#include "User.h"
 #include <string>
 #include <vector>
+
+#include "User.h"
 
 class AirCleaner;
 //------------------------------------------------------------- Constantes
@@ -25,8 +24,8 @@ class AirCleaner;
 
 //------------------------------------------------------------------------
 // Rôle de la classe <Provider>
-//
-//
+// Un Provider est un utilisateur qui fournit des AirCleaners. 
+// Il peut en ajouter à sa liste de Cleaners associés et les consulter.
 //------------------------------------------------------------------------
 
 class Provider : public User
@@ -36,28 +35,23 @@ class Provider : public User
 public:
 //----------------------------------------------------- Méthodes publiques
     void addCleaners( AirCleaner * cleaner);
+    // Mode d'emploi :
+    // Ajoute un AirCleaner à la liste des Cleaners associés au Provider.
 
     const std::vector<AirCleaner*>& getMyCleaners() const;
-    //------------------------------------------------- Surcharge d'opérateurs
-    Provider & operator = ( const Provider & unProvider );
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
+    // Retourne la liste des AirCleaners associés au Provider.
 
+//------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
     Provider (std::string userID, Role role);
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
-
-    virtual ~Provider ( );
+    // Construit un Provider avec un userID et un rôle.
+    
+    ~Provider ( );
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
+    // Destructeur de la classe Provider.
 
 //------------------------------------------------------------------ PRIVE
 
@@ -65,9 +59,10 @@ protected:
 //----------------------------------------------------- Méthodes protégées
 
 //----------------------------------------------------- Attributs protégés
-    std::vector<AirCleaner*> myCleaners; // Liens non possédants vers les AirCleaners associés au Provider
+    // AirCleaners rattachés au fournisseur, sans transfert de propriété.
+    std::vector<AirCleaner*> myCleaners;
 };
 
-//-------------------------------- Autres définitions dépendantes de <User>
+//-------------------------------- Autres définitions dépendantes de <Provider>
 
 #endif // PROVIDER_H

@@ -12,9 +12,9 @@
 
 
 //--------------------------------------------------- Interfaces utilisées
+#include <vector>
 
 #include "User.h"
-#include <vector>
 
 class Sensor;
 //------------------------------------------------------------- Constantes
@@ -23,8 +23,10 @@ class Sensor;
 
 //------------------------------------------------------------------------
 // Rôle de la classe <PrivateUser>
-//
-//
+// Cette classe représente un utilisateur privé de l'application, qui peut 
+// accumuler des points de récompense et être associé à des capteurs. 
+// Elle hérite de la classe User et ajoute des fonctionnalités spécifiques 
+// aux utilisateurs privés, telles que la gestion des points et le statut de fraude.
 //------------------------------------------------------------------------
 
 class PrivateUser : public User 
@@ -64,7 +66,7 @@ public:
     // Mode d'emploi :
     // Construction d'un utilisateur privé à partir de son ID et de son rôle, initialise les points à 0 et le statut de fraude à false
 
-    virtual ~PrivateUser ( );
+    ~PrivateUser ();
     // Mode d'emploi :
     // Destructeur de l'utilisateur privé 
 
@@ -74,7 +76,8 @@ protected:
 //----------------------------------------------------- Méthodes protégées
     int points;
     bool isFraudulent;
-    std::vector<Sensor*> mySensors; // Liens non possédants vers les capteurs associés à l'utilisateur
+    // Capteurs rattachés à cet utilisateur, sans transfert de propriété.
+    std::vector<Sensor*> mySensors;
 //----------------------------------------------------- Attributs protégés
 
 };

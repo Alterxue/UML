@@ -32,29 +32,20 @@ class GovernmentAgency : public User
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    // type Méthode ( liste des paramètres );
+    std::string getAgencyID() const;
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
-
-    void manageSystem();
-    void flagSensors(Sensor & sensor);
+    // Retourne l'ID de l'agence gouvernementale
+    
 //------------------------------------------------- Surcharge d'opérateurs
-
 
 //-------------------------------------------- Constructeurs - destructeur
     GovernmentAgency (std::string userID, Role role, std::string agencyID);
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
+    // Construction d'une agence gouvernementale à partir de son ID, de son rôle et de son ID d'agence
 
-    virtual ~GovernmentAgency ( );
+    ~GovernmentAgency ( );
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
+    // Destructeur de l'agence gouvernementale
 
 //------------------------------------------------------------------ PRIVE
 
@@ -65,6 +56,6 @@ protected:
     std::string agencyID;
 };
 
-//-------------------------------- Autres définitions dépendantes de <User>
+//-------------------------------- Autres définitions dépendantes de <GovernmentAgency>
 
 #endif // GOVERNMENTAGENCY_H

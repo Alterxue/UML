@@ -12,7 +12,7 @@
 
 //-------------------------------------------------------- Include système
 using namespace std;
-
+#include <iostream>
 #include <string>
 
 //------------------------------------------------------ Include personnel
@@ -23,27 +23,28 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-
 string Attribute::getAttributeID() const
 {
     return attributeID;
-}
-
-// type Xxx::Méthode ( liste des paramètres )
-// Algorithme :
-//
-//{
-//} //----- Fin de Méthode
+} //----- Fin de getAttributeID
 
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
-Attribute::Attribute(const string a_attributeID, const string a_unit, const string a_description): attributeID(a_attributeID), unit(a_unit), description(a_description)
+Attribute::Attribute(const string a_attributeID, const string a_unit, const string a_description): attributeID(a_attributeID), 
+unit(a_unit), description(a_description)
 {
     #ifdef MAP
         cout << "Appel au constructeur de <Attribute>" << endl;
     #endif
 } //----- Fin de Attribute
+
+Attribute::~Attribute()
+{
+    #ifdef MAP
+        cout << "Appel au destructeur de <Attribute>" << endl;
+    #endif
+} //----- Fin de ~Attribute
 
 //------------------------------------------------------------------ PRIVE
 

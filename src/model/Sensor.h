@@ -10,15 +10,13 @@
 #if ! defined ( SENSOR_H )
 #define SENSOR_H
 
-
-
 //--------------------------------------------------- Interfaces utilisées
 #include <string>
 #include <vector>
 
 #include "Measurement.h"
 
-class User;
+class PrivateUser;
 
 //------------------------------------------------------------- Constantes
 
@@ -26,8 +24,8 @@ class User;
 
 //------------------------------------------------------------------------
 // Rôle de la classe <Sensor>
-//
-//
+// Un capteur est un dispositif de mesure qui peut être associé à un 
+// utilisateur (son propriétaire) et qui peut prendre des mesures.
 //------------------------------------------------------------------------
 
 class Sensor 
@@ -36,12 +34,6 @@ class Sensor
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    // type Méthode ( liste des paramètres );
-    // Mode d'emploi :
-    //
-    // Contrat :
-    //
-
     const std::vector<Measurement*>& getMeasurements() const;
     // Mode d'emploi :
     // Retourne la liste des mesures du capteur
@@ -66,7 +58,7 @@ public:
     // Mode d'emploi : 
     // Permet de marquer le capteur comme fiable ou non
 
-    void setOwner(User* a_owner);
+    void setOwner(PrivateUser* a_owner);
     // Mode d'emploi :
     // Affecte le PrivateUser au capteur
 
@@ -98,13 +90,15 @@ protected:
     double lattitude;
     double longitude;
     bool isReliable;
-    User* owner;
-    std::vector<Measurement*> myMeasurements; // Liens non possédants vers les mesures associées au capteur
+    // Lien non possédant vers le propriétaire du capteur.
+    PrivateUser* owner;
+    // Mesures rattachées à ce capteur, mais détruites par DataContainer.
+    std::vector<Measurement*> myMeasurements;
 
 //----------------------------------------------------- Attributs protégés
 
 };
 
-//-------------------------------- Autres définitions dépendantes de <User>
+//-------------------------------- Autres définitions dépendantes de <Sensor>
 
 #endif // SENSOR_H

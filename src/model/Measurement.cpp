@@ -19,17 +19,12 @@ using namespace std;
 //------------------------------------------------------ Include personnel
 #include "Measurement.h"
 #include "Sensor.h"
-using DateTime = std::chrono::system_clock::time_point;
+
 //------------------------------------------------------------- Constantes
 
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-// type Xxx::Méthode ( liste des paramètres )
-// Algorithme :
-//
-//{
-//} //----- Fin de Méthode
 DateTime Measurement::getMeasureDate() const
 {
     return this->measureDate;
@@ -53,12 +48,13 @@ double Measurement::getValue() const
 bool Measurement::getIsValid() const
 {
     return this->isValid;
-} //----- Fin de isvalid
+} //----- Fin de getIsValid
 
 void Measurement::setIsValid(bool valid)
 {
     this->isValid = valid;
 } //----- Fin de setIsValid
+
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
@@ -70,6 +66,13 @@ Measurement::Measurement(DateTime a_mesureDate, Sensor* a_sensor, Attribute* an_
     #endif
     isValid = true;
 } //----- Fin de Measurement
+
+Measurement::~Measurement()
+{
+    #ifdef MAP
+        cout << "Appel au destructeur de <Measurement>" << endl;
+    #endif
+} //----- Fin de ~Measurement
 
 //------------------------------------------------------------------ PRIVE
 

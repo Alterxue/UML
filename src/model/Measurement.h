@@ -61,12 +61,19 @@ public:
 
 //-------------------------------------------- Constructeurs - destructeur
     Measurement(DateTime a_measureDate, Sensor* a_sensor, Attribute* an_attribute, double a_value);
+    // Mode d'emploi :
+    // Construit une mesure à partir de sa date, du capteur qui l'a prise, de son attribut et de sa valeur
+
+    ~Measurement();
+    // Mode d'emploi :
+    // Destructeur de la classe Measurement
 
     
 //------------------------------------------------------------------ PRIVE
 protected:
 //----------------------------------------------------- Attributs protégés
     DateTime measureDate;
+    // Références observatrices : les objets pointés sont possédés ailleurs.
     Sensor* sensor;
     Attribute* attribute;
     bool isValid;

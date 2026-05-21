@@ -11,9 +11,9 @@
 //---------------------------------------------------------------- INCLUDE
 
 //-------------------------------------------------------- Include système
+using namespace std;
 #include <iostream>
 #include <string>
-using namespace std;
 
 //------------------------------------------------------ Include personnel
 #include "PrivateUser.h"
@@ -39,8 +39,17 @@ void PrivateUser::addSensor(Sensor* sensor)
 
 int PrivateUser::getPoints() const
 {
+    if (isFraudulent) {
+        cout << "Utilisateur frauduleux, les points ne sont pas disponibles." << endl;
+        return 0;
+    }
     return points;
 } //----- Fin de getPoints
+
+const std::vector<Sensor*>& PrivateUser::getSensorsList() const
+{
+    return mySensors;
+} //----- Fin de getSensorsList
 
 bool PrivateUser::getIsFraudulent() const
 {
@@ -52,14 +61,7 @@ void PrivateUser::setIsFraudulent(bool isFraudulent)
     this->isFraudulent = isFraudulent;
 } //----- Fin de setIsFraudulent
 
-const std::vector<Sensor*>& PrivateUser::getSensorsList() const
-{
-    return mySensors;
-} //----- Fin de getSensorsList
-
 //------------------------------------------------- Surcharge d'opérateurs
-
-
 
 //-------------------------------------------- Constructeurs - destructeur
 PrivateUser::PrivateUser (string userID, Role role) : User(userID, role), points(0), isFraudulent(false)
@@ -75,7 +77,6 @@ PrivateUser::~PrivateUser ()
         cout << "Appel au destructeur de <PrivateUser>" << endl;
     #endif
 } //----- Fin de ~PrivateUser
-
 
 //------------------------------------------------------------------ PRIVE
 

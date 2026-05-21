@@ -27,7 +27,7 @@ using namespace std;
 bool AirCleaner::isActive(const DateTime date) const
 {
     return workingPeriod.contains(date);
-}
+} //----- Fin de isActive
 
 Provider* AirCleaner::getProvider() const
 {
@@ -37,35 +37,29 @@ Provider* AirCleaner::getProvider() const
 string AirCleaner::getAirCleanerID() const
 {
     return cleanerID;
-}
+} //----- Fin de getAirCleanerID
 
 double AirCleaner::getLattitude() const
 {
     return lattitude;
-}
+} //----- Fin de getLattitude
 
 double AirCleaner::getLongitude() const
 {
     return longitude;
-}
+} //----- Fin de getLongitude
 
 TimeRange AirCleaner::getWorkingPeriod() const
 {
     return workingPeriod;
-}
+} //----- Fin de getWorkingPeriod
 
 void AirCleaner::setProvider(Provider* a_provider)
 {
     provider = a_provider;
-}
+} //----- Fin de setProvider
 
 //------------------------------------------------- Surcharge d'opérateurs
-AirCleaner & AirCleaner::operator = (const AirCleaner & unAirCleaner)
-// Algorithme :
-//
-{
-} //----- Fin de operator =
-
 
 //-------------------------------------------- Constructeurs - destructeur
 AirCleaner::AirCleaner(string a_cleanerID, double a_lattitude, double a_longitude, DateTime a_startTime, DateTime a_stopTime)
@@ -82,7 +76,6 @@ AirCleaner::~AirCleaner ()
         cout << "Appel au destructeur de <AirCleaner>" << endl;
     #endif
 } //----- Fin de ~AirCleaner
-
 
 //------------------------------------------------------------------ PRIVE
 

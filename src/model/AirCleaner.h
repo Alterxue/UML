@@ -16,8 +16,7 @@
 
 #include "Sensor.h"
 #include "TimeRange.h"
-
-class Provider;
+#include "Provider.h"
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types
@@ -35,12 +34,6 @@ class AirCleaner
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    // type Méthode ( liste des paramètres );
-    // Mode d'emploi :
-    //
-    // Contrat :
-    //
-
     bool isActive(const DateTime date) const;
     // Mode d'emploi :
     // Indique si l'AirCleaner était actif à la date donnée
@@ -49,27 +42,32 @@ public:
     // Mode d'emploi : 
     // Renvoie le Provider de ce Aircleaner
 
-    void setProvider(Provider* a_provider);
-
     std::string getAirCleanerID() const;
+    // Mode d'emploi :
+    // Renvoie l'ID de ce AirCleaner
     
     double getLattitude() const;
+    // Mode d'emploi :
+    // Renvoie la lattitude du AirCleaner
 
     double getLongitude() const;
+    // Mode d'emploi :
+    // Renvoie la longitude du AirCleaner
 
     TimeRange getWorkingPeriod() const;
+    // Mode d'emploi :
+    // Renvoie la période de fonctionnement du AirCleaner
+
+    void setProvider(Provider* a_provider);
+    // Mode d'emploi :
+    // Définit le Provider de ce AirCleaner
 
 //------------------------------------------------- Surcharge d'opérateurs
-    AirCleaner & operator = ( const AirCleaner & unAirCleaner );
-    // Mode d'emploi :
-    //
-    // Contrat :
-    //
 
 //-------------------------------------------- Constructeurs - destructeur
     AirCleaner(std::string a_cleanerID, double a_lattitude, double a_longitude, DateTime a_startTime, DateTime a_stopTime);
     // Mode d'emploi :
-    // Constructeur du AirCleaner à partir des paramètres
+    // Constructeur du AirCleaner
 
     ~AirCleaner ( );
     // Mode d'emploi :
@@ -82,12 +80,13 @@ protected:
 
 //----------------------------------------------------- Attributs protégés
     std::string cleanerID;
+    // Lien non possédant vers le fournisseur de l'AirCleaner.
     Provider* provider;
     double lattitude;
     double longitude;
     TimeRange workingPeriod;
 };
 
-//-------------------------------- Autres définitions dépendantes de <User>
+//-------------------------------- Autres définitions dépendantes de <AirCleaner>
 
 #endif // AIRCLEANER_H

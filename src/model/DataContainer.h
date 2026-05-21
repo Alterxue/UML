@@ -29,8 +29,8 @@ class Measurement;
 // Rôle de la classe <DataContainer> : 
 // Permet de stocker toutes les données des fichiers, après leur
 // chargement, pendant toute l'execution
-// Contiendra l'ensemble des Attributes, PrivateUSer, Sensors, AirCleaners
-// et Providers
+// Contiendra l'ensemble des Attributes, PrivateUSer, Sensors, AirCleaners,
+// Providers et Measurements
 //------------------------------------------------------------------------
 
 class DataContainer
@@ -106,15 +106,28 @@ public:
     // Mode d'emploi :
     // Permet de récupérer un fournisseur à partir de son ID
 
+    void clear();
+    // Mode d'emploi :
+    // Vide et détruit toutes les données possédées par ce conteneur.
 
 //------------------------------------------------- Surcharge d'opérateurs
-
+    DataContainer& operator=(const DataContainer&) = delete;
+    // Mode d'emploi :
+    // Empêche l'affectation accidentelle d'un conteneur possédant des pointeurs
 
 //-------------------------------------------- Constructeurs - destructeur
+    DataContainer(const DataContainer&) = delete;
+    // Mode d'emploi :
+    // Empêche la copie accidentelle d'un conteneur possédant des pointeurs
+
     DataContainer();
+    // Mode d'emploi :
+    // Constructeur de la classe DataContainer
 
     ~DataContainer();
-    
+    // Mode d'emploi :
+    // Destructeur de la classe DataContainer, détruit toutes les données possédées
+
 //------------------------------------------------------------------ PRIVE
 protected:
 //----------------------------------------------------- Méthodes protégées

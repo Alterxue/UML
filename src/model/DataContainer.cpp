@@ -58,13 +58,7 @@ void DataContainer::addProvider(Provider* ptr_provider)
 
 void DataContainer::addMeasurement(Measurement* ptr_measurement)
 {
-    if (ptr_measurement == nullptr) {
-        return;
-    }
     Sensor* sensor = ptr_measurement->getSensor();
-    if (sensor == nullptr) {
-        return;
-    }
     measurementsBySensor[sensor->getSensorID()].push_back(ptr_measurement);
 } //----- Fin de addMeasurement
 
@@ -113,8 +107,8 @@ Sensor * DataContainer::getSensorByID(const string& sensorID)
     if (it == allSensors.end() || it->second == nullptr) {
         return nullptr;
     }
-        return it->second;
-}
+    return it->second;
+} // ---- Fin de getSensorByID
 
 PrivateUser* DataContainer::getPrivateUserByID(const string& userID)
 {
@@ -123,7 +117,7 @@ PrivateUser* DataContainer::getPrivateUserByID(const string& userID)
         return nullptr;
     }
     return it->second;
-}
+} // ---- Fin de getPrivateUserByID
 
 AirCleaner * DataContainer::getAirCleanerByID(const std::string& airCleanerID)
 {
@@ -132,7 +126,7 @@ AirCleaner * DataContainer::getAirCleanerByID(const std::string& airCleanerID)
         return nullptr;
     }
     return it->second;
-}
+} // ---- Fin de getAirCleanerByID
 
 Provider* DataContainer::getProviderByID(const std::string& providerID)
 {
@@ -141,49 +135,65 @@ Provider* DataContainer::getProviderByID(const std::string& providerID)
         return nullptr;
     }
     return it->second;
-}
+} // ---- Fin de getProviderByID
+
+void DataContainer::clear()
+{
+    for (auto& pair : measurementsBySensor) {
+        for (Measurement* measurement : pair.second) {
+            delete measurement;
+        }
+        pair.second.clear();
+    }
+    measurementsBySensor.clear();
+
+    for (auto& pair : allAirCleaners) {
+        delete pair.second;
+        pair.second = nullptr;
+    }
+    allAirCleaners.clear();
+
+    for (auto& pair : allSensors) {
+        delete pair.second;
+        pair.second = nullptr;
+    }
+    allSensors.clear();
+
+    for (auto& pair : allProviders) {
+        delete pair.second;
+        pair.second = nullptr;
+    }
+    allProviders.clear();
+
+    for (auto& pair : allUsers) {
+        delete pair.second;
+        pair.second = nullptr;
+    }
+    allUsers.clear();
+
+    for (auto& pair : allAttributes) {
+        delete pair.second;
+        pair.second = nullptr;
+    }
+    allAttributes.clear();
+} //---- Fin de clear
 
 //-------------------------------------------- Constructeurs - destructeur
 DataContainer::DataContainer()
 {
     #ifdef MAP
-        cout <<"Appel au constructeur de <DataContainer>"<< endl;
+        cout << "Appel au constructeur de <DataContainer>" << endl;
     #endif
 } //----- Fin de DataContainer
 
 DataContainer::~DataContainer()
 {
-   #ifdef MAP
-        cout <<"Appel au destructeur de <DataContainer>"<< endl;
-    #endif 
-   for (std::map<std::string, AirCleaner*>::value_type& pair : allAirCleaners) {
-       delete pair.second;
-       pair.second = nullptr;
-   }
-
-   for (std::map<std::string, Sensor*>::value_type& pair : allSensors) {
-       delete pair.second;
-       pair.second = nullptr;
-   }
-
-   for (std::map<std::string, Provider*>::value_type& pair : allProviders) {
-       delete pair.second;
-       pair.second = nullptr;
-   }
-
-   for (std::map<std::string, PrivateUser*>::value_type& pair : allUsers) {
-       delete pair.second;
-       pair.second = nullptr;
-   }
-
-   for (std::map<std::string, Attribute*>::value_type& pair : allAttributes) {
-       delete pair.second;
-       pair.second = nullptr;
-   }
-
-   allAirCleaners.clear();
-   allSensors.clear();
-   allProviders.clear();
-   allUsers.clear();
-   allAttributes.clear();
+    #ifdef MAP
+        cout << "Appel au destructeur de <DataContainer>" << endl;
+    #endif
+    this->clear();
 } //----- Fin de ~DataContainer
+
+//------------------------------------------------------------------ PRIVE
+
+//----------------------------------------------------- Méthodes protégées

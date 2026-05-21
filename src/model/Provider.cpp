@@ -11,10 +11,11 @@
 //---------------------------------------------------------------- INCLUDE
 
 //-------------------------------------------------------- Include système
+using namespace std;
 #include <iostream>
 #include <string>
 #include <list>
-using namespace std;
+
 
 //------------------------------------------------------ Include personnel
 #include "Provider.h"
@@ -24,33 +25,32 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-
 void Provider::addCleaners(AirCleaner* cleaner) 
 {
     this->myCleaners.push_back(cleaner);
-}
+} //----- Fin de addCleaners
 
 const vector<AirCleaner*>& Provider::getMyCleaners() const 
 {
     return this->myCleaners;
-}
+} //----- Fin de getMyCleaners
 
 //------------------------------------------------- Surcharge d'opérateurs
-Provider & Provider::operator = (const Provider & unProvider)
-{
-} //----- Fin de operator =
-
 
 //-------------------------------------------- Constructeurs - destructeur
-Provider::Provider(string userID, Role role) : User(userID,role){}
+Provider::Provider(string userID, Role role) : User(userID,role)
+{
+    #ifdef MAP
+        cout << "Appel au constructeur de <Provider>" << endl;
+    #endif
+} //----- Fin de Provider
 
 Provider::~Provider ()
 {
-#ifdef MAP
-    cout << "Appel au destructeur de <Provider>" << endl;
-#endif
+    #ifdef MAP
+        cout << "Appel au destructeur de <Provider>" << endl;
+    #endif
 } //----- Fin de ~Provider
-
 
 //------------------------------------------------------------------ PRIVE
 

@@ -18,6 +18,7 @@ using namespace std;
 
 //------------------------------------------------------ Include personnel
 #include "Sensor.h"
+#include "PrivateUser.h"
 
 //------------------------------------------------------------- Constantes
 
@@ -54,7 +55,7 @@ void Sensor::setReliability(bool reliability)
     this->isReliable = reliability;
 } //----- Fin de setReliability
 
-void Sensor::setOwner(User* a_owner)
+void Sensor::setOwner(PrivateUser* a_owner)
 {
     owner = a_owner;
 } //----- Fin de setOwner
@@ -92,11 +93,7 @@ double Sensor::calculateDistance(double userLatitude, double userLongitude) cons
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
-
-
-
 Sensor::Sensor(string a_sensorID, double a_lattitude, double a_longitude) : sensorID(a_sensorID), lattitude(a_lattitude), longitude(a_longitude)
-// Algorithme
 {
     owner = nullptr;
     isReliable = true;
@@ -105,9 +102,7 @@ Sensor::Sensor(string a_sensorID, double a_lattitude, double a_longitude) : sens
     #endif
 } //----- Fin de Sensor
 
-
 Sensor::~Sensor ()
-// Algorithme :
 {
 
     myMeasurements.clear();
@@ -115,7 +110,6 @@ Sensor::~Sensor ()
         cout << "Appel au destructeur de <Sensor>" << endl;
     #endif
 } //----- Fin de ~Sensor
-
 
 //------------------------------------------------------------------ PRIVE
 

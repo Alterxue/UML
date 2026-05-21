@@ -11,9 +11,9 @@
 //---------------------------------------------------------------- INCLUDE
 
 //-------------------------------------------------------- Include système
+using namespace std;
 #include <iostream>
 #include <string>
-using namespace std;
 
 //------------------------------------------------------ Include personnel
 #include "GovernmentAgency.h"
@@ -23,15 +23,10 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-void GovernmentAgency::manageSystem()
+string GovernmentAgency::getAgencyID() const
 {
-    // Implementation for managing the system
-}
-
-void GovernmentAgency::flagSensors(Sensor & sensor)
-{
-    sensor.setReliability(false);
-}
+    return agencyID;
+} //----- Fin de getAgencyID
 
 //------------------------------------------------- Surcharge d'opérateurs
 
