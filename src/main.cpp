@@ -54,7 +54,7 @@ int main(){
 
     // Charger toutes les données du CSV data manager avant tout test de connexion
     DataService::initializeDataContainer(&dataContainer);
-    DataService::loadAllData();
+    DataService::reloadAllData();
 
     cout << "Données chargées depuis les fichiers CSV." << endl;
     cout << dataContainer.getAllSensors().size() << " capteurs chargés." << endl;
@@ -366,7 +366,8 @@ int main(){
                         cout << "6. Vérifier si un capteur est défectueux" << endl;
                         cout << "7. Identifier les comportements frauduleux" << endl;
                         cout << "8. Exclure les données corrompues" << endl;
-                        cout << "9. Retour au menu principal" << endl;
+                        cout << "9. Restaurer la base de données à un état sécurisé" << endl;
+                        cout << "10. Retour au menu principal" << endl;
                         cin >> particularChoice;
                         
 
@@ -395,7 +396,10 @@ int main(){
                             case 8:{
                                 SecurityService::removeCorruptedData(*Application.getCurrentGovernmentAgency());
                                 break;}
-                            case 9:
+                            case 9:{
+                                SecurityService::initializeDatabase(*Application.getCurrentGovernmentAgency());
+                                break;}
+                            case 10:
                                 break;
                             default:
                                 cout << "Choix invalide, veuillez réessayer." << endl;
