@@ -188,8 +188,6 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
         
         for (const auto& mesureCible : donneesCible) {
             // Chercher la mesure correspondante (même timestamp et attributeID)
-            bool trouve = false;
-            
             for (const auto& mesureAComparer : donneesAComparer) {
                 if (mesureAComparer != nullptr && mesureCible != nullptr &&
                     mesureAComparer->getMeasureDate() == mesureCible->getMeasureDate() && 
@@ -199,7 +197,6 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
                     double difference = abs(mesureCible->getValue() - mesureAComparer->getValue());
                     differenceTotale += difference;
                     pointsCommuns += 1;
-                    trouve = true;
                     break;
                 }
             }

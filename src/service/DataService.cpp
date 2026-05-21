@@ -208,9 +208,9 @@ vector<Measurement*> DataService::getMeasurementsBySensor(const string& sensorID
     return result;
 } //----- Fin de getMeasurementsBySensor
 
-list<Measurement> DataService::getUserHistory(const PrivateUser& user)
+vector<Measurement*> DataService::getUserHistory(const PrivateUser& user)
 {
-    list<Measurement> result;
+    vector<Measurement*> result;
 
     if (dataContainer == nullptr) {
         cout << "ERREUR: DataContainer non initialisé" << endl;
@@ -224,9 +224,9 @@ list<Measurement> DataService::getUserHistory(const PrivateUser& user)
         }
 
         const vector<Measurement*>& measurements = sensor->getMeasurements();
-        for (const Measurement* measurement : measurements) {
+        for (Measurement* measurement : measurements) {
             if (measurement != nullptr) {
-                result.push_back(*measurement);
+                result.push_back(measurement);
             }
         }
     }
@@ -311,7 +311,7 @@ void DataService::updateSensorStatus(const string& sensorID, bool isReliable) {
     }
 
     vector<Sensor*> allSensors = getAllSensors();
-    for (const auto& sensor : allSensors) {
+    for (const vector<Sensor*>::value_type& sensor : allSensors) {
         if (sensor != nullptr && sensor->getSensorID() == sensorID) {
             sensor->setReliability(isReliable);
             cout << "Updated sensor " << sensorID << " reliability to " << (isReliable ? "RELIABLE" : "UNRELIABLE") << endl;
@@ -323,14 +323,13 @@ void DataService::updateSensorStatus(const string& sensorID, bool isReliable) {
 } //----- Fin de updateSensorStatus
 
 // Mark a measurement as invalid (soft delete)
-void DataService::markMeasurementAsInvalid(const Measurement& measurement) {
+void DataService::markMeasurementAsInvalid(Measurement& measurement) {
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return;
     }
 
-    // Note: Implementation depends on how Measurement handles soft deletes
-    // For now, we just log the operation
+    measurement.setIsValid(false);
     cout << "Marked measurement as invalid for sensor " << measurement.getSensor()->getSensorID() << endl;
 } //----- Fin de markMeasurementAsInvalid
 

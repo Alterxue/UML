@@ -25,6 +25,10 @@ using namespace std;
 //----------------------------------------------------- Méthodes publiques
 void PrivateUser::incrementPoints(int pointsToAdd)
 {
+    if (isFraudulent) {
+        cout << "Utilisateur frauduleux, les points ne peuvent pas être incrémentés." << endl;
+        return;
+    }
     points += pointsToAdd;
 } //----- Fin de incrementPoints
 
@@ -38,7 +42,7 @@ int PrivateUser::getPoints() const
     return points;
 } //----- Fin de getPoints
 
-const bool PrivateUser::getIsFraudulent() const
+bool PrivateUser::getIsFraudulent() const
 {
     return isFraudulent;
 } //----- Fin de getIsFraudulent

@@ -79,7 +79,7 @@ public:
     // Mode d'emploi :
     // Renvoie la liste des mesures associées au capteur identifié par sensorID
 
-    static std::list<Measurement> getUserHistory(const PrivateUser& user);
+    static std::vector<Measurement*> getUserHistory(const PrivateUser& user);
     // Mode d'emploi :
     // Renvoie l'historique des contributions du PrivateUser à partir de ses capteurs
     
@@ -94,12 +94,11 @@ public:
     static AirCleaner* getCleanerById(const std::string& cleanerID);
     
     // =============== Requêtes de maintenance ===============
-    
     static void updateSensorStatus(const string& sensorID, bool isReliable);
     // Mode d'emploi :
     // Met à jour le statut de fiabilité d'un capteur en base de données
     
-    static void markMeasurementAsInvalid(const Measurement& measurement);
+    static void markMeasurementAsInvalid(Measurement& measurement);
     // Mode d'emploi :
     // Marque une mesure comme invalide (soft delete)
     

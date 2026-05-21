@@ -68,10 +68,10 @@ int main(){
     int roleChoice;
     do{
         cout << "Veuillez vous connecter pour accéder au système." << endl;
-        cout << "Vous êtes un : " << endl;
         cout << "1. Utilisateur privé" << endl;
         cout << "2. Fournisseur" << endl;
         cout << "3. Agence gouvernementale" << endl;
+        cout << "Vous êtes un : ";
         cin >> roleChoice;
     
         string userID;
@@ -104,6 +104,7 @@ int main(){
         cout << "4. Estimer la qualité de l'air" << endl;
         cout << "5. Menu spécial" << endl;
         cout << "6. Quitter" << endl;
+        cout << "Votre choix : ";
         cin >> choice;
 
         switch (choice) {
@@ -214,6 +215,7 @@ int main(){
                         cout << "9. Saisir des mesures de capteur privé" << endl;
                         cout << "10. Voir l'historique de mes contributions" << endl;
                         cout << "11. Retour au menu principal" << endl;
+                        cout << "Votre choix : ";
                         cin >> particularChoice;
 
                         switch (particularChoice) {
@@ -305,20 +307,20 @@ int main(){
                             }
                             case 10:
                             {
-                                // cout << "Affichage de l'historique de vos contributions..." << endl;
-                                // list<Measurement> userHistory = DataService::getUserHistory(*Application.getCurrentPrivateUser());
-                                // if (userHistory.empty()) {
-                                //     cout << "Aucune contribution." << endl;
-                                //     break;
-                                // }
-                                // for (const auto& measurement : userHistory) {
-                                //     cout << "- " << measurement.getSensor()->getSensorID()
-                                //          << " | " << measurement.getAttribute()->getAttributeID()
-                                //          << " | " << measurement.getValue()
-                                //          << " | " << formatDateTime(measurement.getMeasureDate())
-                                //          << endl;
-                                // }
-                                // break;
+                                cout << "Affichage de l'historique de vos contributions..." << endl;
+                                vector<Measurement*> userHistory = DataService::getUserHistory(*Application.getCurrentPrivateUser());
+                                if (userHistory.empty()) {
+                                    cout << "Aucune contribution." << endl;
+                                    break;
+                                }
+                                for (const auto& measurement : userHistory) {
+                                    cout << "- " << measurement->getSensor()->getSensorID()
+                                         << " | " << measurement->getAttribute()->getAttributeID()
+                                         << " | " << measurement->getValue()
+                                         << " | " << formatDateTime(measurement->getMeasureDate())
+                                         << endl;
+                                }
+                                break;
                             }
                             case 11:
                                 break;
@@ -335,7 +337,9 @@ int main(){
                         cout << "8. Comparer les capteurs par similarité" << endl;
                         cout << "9. Analyser le rayon de purification" << endl;
                         cout << "10. Consulter les statistiques de zone" << endl;
-                        cout << "11. Retour au menu principal" << endl;                        
+                        cout << "11. Retour au menu principal" << endl;  
+                        cout << "Votre choix : ";
+                        cin >> particularChoice;                      
                         switch (particularChoice) {
                             case 6:
                                 // Logic to display the impact of a sensor
@@ -368,6 +372,7 @@ int main(){
                         cout << "8. Exclure les données corrompues" << endl;
                         cout << "9. Restaurer la base de données à un état sécurisé" << endl;
                         cout << "10. Retour au menu principal" << endl;
+                        cout << "Votre choix : ";
                         cin >> particularChoice;
                         
 

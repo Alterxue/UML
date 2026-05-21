@@ -226,7 +226,6 @@ vector<PrivateUser*> SecurityService::detectFraudulentUsers(const User& user)
     return fraudulentUsers;
 }
 
-// Data corruption removal: Mark corrupted data as invalid
 void SecurityService::removeCorruptedData(const User& user) 
 // Algorithme :
 // 1. Vérifier que l'utilisateur est une agence gouvernementale
@@ -277,8 +276,6 @@ void SecurityService::removeCorruptedData(const User& user)
     return;
 }
 
-
-// System initialization: Restore security baseline
 void SecurityService::initializeDatabase(const User& user) 
 // Algorithme
 // 1. Vérifier que l'utilisateur est une agence gouvernementale
@@ -290,12 +287,11 @@ void SecurityService::initializeDatabase(const User& user)
         cout << "ERREUR : Seules les agences gouvernementales peuvent initialiser la base de données." << endl;
         return;
     }
-    
-    cout << "Initializing Database Security Baseline..." << endl;
+    cout << "Initialisation de la base de données..." << endl;
     
     // 2. Reload all data from CSV files via DataService
-    cout << "Loading initial state from CSV files..." << endl;
-    DataService::loadAllData();
+    cout << "Chargement de l'état initial à partir des fichiers CSV..." << endl;
+    DataService::reloadAllData();
     
     // 3. Build security baseline: Mark all government sensors as reliable
     vector<Sensor*> allSensors = DataService::getAllSensors();

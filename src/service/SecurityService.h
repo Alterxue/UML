@@ -10,16 +10,13 @@
 #if ! defined ( SECURITYSERVICE_H )
 #define SECURITYSERVICE_H
 
+//--------------------------------------------------- Interfaces utilisées
 #include <ctime>
 #include <list>
 #include <string>
 
 #include "../model/User.h"
-
-using namespace std;
-
-//--------------------------------------------------- Interfaces utilisées
-
+#include "../model/PrivateUser.h"
 //------------------------------------------------------------- Constantes
 
 //------------------------------------------------------------------ Types

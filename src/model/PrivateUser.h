@@ -49,7 +49,7 @@ public:
     // Mode d'emploi :
     // Permet de récupérer la liste des capteurs associés à l'utilisateur privé
 
-    const bool getIsFraudulent() const;
+    bool getIsFraudulent() const;
     // Mode d'emploi :
     // Permet de savoir si l'utilisateur est marqué comme frauduleux ou non
 
