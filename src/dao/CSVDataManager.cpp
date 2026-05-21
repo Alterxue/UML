@@ -175,7 +175,7 @@ void CSVDataManager::loadProviders(DataContainer & container) const
     Provider* provider = new Provider(providerId, PROVIDER);
     AirCleaner* cleaner = container.getAirCleanerByID(cleanerId);
     if (cleaner != nullptr) {
-      provider->addCleaners(cleaner);
+      provider->addAirCleaner(cleaner);
       cleaner->setProvider(provider);
     }
     container.addProvider(provider);
