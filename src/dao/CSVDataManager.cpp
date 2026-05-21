@@ -221,7 +221,7 @@ void CSVDataManager::loadMeasurements(DataContainer & container) const
 
     double value = std::stod(valueStr);
     Measurement* measurement = new Measurement(measureDate, sensor, attribute, value);
-    sensor->addMeasurement(*measurement);
+    sensor->addMeasurement(measurement);
     container.addMeasurement(measurement);
   }
 } //----- Fin de loadMeasurements
