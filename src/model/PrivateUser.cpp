@@ -31,7 +31,7 @@ void PrivateUser::incrementPoints(int pointsToAdd)
 
 void PrivateUser::addSensor(Sensor* sensor)
 {
-    sensorsList.push_back(sensor);
+    mySensors.push_back(sensor);
 }
 
 int PrivateUser::getPoints() const
@@ -41,7 +41,7 @@ int PrivateUser::getPoints() const
 
 const std::vector<Sensor*>& PrivateUser::getSensorsList() const
 {
-    return sensorsList;
+    return mySensors;
 }
 
 //------------------------------------------------- Surcharge d'opérateurs

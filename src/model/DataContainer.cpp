@@ -36,18 +36,6 @@ void DataContainer::addAttribute(Attribute* ptr_attribute)
     allAttributes[ptr_attribute->getAttributeID()] = ptr_attribute;
 } //----- Fin de addAttribute
 
-void DataContainer::addMeasurement(Measurement* ptr_measurement)
-{
-    if (ptr_measurement == nullptr) {
-        return;
-    }
-    Sensor* sensor = ptr_measurement->getSensor();
-    if (sensor == nullptr) {
-        return;
-    }
-    measurementsBySensor[sensor->getSensorID()].push_back(ptr_measurement);
-} //----- Fin de addMeasurement
-
 void DataContainer::addSensor(Sensor* ptr_sensor)
 {
     allSensors[ptr_sensor->getSensorID()] = ptr_sensor;
@@ -68,35 +56,17 @@ void DataContainer::addProvider(Provider* ptr_provider)
     allProviders[ptr_provider->getUserID()] = ptr_provider;
 } //----- Fin de addProvider
 
-Sensor * DataContainer::getSensorByID(const std::string& sensorID)
+void DataContainer::addMeasurement(Measurement* ptr_measurement)
 {
-    for (const map<std::string, Sensor*>::value_type& pair : allSensors) {
-        if (pair.first == sensorID) {
-            return pair.second;
-        }
+    if (ptr_measurement == nullptr) {
+        return;
     }
-    return nullptr; // Retourne nullptr si le capteur n'est pas trouvé
-}
-
-AirCleaner * DataContainer::getAirCleanerByID(const std::string& airCleanerID)
-{
-    for (const map<std::string, AirCleaner*>::value_type& pair : allAirCleaners) {
-        if (pair.first == airCleanerID) {
-            return pair.second;
-        }
+    Sensor* sensor = ptr_measurement->getSensor();
+    if (sensor == nullptr) {
+        return;
     }
-    return nullptr; // Retourne nullptr si l'air cleaner n'est pas trouvé
-}
-
-Attribute * DataContainer::getAttributeByID(const std::string& attributeID)
-{
-    for (const auto& pair : this->allAttributes) {
-        if (pair.first == attributeID) {
-            return pair.second;
-        }
-    }
-    return nullptr; // Retourne nullptr si l'attribut n'est pas trouvé
-}
+    measurementsBySensor[sensor->getSensorID()].push_back(ptr_measurement);
+} //----- Fin de addMeasurement
 
 const std::map<std::string, Attribute*>& DataContainer::getAllAttributes() const
 {
@@ -108,7 +78,7 @@ const std::map<std::string, Sensor*>& DataContainer::getAllSensors() const
     return allSensors;
 } //----- Fin de getAllSensors
 
-const std::map<std::string, PrivateUser*>& DataContainer::getAllUsers() const
+const std::map<string, PrivateUser*>& DataContainer::getAllUsers() const
 {
     return allUsers;
 } //----- Fin de getAllUsers
@@ -118,10 +88,60 @@ const std::map<string, AirCleaner*>& DataContainer::getAllAirCleaners() const
     return allAirCleaners;
 } //----- Fin de getAllAirCleaners
 
-const std::map<std::string, Provider*>& DataContainer::getAllProviders() const
+const std::map<string, Provider*>& DataContainer::getAllProviders() const
 {
     return allProviders;
 } //----- Fin de getAllProviders
+
+const std::map<string, vector<Measurement*>>& DataContainer::getAllMeasurementsBySensor() const
+{
+    return measurementsBySensor;
+} //----- Fin de getAllMeasurementsBySensor 
+
+Attribute * DataContainer::getAttributeByID(const string& attributeID)
+{
+    map<string, Attribute*>::const_iterator it = allAttributes.find(attributeID);
+    if (it == allAttributes.end() || it->second == nullptr) {
+        return nullptr;
+    }
+    return it->second;
+} // ---- Fin de getAttributeByID
+
+Sensor * DataContainer::getSensorByID(const string& sensorID)
+{
+    map<string, Sensor*>::const_iterator it = allSensors.find(sensorID);
+    if (it == allSensors.end() || it->second == nullptr) {
+        return nullptr;
+    }
+        return it->second;
+}
+
+PrivateUser* DataContainer::getPrivateUserByID(const string& userID)
+{
+    map<string, PrivateUser*>::const_iterator it = allUsers.find(userID);
+    if (it == allUsers.end() || it->second == nullptr) {
+        return nullptr;
+    }
+    return it->second;
+}
+
+AirCleaner * DataContainer::getAirCleanerByID(const std::string& airCleanerID)
+{
+    map<string, AirCleaner*>::const_iterator it = allAirCleaners.find(airCleanerID);
+    if (it == allAirCleaners.end() || it->second == nullptr) {
+        return nullptr;
+    }
+    return it->second;
+}
+
+Provider* DataContainer::getProviderByID(const std::string& providerID)
+{
+    map<string, Provider*>::const_iterator it = allProviders.find(providerID);
+    if (it == allProviders.end() || it->second == nullptr) {
+        return nullptr;
+    }
+    return it->second;
+}
 
 //-------------------------------------------- Constructeurs - destructeur
 DataContainer::DataContainer()

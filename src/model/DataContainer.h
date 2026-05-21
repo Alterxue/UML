@@ -42,10 +42,6 @@ public:
     // Mode d'emploi : 
     // Ajoute un attribut de mesure à la collection
 
-    void addMeasurement(Measurement* ptr_measurement);
-    // Mode d'emploi :
-    // Ajoute une mesure à la collection
-
     void addSensor(Sensor* ptr_sensor);
     // Mode d'emploi :
     // Ajoute un capteur à la collection
@@ -61,6 +57,10 @@ public:
     void addProvider(Provider* ptr_provider);
     // Mode d'emploi :
     // Ajoute un fournisseur à la collection
+
+    void addMeasurement(Measurement* ptr_measurement);
+    // Mode d'emploi :
+    // Ajoute une mesure à la collection
 
     const std::map<std::string, Attribute*>& getAllAttributes() const;
     // Mode d'emploi :
@@ -82,17 +82,30 @@ public:
     // Mode d'emploi :
     // Renvoie la collection des fournisseurs
 
-    Sensor * getSensorByID(const std::string& sensorID);
+    const std::map<std::string, std::vector<Measurement*>>& getAllMeasurementsBySensor() const;
     // Mode d'emploi :
-    // Permet de récupérer un capteur à partir de son ID, retourne nullptr si le capteur n'est pas trouvé
-
-    AirCleaner * getAirCleanerByID(const std::string& airCleanerID);
-    // Mode d'emploi :
-    // Permet de récupérer un air cleaner à partir de son ID, retourne nullptr si l'air cleaner n'est pas trouvé
+    // Renvoie la collection des mesures, organisées par capteur
 
     Attribute * getAttributeByID(const std::string& attributeID);
     // Mode d'emploi :
     // Permet de récupérer un attribut à partir de son ID, retourne nullptr si l'attribut n'est pas trouvé
+
+    Sensor * getSensorByID(const std::string& sensorID);
+    // Mode d'emploi :
+    // Permet de récupérer un capteur à partir de son ID
+
+    PrivateUser* getPrivateUserByID(const std::string& userID);
+    // Mode d'emploi :
+    // Permet de récupérer un utilisateur à partir de son ID
+
+    AirCleaner * getAirCleanerByID(const std::string& airCleanerID);
+    // Mode d'emploi :
+    // Permet de récupérer un air cleaner à partir de son ID
+
+    Provider* getProviderByID(const std::string& providerID);
+    // Mode d'emploi :
+    // Permet de récupérer un fournisseur à partir de son ID
+
 
 //------------------------------------------------- Surcharge d'opérateurs
 

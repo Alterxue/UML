@@ -20,6 +20,7 @@ using namespace std;
 #include <vector>
 #include <cmath>
 #include "DataService.h"
+#include "../dao/CSVDataManager.h"
 #include "../model/Sensor.h"
 #include "../model/Measurement.h"
 #include "../model/User.h"
@@ -28,224 +29,207 @@ using namespace std;
 #include "../model/TimeRange.h"
 #include "../model/AirCleaner.h"
 #include "../model/DataContainer.h"
-using namespace std;
+#include "../model/Role.h"
 
 //------------------------------------------------------------- Constantes
 
 //----------------------------------------------------------------- PUBLIC
-
-// Initialize static member
+// Initialise le membre statique
 DataContainer* DataService::dataContainer = nullptr;
 
 //----------------------------------------------------- Méthodes publiques
-
-// ==================== INITIALIZATION METHODS ====================
-
-// Initialize the data container
-void DataService::initializeDataContainer(DataContainer* container) {
+// ======= Initialisation =======
+void DataService::initializeDataContainer(DataContainer* container) 
+{
+    if (container == nullptr) {
+        cout << "ERREUR: DataContainer null" << endl;
+        return;
+    }
     dataContainer = container;
     cout << "DataService initialized with DataContainer" << endl;
-}
+} //----- Fin de initializeDataContainer
 
-// Get reference to data container
-DataContainer* DataService::getDataContainer() {
+DataContainer* DataService::getDataContainer() 
+{
     return dataContainer;
-}
+} //----- Fin de getDataContainer
 
-// ==================== SENSOR QUERY METHODS ====================
-
-// Get all sensors owned by a user or all public government sensors
-vector<Sensor*> DataService::getSensors(const User& user) {
+// =============== Requête de sur les capteurs ===============
+vector<Sensor*> DataService::getAllSensors() 
+{
     vector<Sensor*> result;
-    
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return result;
     }
-    
-    // If user is GovernmentAgency, return all sensors
-    const GovernmentAgency* agency = dynamic_cast<const GovernmentAgency*>(&user);
-    if (agency != nullptr) {
-        return getAllSensors();
-    }
-    
-    // If user is PrivateUser, return only their sensors
-    const PrivateUser* privateUser = dynamic_cast<const PrivateUser*>(&user);
-    if (privateUser != nullptr) {
-        return privateUser->getSensorsList(); 
-    }
-    
-    return result;
-}
-
-// Get all sensors in the system
-vector<Sensor*> DataService::getAllSensors() {
-    vector<Sensor*> result;
-    
-    if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
-        return result;
-    }
-    
-    const auto& sensors = dataContainer->getAllSensors(); // pas de copie
-    result.reserve(sensors.size());
-    for (const auto& [id, ptr] : sensors) {
+    const map<string, Sensor*>& sensors = dataContainer->getAllSensors(); 
+    result.reserve(sensors.size()); // Préallouer de la mémoire pour éviter les reallocations
+    for (const map<string, Sensor*>::value_type& pair : sensors) {
+        Sensor* ptr = pair.second;
         if (ptr != nullptr) result.push_back(ptr);
     }
-    
     return result;
-}
+} //----- Fin de getAllSensors
 
-// Get sensors within a geographical area (circle)
-vector<Sensor> DataService::getSensorsInArea(double lat, double lon, double radius) {
-    vector<Sensor> result;
+vector<Sensor*> DataService::getSensors(const User& user) 
+{
+    vector<Sensor*> result;
+
+    if (dataContainer == nullptr) {
+        cout << "ERROR: DataContainer not initialized" << endl;
+        return result;
+    }
+
+    if (user.getRole() == GOVERNMENT_AGENCY) {
+        return getAllSensors();
+    }
+
+    if (user.getRole() == PRIVATE_USER) {
+        return getSensorsByUser(user.getUserID());
+    }
+    return result;
+} //----- Fin de getSensors
+
+vector<Sensor*> DataService::getSensorsByUser(const string& userID)
+{
+    vector<Sensor*> result;
+    if (dataContainer == nullptr) {
+        cout << "ERROR: DataContainer not initialized" << endl;
+        return result;
+    }
+
+    PrivateUser* privateUser = dataContainer->getPrivateUserByID(userID);
+    if (privateUser == nullptr){
+        return result;
+    }
+
+    const vector<Sensor*>& sensors = privateUser->getSensorsList();
+    result.reserve(sensors.size());
+    for (const vector<Sensor*>::value_type& sensorPtr : sensors) {
+        if (sensorPtr != nullptr) {
+            result.push_back(sensorPtr);
+        }
+    }
+
+    return result;
+} //----- Fin de getSensorsByUser
+
+vector<Sensor*> DataService::getSensorsInArea(double lat, double lon, double radiusKM) 
+{
+    vector<Sensor*> result;
     vector<Sensor*> allSensors = getAllSensors();
     
-    // Filter sensors by distance
-    for (const auto& sensor : allSensors) {
+    for (const vector<Sensor*>::value_type& sensor : allSensors) {
         double distance = sensor->calculateDistance(lat, lon);
-        if (distance <= radius) {
-            result.push_back(*sensor);
+        if (distance <= radiusKM) {
+            result.push_back(sensor);
         }
     }
     
     return result;
-}
+} //----- Fin de getSensorsInArea
 
-// Get sensor by ID
-Sensor DataService::getSensorById(string sensorID) {
-    const auto& sensorsMap = dataContainer->getAllSensors();
-    auto it = sensorsMap.find(sensorID);
-    if (it != sensorsMap.end() && it->second != nullptr) {
-        return *it->second;
-    }
-    cout << "WARNING: Sensor " << sensorID << " not found" << endl;
-    return Sensor("", 0.0, 0.0);
-}
-
-// ==================== MEASUREMENT QUERY METHODS ====================
-
-// Get all measurements for a user's sensors
-vector<Measurement> DataService::getMeasurements(const User& user) {
-    vector<Measurement> result;
+// =============== Requêtes sur les mesures ===============
+vector<Measurement*> DataService::getAllMeasurements() 
+{
+    vector<Measurement*> result;
     
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return result;
     }
     
-    // If GovernmentAgency, return all measurements
-    const GovernmentAgency* agency = dynamic_cast<const GovernmentAgency*>(&user);
-    if (agency != nullptr) {
-        list<Measurement> allMeasurements = getAllMeasurements();
-        for (const auto& m : allMeasurements) {
-            result.push_back(m);
-        }
-        return result;
-    }
-    
-    // If PrivateUser, return measurements from their sensors only
-    const PrivateUser* privateUser = dynamic_cast<const PrivateUser*>(&user);
-    if (privateUser != nullptr) {
-        vector<Sensor*> userSensors = privateUser->getSensorsList();
-        list<Measurement> allMeasurements = getAllMeasurements();
-        
-        for (const auto& measurement : allMeasurements) {
-            for (const auto& sensor : userSensors) {
-                if (measurement.getSensor()->getSensorID() == sensor->getSensorID()) {
-                    result.push_back(measurement);
-                    break;
-                }
+    const map<string, vector<Measurement*>>& measurementsBySensor = dataContainer->getAllMeasurementsBySensor();
+    for (const map<string, vector<Measurement*>>::value_type& pair : measurementsBySensor) {
+        for (Measurement* measurement : pair.second) {
+            if (measurement != nullptr) {
+                result.push_back(measurement);
             }
         }
     }
     
     return result;
-}
+} //----- Fin de getAllMeasurements
 
-// Get all measurements in the system
-list<Measurement> DataService::getAllMeasurements() {
-    list<Measurement> result;
+vector<Measurement*> DataService::getMeasurements(const User& user) 
+{
+    vector<Measurement*> result;
     
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return result;
     }
     
-    vector<Sensor*> allSensors = getAllSensors();
-    for (const auto& sensor : allSensors) {
-        vector<Measurement> sensorMeasurements = sensor->getMeasurements();
-        for (const auto& measurement : sensorMeasurements) {
-            result.push_back(measurement);
-        }
+    // Si agence gouvernementale, retourner toutes les mesures
+    if (user.getRole() == GOVERNMENT_AGENCY) {
+        return getAllMeasurements();
     }
     
+    // Si PrivateUser, retourner les mesures de ses capteurs
+    if (user.getRole() == PRIVATE_USER) { 
+        const vector<Sensor*>& userSensors = getSensorsByUser(user.getUserID());
+        for (const vector<Sensor*>::value_type& sensor : userSensors) {
+            if (sensor != nullptr) {
+                const vector<Measurement*>& sensorMeasurements = sensor->getMeasurements();
+                for (const vector<Measurement*>::value_type& measurement : sensorMeasurements) {
+                    if (measurement != nullptr) {
+                        result.push_back(measurement);
+                    }
+                }
+            }
+        }   
+    }
     return result;
-}
+} //----- Fin de getMeasurements
 
-// Get measurements for a specific sensor
-list<Measurement> DataService::getMeasurementsBySensor(string sensorID) {
-    list<Measurement> result;
+vector<Measurement*> DataService::getMeasurementsBySensor(const string& sensorID) 
+{
+    vector<Measurement*> result;
     
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return result;
     }
     
-    const auto& sensorsMap = dataContainer->getAllSensors();
-    auto it = sensorsMap.find(sensorID);
-    
-    if (it != sensorsMap.end() && it->second != nullptr) {
-        vector<Measurement> measurements = it->second->getMeasurements();
-        for (const auto& measurement : measurements) {
-            result.push_back(measurement);
+    const map<string, vector<Measurement*>>& measurementsBySensor = dataContainer->getAllMeasurementsBySensor();
+    map<string, vector<Measurement*>>::const_iterator it = measurementsBySensor.find(sensorID);
+
+    if (it != measurementsBySensor.end()) {
+        for (Measurement* measurement : it->second) {
+            if (measurement != nullptr) {
+                result.push_back(measurement);
+            }
         }
-    } else {
+    } 
+    else {
         cout << "WARNING: Sensor " << sensorID << " not found" << endl;
     }
     
     return result;
-}
+} //----- Fin de getMeasurementsBySensor
 
 // Add a new measurement
-void DataService::addMeasurement(DateTime a_measureDate, Sensor* a_sensor, Attribute* an_attribute, double a_value) {
+void DataService::addMeasurement(DateTime measureDate, Sensor* sensor, Attribute* attribute, double value) {
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return;
     }
-    
-    // Create new measurement
-    Measurement measurement(a_measureDate, a_sensor, an_attribute, a_value);
-    
-    // Add measurement to sensor
-    a_sensor->addMeasurement(measurement);
-    
-    cout << "Measurement added for sensor " << a_sensor->getSensorID() << endl;
-}
 
-// ==================== USER QUERY METHODS ====================
-
-// Get user history (all measurements they submitted)
-list<Measurement> DataService::getUserHistory(const User& user) {
-    list<Measurement> result;
-    
-    const PrivateUser* privateUser = dynamic_cast<const PrivateUser*>(&user);
-    if (privateUser == nullptr) {
-        cout << "ERROR: Only PrivateUsers have history" << endl;
-        return result;
+    if (sensor == nullptr || attribute == nullptr) {
+        cout << "ERROR: Cannot add measurement with null sensor or attribute" << endl;
+        return;
     }
-    
-    vector<Measurement> measurements = getMeasurements(user);
-    for (const auto& m : measurements) {
-        result.push_back(m);
-    }
-    
-    return result;
-}
 
-// Get all private users
-list<PrivateUser> DataService::getAllPrivateUsers() {
-    list<PrivateUser> result;
+    Measurement* measurement = new Measurement(measureDate, sensor, attribute, value);
+    sensor->addMeasurement(measurement);
+    dataContainer->addMeasurement(measurement);
+
+    cout << "Measurement added for sensor " << sensor->getSensorID() << endl;
+} //----- Fin de addMeasurement
+
+// =============== Requêtes sur les utilisateurs ===============
+vector<PrivateUser*> DataService::getAllPrivateUsers() {
+    vector<PrivateUser*> result;
 
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
@@ -253,129 +237,42 @@ list<PrivateUser> DataService::getAllPrivateUsers() {
     }
 
     const auto& users = dataContainer->getAllUsers();
+    result.reserve(users.size());
     for (const auto& [id, privateUser] : users) {
         if (privateUser) {
-            result.push_back(*privateUser);
+            result.push_back(privateUser);
         }
     }
 
     return result;
-}
+} //----- Fin de getAllPrivateUsers
 
-// ==================== AIR CLEANER QUERY METHODS ====================
-
-// Get air cleaner by ID
-AirCleaner DataService::getCleanerById(string cleanerID) {
+// =============== Requêtes sur les AirCleaners ===============
+AirCleaner* DataService::getCleanerById(const string& cleanerID) {
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
-        // Return default constructed AirCleaner
-        return AirCleaner("", 0.0, 0.0, 
-                  chrono::system_clock::now(), 
-                  chrono::system_clock::now());
+        return nullptr;
     }
-    
-    const auto& cleaners = dataContainer->getAllAirCleaners();
-    auto it = cleaners.find(cleanerID);
-    if (it != cleaners.end() && it->second != nullptr) {
-        return *it->second;
-    }
-    
-    cout << "WARNING: Air Cleaner " << cleanerID << " not found" << endl;
-    
-    // Return default constructed AirCleaner if not found
-    return AirCleaner("", 0.0, 0.0, 
-                      chrono::system_clock::now(), 
-                      chrono::system_clock::now());
+
+    return dataContainer->getAirCleanerByID(cleanerID);
 }
 
-// ==================== DATA MANAGEMENT METHODS ====================
-
-// Mark a measurement as invalid
-void DataService::markMeasurementAsInvalid(Measurement measurement) {
+// =============== Requêtes de maintenance ===============
+void DataService::loadAllData() {
     if (dataContainer == nullptr) {
         cout << "ERROR: DataContainer not initialized" << endl;
         return;
     }
 
-    Sensor* sensor = measurement.getSensor();
-    if (sensor == nullptr) {
-        cout << "ERROR: Measurement has no associated sensor" << endl;
-        return;
-    }
-
-    vector<Measurement> sensorMeasurements = sensor->getMeasurements();
-    for (auto& m : sensorMeasurements) {
-        if (m.getSensor() == measurement.getSensor() &&
-            m.getAttribute() == measurement.getAttribute() &&
-            m.getMeasureDate() == measurement.getMeasureDate() &&
-            m.getValue() == measurement.getValue()) {
-            m.setIsValid(false);
-            cout << "Measurement marked as invalid" << endl;
-            return;
-        }
-    }
-
-    cout << "WARNING: Measurement not found" << endl;
-}
-
-// Update sensor reliability status
-void DataService::updateSensorStatus(string sensorID, bool isReliable) {
-    if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
-        return;
-    }
-
-    const auto& sensors = dataContainer->getAllSensors();
-    auto it = sensors.find(sensorID);
-    if (it != sensors.end() && it->second != nullptr) {
-        it->second->setReliability(isReliable);
-        cout << "Sensor " << sensorID << " status updated: "
-             << (isReliable ? "RELIABLE" : "UNRELIABLE") << endl;
-        return;
-    }
-
-    cout << "WARNING: Sensor " << sensorID << " not found" << endl;
-}
-
-// Clear any corruption flags
-void DataService::clearCorruptionFlags() {
-    if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
-        return;
-    }
-
-    const auto& sensors = dataContainer->getAllSensors();
-    int clearedCount = 0;
-
-    for (const auto& [id, sensorPtr] : sensors) {
-        if (sensorPtr == nullptr) {
-            continue;
-        }
-
-        vector<Measurement> sensorMeasurements = sensorPtr->getMeasurements();
-        for (auto& measurement : sensorMeasurements) {
-            // Check if measurement is marked as invalid and restore it
-            if (!measurement.getIsValid()) {
-                measurement.setIsValid(true);
-                clearedCount++;
-            }
-        }
-    }
-
-    cout << "Corruption flags cleared. Records restored: " << clearedCount << endl;
-}
-
-// Reload all data from CSV files
-void DataService::reloadAllData() {
-    if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
-        return;
-    }
-    
     cout << "Reloading all data from CSV files..." << endl;
-    
-    // TODO: Call CSVDataManager to reload all data
-    // CSVDataManager::loadAllData(dataContainer);
+
+    CSVDataManager csvDataManager;
+    csvDataManager.loadAttributes(*dataContainer);
+    csvDataManager.loadSensors(*dataContainer);
+    csvDataManager.loadUsers(*dataContainer);
+    csvDataManager.loadCleaners(*dataContainer);
+    csvDataManager.loadProviders(*dataContainer);
+    csvDataManager.loadMeasurements(*dataContainer);
     
     cout << "Data reload complete" << endl;
 }
@@ -383,17 +280,17 @@ void DataService::reloadAllData() {
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
-
-DataService::DataService () {
-#ifdef MAP
-    cout << "Appel au constructeur de <DataService>" << endl;
-#endif
+DataService::DataService () 
+{
+    #ifdef MAP
+        cout << "Appel au constructeur de <DataService>" << endl;
+    #endif
 }  // ----- Fin de DataService
 
 DataService::~DataService ( ) {
-#ifdef MAP
-    cout << "Appel au destructeur de <DataService>" << endl;
-#endif
+    #ifdef MAP
+        cout << "Appel au destructeur de <DataService>" << endl;
+    #endif
 }  // ----- Fin de ~DataService
 
 //------------------------------------------------------------------ PRIVE

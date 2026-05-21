@@ -67,8 +67,6 @@ int main(){
     cout << dataContainer.getAllAirCleaners().size() << " air cleaners chargés." << endl;
     cout << dataContainer.getAllProviders().size() << " fournisseurs chargés." << endl;
 
-
-
     cout << "" << endl;
     bool login = false;
     cout << "Bienvenue dans AirWatcherSystem !" << endl;

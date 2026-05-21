@@ -15,7 +15,6 @@ using namespace std;
 #include <iostream>
 #include <string>
 #include <cmath>
-using namespace std;
 
 //------------------------------------------------------ Include personnel
 #include "Sensor.h"
@@ -67,11 +66,27 @@ void Sensor::addMeasurement(Measurement* measure)
     }
 } //----- Fin de addMeasurement
 
-int Sensor::calculateDistance(double userLatitude, double userLongitude) const
+double Sensor::calculateDistance(double userLatitude, double userLongitude) const
 {
-    double latDiff = userLatitude - this->lattitude;
-    double lonDiff = userLongitude - this->longitude;
-    return static_cast<int>(sqrt(latDiff * latDiff + lonDiff * lonDiff) * 111000); 
+    // Formule de Haversine (précision sphérique)
+    const double PI = acos(-1.0);
+    const double EARTH_RADIUS_KM = 6371.0; // Rayon moyen de la Terre
+    // 1. Conversion de toutes les coordonnées en radians
+    double lat1_rad = this->lattitude * PI / 180.0;
+    double lon1_rad = this->longitude * PI / 180.0;
+    double lat2_rad = userLatitude * PI / 180.0;
+    double lon2_rad = userLongitude * PI / 180.0;
+    // 2. Différences en radians
+    double dLat = lat2_rad - lat1_rad;
+    double dLon = lon2_rad - lon1_rad;
+    // 3. Formule trigonométrique de Haversine
+    double a = sin(dLat / 2.0) * sin(dLat / 2.0) +
+               cos(lat1_rad) * cos(lat2_rad) *
+               sin(dLon / 2.0) * sin(dLon / 2.0);
+               
+    double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+    // 4. Distance finale en kilomètres
+    return EARTH_RADIUS_KM * c;
 } //----- FIn de calculateDistance
 
 //------------------------------------------------- Surcharge d'opérateurs

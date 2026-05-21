@@ -74,7 +74,7 @@ public:
     // Mode d'emploi :
     // Ajoute la measure à la liste des mesures du capteur
 
-    int calculateDistance(double userLatitude, double userLongitude) const;
+    double calculateDistance(double userLatitude, double userLongitude) const;
     // Mode d'emploi : 
     // Calcule la distance du capteur à une position donnée
 
