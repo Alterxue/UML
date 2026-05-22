@@ -286,11 +286,11 @@ AirCleaner* DataService::getCleanerById(const string& cleanerID) {
 // =============== Requêtes de maintenance ===============
 void DataService::reloadAllData() {
     if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
+        cout << "ERREUR: DataContainer non initialisé" << endl;
         return;
     }
 
-    cout << "Reloading all data from CSV files..." << endl;
+    cout << "Chargement de toutes les données depuis les fichiers CSV..." << endl;
 
     CSVDataManager csvDataManager;
     csvDataManager.loadAttributes(*dataContainer);
@@ -300,13 +300,13 @@ void DataService::reloadAllData() {
     csvDataManager.loadProviders(*dataContainer);
     csvDataManager.loadMeasurements(*dataContainer);
     
-    cout << "Data reload complete" << endl;
+    cout << "Rechargement des données terminé" << endl;
 }
 
 // Update sensor reliability status
 void DataService::updateSensorStatus(const string& sensorID, bool isReliable) {
     if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
+        cout << "ERREUR: DataContainer non initialisé" << endl;
         return;
     }
 

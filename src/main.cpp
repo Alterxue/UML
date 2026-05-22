@@ -50,7 +50,6 @@ static string formatDateTime(const DateTime& value)
 int main(){
     AirWatcherSystem Application;
     DataContainer dataContainer;
-    CSVDataManager dataManager;
 
     // Charger toutes les données du CSV data manager avant tout test de connexion
     DataService::initializeDataContainer(&dataContainer);
