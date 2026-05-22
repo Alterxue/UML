@@ -138,52 +138,23 @@ Provider* DataContainer::getProviderByID(const std::string& providerID)
     return it->second;
 } // ---- Fin de getProviderByID
 
-void DataContainer::clear()
-{
-    for (auto& pair : measurementsBySensor) {
-        for (Measurement* measurement : pair.second) {
-            delete measurement;
-        }
-        pair.second.clear();
-    }
-    measurementsBySensor.clear();
-
-    for (auto& pair : allAirCleaners) {
-        delete pair.second;
-        pair.second = nullptr;
-    }
-    allAirCleaners.clear();
-
-    for (auto& pair : allSensors) {
-        delete pair.second;
-        pair.second = nullptr;
-    }
-    allSensors.clear();
-
-    for (auto& pair : allProviders) {
-        delete pair.second;
-        pair.second = nullptr;
-    }
-    allProviders.clear();
-
-    for (auto& pair : allUsers) {
-        delete pair.second;
-        pair.second = nullptr;
-    }
-    allUsers.clear();
-
-    for (auto& pair : allAttributes) {
-        delete pair.second;
-        pair.second = nullptr;
-    }
-    allAttributes.clear();
-} //---- Fin de clear
-
 void DataContainer::removeSensor(const std::string& sensorID)
 {
     map<string, Sensor*>::iterator sensorIt = allSensors.find(sensorID);
     if (sensorIt != allSensors.end()) {
         Sensor* sensorToRemove = sensorIt->second;
+
+        map<string, vector<Measurement*>>::iterator measurementIt = measurementsBySensor.find(sensorID);
+        if (measurementIt != measurementsBySensor.end()) {
+            for (vector<Measurement*>::iterator measurementItVector = measurementIt->second.begin(); measurementItVector != measurementIt->second.end(); ++measurementItVector) {
+                Measurement* measurement = *measurementItVector;
+                if (measurement != nullptr) {
+                    sensorToRemove->removeMeasurement(measurement);
+                    delete measurement;
+                }
+            }
+            measurementsBySensor.erase(measurementIt);
+        }
 
         for (map<string, PrivateUser*>::iterator userIt = allUsers.begin(); userIt != allUsers.end(); ++userIt) {
             PrivateUser* privateUser = userIt->second;
@@ -194,14 +165,6 @@ void DataContainer::removeSensor(const std::string& sensorID)
 
         delete sensorIt->second;
         allSensors.erase(sensorIt);
-    }
-    
-    map<string, vector<Measurement*>>::iterator measurementIt = measurementsBySensor.find(sensorID);
-    if (measurementIt != measurementsBySensor.end()) {
-        for (Measurement* measurement : measurementIt->second) {
-            delete measurement;
-        }
-        measurementsBySensor.erase(measurementIt);
     }
 } //----- Fin de removeSensor
 
@@ -218,7 +181,43 @@ DataContainer::~DataContainer()
     #ifdef MAP
         cout << "Appel au destructeur de <DataContainer>" << endl;
     #endif
-    this->clear();
+    for (map<string, vector<Measurement*>>::iterator measurementMapIt = measurementsBySensor.begin(); measurementMapIt != measurementsBySensor.end(); ++measurementMapIt) {
+        for (vector<Measurement*>::iterator measurementIt = measurementMapIt->second.begin(); measurementIt != measurementMapIt->second.end(); ++measurementIt) {
+            delete *measurementIt;
+        }
+        measurementMapIt->second.clear();
+    }
+    measurementsBySensor.clear();
+
+    for (map<string, AirCleaner*>::iterator airCleanerIt = allAirCleaners.begin(); airCleanerIt != allAirCleaners.end(); ++airCleanerIt) {
+        delete airCleanerIt->second;
+        airCleanerIt->second = nullptr;
+    }
+    allAirCleaners.clear();
+
+    for (map<string, Sensor*>::iterator sensorIt = allSensors.begin(); sensorIt != allSensors.end(); ++sensorIt) {
+        delete sensorIt->second;
+        sensorIt->second = nullptr;
+    }
+    allSensors.clear();
+
+    for (map<string, Provider*>::iterator providerIt = allProviders.begin(); providerIt != allProviders.end(); ++providerIt) {
+        delete providerIt->second;
+        providerIt->second = nullptr;
+    }
+    allProviders.clear();
+
+    for (map<string, PrivateUser*>::iterator userIt = allUsers.begin(); userIt != allUsers.end(); ++userIt) {
+        delete userIt->second;
+        userIt->second = nullptr;
+    }
+    allUsers.clear();
+
+    for (map<string, Attribute*>::iterator attributeIt = allAttributes.begin(); attributeIt != allAttributes.end(); ++attributeIt) {
+        delete attributeIt->second;
+        attributeIt->second = nullptr;
+    }
+    allAttributes.clear();
 } //----- Fin de ~DataContainer
 
 //------------------------------------------------------------------ PRIVE

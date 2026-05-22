@@ -118,7 +118,6 @@ bool SecurityService::checkSensorReliability(const User& user, string targetSens
                     mesureVoisin->getAttribute()->getAttributeID() == mesure->getAttribute()->getAttributeID()) {
                     
                     sommValeurs += mesureVoisin->getValue();
-                    sommValeurs += mesureVoisin->getValue();
                     compteMesures++;
                 }
             }
@@ -272,11 +271,10 @@ void SecurityService::showCorruptedData(const User& user)
     chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
     cout << "Nombre de mesures corrompues marquées : " << corruptedRecordsCount << endl;
-    cout << "Temps d'exécution removeCorruptedData : " << duree.count() << " ms" << endl;
+    cout << "Temps d'exécution showCorruptedData : " << duree.count() << " ms" << endl;
     return;
 }
 
-// A revoir peut être
 void SecurityService::initializeDatabase(const User& user) 
 // Algorithme
 // 1. Vérifier que l'utilisateur est une agence gouvernementale

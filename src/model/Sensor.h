@@ -66,6 +66,10 @@ public:
     // Mode d'emploi :
     // Ajoute la measure à la liste des mesures du capteur
 
+    void removeMeasurement(Measurement* measure);
+    // Mode d'emploi :
+    // Retire une mesure de la liste du capteur sans la détruire
+
     double calculateDistance(double userLatitude, double userLongitude) const;
     // Mode d'emploi : 
     // Calcule la distance du capteur à une position donnée

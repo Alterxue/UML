@@ -67,6 +67,16 @@ void Sensor::addMeasurement(Measurement* measure)
     }
 } //----- Fin de addMeasurement
 
+void Sensor::removeMeasurement(Measurement* measure)
+{
+    for (vector<Measurement*>::iterator it = myMeasurements.begin(); it != myMeasurements.end(); ++it) {
+        if (*it == measure) {
+            myMeasurements.erase(it);
+            break;
+        }
+    }
+} //----- Fin de removeMeasurement
+
 double Sensor::calculateDistance(double userLatitude, double userLongitude) const
 {
     // Formule de Haversine (précision sphérique)

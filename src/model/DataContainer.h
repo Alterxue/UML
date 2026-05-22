@@ -111,10 +111,6 @@ public:
     // Supprime un capteur de la collection, ainsi que toutes les mesures
     // qui lui sont associées, et libère la mémoire correspondante.
 
-    void clear();
-    // Mode d'emploi :
-    // Vide et détruit toutes les données possédées par ce conteneur.
-
 //------------------------------------------------- Surcharge d'opérateurs
     DataContainer& operator=(const DataContainer&) = delete;
     // Mode d'emploi :
