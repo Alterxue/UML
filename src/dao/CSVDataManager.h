@@ -84,51 +84,6 @@ public:
     // Mode d'emploi :
     // Sauvegarde toutes les mesures dans le fichier CSV
  
-
-
-  //std::list<Sensor> loadSensorsByUser(PrivateUser user)const;
-  // Mode d'emploi :Renvoie la liste des Sensor appartenant a l'user en paramètre à l'appelant
-  //
-  // Contrat :
-  //
-  // Sensor loadSensorById(std::string sensorID);
-
-  //std::list<Measurement> loadMeasurements()const;
-  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-  //
-  // Contrat :
-  //
-  std::vector<Measurement> loadMeasurementsBySensorID(std::string sensorID);
-  // Mode d'emploi : Renvoie une liste de mesure associé au Sensor dont l'ID est en parametre
-  //
-  // Contrat :
-  // 
-
-
-
-  void appendNewSensor(const Sensor& sensor,const PrivateUser& user);
-  // Mode d'emploi :
-  //
-  // Contrat :
-  //
-  //void appendNewSensor(Sensor sensor);
-  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-  //
-  // Contrat :
-  //
-  //void appendNewSensor(Sensor sensor);
-  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-  //
-  // Contrat :
-  //
-  void updateSensorStatus();
-  // Mode d'emploi :Renvoie une liste de Sensor à l'appelant
-  //
-  // Contrat :
-  //
-    
-  
-
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
