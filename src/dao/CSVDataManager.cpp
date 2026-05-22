@@ -89,18 +89,24 @@ void CSVDataManager::loadUsers(DataContainer & container) const
     string sensorId;
 
     getline(iss, userId, ';');
-    getline(iss, sensorId, ';');
 
     if (userId.empty()) {
       continue;
     }
 
     PrivateUser* user = new PrivateUser(userId, PRIVATE_USER);
-    Sensor* sensor = container.getSensorByID(sensorId);
 
-    if (sensor != nullptr) {
-      sensor->setOwner(user);
-      user->addSensor(sensor);
+    while (getline(iss, sensorId, ';')) {
+      if (sensorId.empty()) {
+        continue;
+      }
+
+      Sensor* sensor = container.getSensorByID(sensorId);
+
+      if (sensor != nullptr) {
+        sensor->setOwner(user);
+        user->addSensor(sensor);
+      }
     }
 
     container.addUser(user);
@@ -225,6 +231,164 @@ void CSVDataManager::loadMeasurements(DataContainer & container) const
     container.addMeasurement(measurement);
   }
 } //----- Fin de loadMeasurements
+
+void CSVDataManager::saveSensors(const DataContainer & container) const
+{
+  ofstream file("data/sensors.csv", ios::trunc);
+
+  if (!file.is_open()) {
+    return;
+  }
+
+  const map<string, Sensor*>& sensors = container.getAllSensors();
+  for (map<string, Sensor*>::const_iterator it = sensors.begin(); it != sensors.end(); ++it) {
+    const string& sensorId = it->first;
+    const Sensor* sensor = it->second;
+
+    if (sensor == nullptr) {
+      continue;
+    }
+
+    file << sensorId << ";" << sensor->getLattitude() << ";" << sensor->getLongitude() << ";" << endl;
+  }
+}
+
+void CSVDataManager::saveUsers(const DataContainer & container) const
+{
+  ofstream file("data/users.csv", ios::trunc);
+
+  if (!file.is_open()) {
+    return;
+  }
+
+  const map<string, PrivateUser*>& users = container.getAllUsers();
+  for (map<string, PrivateUser*>::const_iterator it = users.begin(); it != users.end(); ++it) {
+    const string& userId = it->first;
+    const PrivateUser* user = it->second;
+
+    if (user == nullptr) {
+      continue;
+    }
+
+    const vector<Sensor*>& sensors = user->getSensorsList();
+
+    file << userId << ";";
+
+    for (vector<Sensor*>::const_iterator sensorIt = sensors.begin(); sensorIt != sensors.end(); ++sensorIt) {
+      const Sensor* sensor = *sensorIt;
+
+      if (sensor == nullptr) {
+        continue;
+      }
+
+      file << sensor->getSensorID() << ";";
+    }
+
+    file << endl;
+  }
+}
+
+void CSVDataManager::saveCleaners(const DataContainer & container) const
+{
+  ofstream file("data/cleaners.csv", ios::trunc);
+
+  if (!file.is_open()) {
+    return;
+  }
+
+  const map<string, AirCleaner*>& cleaners = container.getAllAirCleaners();
+  for (map<string, AirCleaner*>::const_iterator it = cleaners.begin(); it != cleaners.end(); ++it) {
+    const string& cleanerId = it->first;
+    const AirCleaner* cleaner = it->second;
+
+    if (cleaner == nullptr) {
+      continue;
+    }
+
+    const TimeRange workingPeriod = cleaner->getWorkingPeriod();
+    const time_t startRawTime = chrono::system_clock::to_time_t(workingPeriod.getStart());
+    const tm* startLocalTime = std::localtime(&startRawTime);
+    ostringstream startStream;
+    startStream << put_time(startLocalTime, "%Y-%m-%d %H:%M:%S");
+
+    const time_t endRawTime = chrono::system_clock::to_time_t(workingPeriod.getEnd());
+    const tm* endLocalTime = std::localtime(&endRawTime);
+    ostringstream endStream;
+    endStream << put_time(endLocalTime, "%Y-%m-%d %H:%M:%S");
+
+    file << cleanerId << ";"
+         << cleaner->getLattitude() << ";"
+         << cleaner->getLongitude() << ";"
+         << startStream.str() << ";"
+         << endStream.str() << ";" << endl;
+  }
+}
+
+void CSVDataManager::saveProviders(const DataContainer & container) const
+{
+  ofstream file("data/providers.csv", ios::trunc);
+
+  if (!file.is_open()) {
+    return;
+  }
+
+  const map<string, Provider*>& providers = container.getAllProviders();
+  for (map<string, Provider*>::const_iterator it = providers.begin(); it != providers.end(); ++it) {
+    const string& providerId = it->first;
+    const Provider* provider = it->second;
+
+    if (provider == nullptr) {
+      continue;
+    }
+
+    const vector<AirCleaner*>& cleaners = provider->getMyCleaners();
+
+    if (cleaners.empty()) {
+      file << providerId << ";;" << endl;
+      continue;
+    }
+
+    const AirCleaner* cleaner = cleaners.front();
+    if (cleaner == nullptr) {
+      file << providerId << ";;" << endl;
+      continue;
+    }
+
+    file << providerId << ";" << cleaner->getAirCleanerID() << ";" << endl;
+  }
+}
+
+void CSVDataManager::saveMeasurements(const DataContainer & container) const
+{
+  ofstream file("data/measurements.csv", ios::trunc);
+
+  if (!file.is_open()) {
+    return;
+  }
+
+  const map<string, vector<Measurement*>>& measurementsBySensor = container.getAllMeasurementsBySensor();
+  for (map<string, vector<Measurement*>>::const_iterator it = measurementsBySensor.begin(); it != measurementsBySensor.end(); ++it) {
+    const vector<Measurement*>& measurements = it->second;
+
+    for (vector<Measurement*>::const_iterator measurementIt = measurements.begin(); measurementIt != measurements.end(); ++measurementIt) {
+      const Measurement* measurement = *measurementIt;
+
+      if (measurement == nullptr || measurement->getSensor() == nullptr || measurement->getAttribute() == nullptr) {
+        continue;
+      }
+
+      const time_t rawTime = chrono::system_clock::to_time_t(measurement->getMeasureDate());
+      const tm* localTime = std::localtime(&rawTime);
+      ostringstream timestampStream;
+      timestampStream << put_time(localTime, "%Y-%m-%d %H:%M:%S");
+
+      file << timestampStream.str() << ";"
+           << measurement->getSensor()->getSensorID() << ";"
+           << measurement->getAttribute()->getAttributeID() << ";"
+           << measurement->getValue() << ";" << endl;
+    }
+  }
+}
 
 //------------------------------------------------- Surcharge d'opérateurs
 

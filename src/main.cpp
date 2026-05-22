@@ -417,6 +417,8 @@ int main(){
             default:
                 cout << "Choix invalide, veuillez réessayer."<<endl;}
     } while (choice != 6);
+
+    DataService::saveAllData();
     
     return 0;
 }
