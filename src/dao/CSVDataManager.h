@@ -86,8 +86,6 @@ public:
  
 
 
-
-
   //std::list<Sensor> loadSensorsByUser(PrivateUser user)const;
   // Mode d'emploi :Renvoie la liste des Sensor appartenant a l'user en paramètre à l'appelant
   //
