@@ -341,7 +341,7 @@ int main(){
                         cin >> particularChoice;                      
                         switch (particularChoice) {
                             case 6:
-                                // Logic to display the impact of a sensor
+                                // Logic to display the impact of a cleaner
                                 break;
                             case 7:
                                 // Logic to calculate average AQI in a zone

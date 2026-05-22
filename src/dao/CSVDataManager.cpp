@@ -169,21 +169,27 @@ void CSVDataManager::loadProviders(DataContainer & container) const
     istringstream iss(line);
 
     string providerId;
-    string cleanerId;
-
     getline(iss, providerId, ';');
-    getline(iss, cleanerId, ';');
 
-    if (providerId.empty() || cleanerId.empty()) {
+    if (providerId.empty()) {
       continue;
     }
 
     Provider* provider = new Provider(providerId, PROVIDER);
-    AirCleaner* cleaner = container.getAirCleanerByID(cleanerId);
-    if (cleaner != nullptr) {
-      provider->addAirCleaner(cleaner);
-      cleaner->setProvider(provider);
+
+    string cleanerId;
+    while (getline(iss, cleanerId, ';')) {
+      if (cleanerId.empty()) {
+        continue;
+      }
+
+      AirCleaner* cleaner = container.getAirCleanerByID(cleanerId);
+      if (cleaner != nullptr) {
+        provider->addAirCleaner(cleaner);
+        cleaner->setProvider(provider);
+      }
     }
+
     container.addProvider(provider);
   }
 } //----- Fin de loadProviders
@@ -342,19 +348,19 @@ void CSVDataManager::saveProviders(const DataContainer & container) const
     }
 
     const vector<AirCleaner*>& cleaners = provider->getMyCleaners();
+    file << providerId << ";";
 
-    if (cleaners.empty()) {
-      file << providerId << ";;" << endl;
-      continue;
+    for (vector<AirCleaner*>::const_iterator cleanerIt = cleaners.begin(); cleanerIt != cleaners.end(); ++cleanerIt) {
+      const AirCleaner* cleaner = *cleanerIt;
+
+      if (cleaner == nullptr) {
+        continue;
+      }
+
+      file << cleaner->getAirCleanerID() << ";";
     }
 
-    const AirCleaner* cleaner = cleaners.front();
-    if (cleaner == nullptr) {
-      file << providerId << ";;" << endl;
-      continue;
-    }
-
-    file << providerId << ";" << cleaner->getAirCleanerID() << ";" << endl;
+    file << endl;
   }
 }
 
