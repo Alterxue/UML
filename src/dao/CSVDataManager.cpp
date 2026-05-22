@@ -53,7 +53,6 @@ void CSVDataManager::loadAttributes(DataContainer & container) const
 } //----- Fin de loadAttributes
 
 void CSVDataManager::loadSensors(DataContainer & container) const
-// Algorithme :
 {
   ifstream file("data/sensors.csv");
   string line;
@@ -77,7 +76,6 @@ void CSVDataManager::loadSensors(DataContainer & container) const
 } //----- Fin de loadSensors
 
 void CSVDataManager::loadUsers(DataContainer & container) const
-// Algorithme :
 {
   ifstream file("data/users.csv");
   string line;
@@ -114,7 +112,6 @@ void CSVDataManager::loadUsers(DataContainer & container) const
 } //----- Fin de loadUsers
 
 void CSVDataManager::loadCleaners(DataContainer & container) const
-// Algorithme :
 {
   ifstream file("data/cleaners.csv");
   string line;
@@ -160,7 +157,6 @@ void CSVDataManager::loadCleaners(DataContainer & container) const
 } //----- Fin de loadCleaners
 
 void CSVDataManager::loadProviders(DataContainer & container) const
-// Algorithme :
 {
   ifstream file("data/providers.csv");
   string line;
@@ -195,7 +191,6 @@ void CSVDataManager::loadProviders(DataContainer & container) const
 } //----- Fin de loadProviders
 
 void CSVDataManager::loadMeasurements(DataContainer & container) const
-// Algorithme :
 {
   ifstream file("data/measurements.csv");
   string line;
@@ -257,7 +252,7 @@ void CSVDataManager::saveSensors(const DataContainer & container) const
 
     file << sensorId << ";" << sensor->getLattitude() << ";" << sensor->getLongitude() << ";" << endl;
   }
-}
+} //----- Fin de saveSensors
 
 void CSVDataManager::saveUsers(const DataContainer & container) const
 {
@@ -292,7 +287,7 @@ void CSVDataManager::saveUsers(const DataContainer & container) const
 
     file << endl;
   }
-}
+} //----- Fin de saveUsers
 
 void CSVDataManager::saveCleaners(const DataContainer & container) const
 {
@@ -328,7 +323,7 @@ void CSVDataManager::saveCleaners(const DataContainer & container) const
          << startStream.str() << ";"
          << endStream.str() << ";" << endl;
   }
-}
+} //----- Fin de saveCleaners
 
 void CSVDataManager::saveProviders(const DataContainer & container) const
 {
@@ -362,7 +357,7 @@ void CSVDataManager::saveProviders(const DataContainer & container) const
 
     file << endl;
   }
-}
+} //----- Fin de saveProviders
 
 void CSVDataManager::saveMeasurements(const DataContainer & container) const
 {
@@ -394,13 +389,12 @@ void CSVDataManager::saveMeasurements(const DataContainer & container) const
            << measurement->getValue() << ";" << endl;
     }
   }
-}
+} //----- Fin de saveMeasurements
 
 //------------------------------------------------- Surcharge d'opérateurs
 
 //-------------------------------------------- Constructeurs - destructeur
 CSVDataManager::CSVDataManager ( )
-// Algorithme :
 {
   #ifdef MAP
       cout << "Appel au constructeur de <CSVDataManager>" << endl;
@@ -408,7 +402,6 @@ CSVDataManager::CSVDataManager ( )
 } //----- Fin de CSVDataManager
 
 CSVDataManager::~CSVDataManager ( )
-// Algorithme :
 {
   #ifdef MAP
       cout << "Appel au destructeur de <CSVDataManager>" << endl;
