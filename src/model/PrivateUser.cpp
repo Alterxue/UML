@@ -37,6 +37,16 @@ void PrivateUser::addSensor(Sensor* sensor)
     mySensors.push_back(sensor);
 } //----- Fin de addSensor
 
+void PrivateUser::removeSensor(Sensor* sensor)
+{
+    for (vector<Sensor*>::iterator it = mySensors.begin(); it != mySensors.end(); ++it) {
+        if (*it == sensor) {
+            mySensors.erase(it);
+            break;
+        }
+    }
+} //----- Fin de removeSensor
+
 int PrivateUser::getPoints() const
 {
     return points;

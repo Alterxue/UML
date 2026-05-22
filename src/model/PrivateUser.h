@@ -43,6 +43,10 @@ public:
     // Mode d'emploi :
     // Permet d'associer un capteur à l'utilisateur privé
 
+    void removeSensor(Sensor* sensor);
+    // Mode d'emploi :
+    // Retire un capteur de la liste de l'utilisateur privé sans le détruire
+
     int getPoints() const;
     // Mode d'emploi :
     // Permet de récupérer le nombre de points de l'utilisateur privé

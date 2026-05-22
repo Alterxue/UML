@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <algorithm>
 using namespace std;
 
 //------------------------------------------------------ Include personnel
@@ -182,6 +183,15 @@ void DataContainer::removeSensor(const std::string& sensorID)
 {
     map<string, Sensor*>::iterator sensorIt = allSensors.find(sensorID);
     if (sensorIt != allSensors.end()) {
+        Sensor* sensorToRemove = sensorIt->second;
+
+        for (map<string, PrivateUser*>::iterator userIt = allUsers.begin(); userIt != allUsers.end(); ++userIt) {
+            PrivateUser* privateUser = userIt->second;
+            if (privateUser != nullptr) {
+                privateUser->removeSensor(sensorToRemove);
+            }
+        }
+
         delete sensorIt->second;
         allSensors.erase(sensorIt);
     }
