@@ -111,31 +111,15 @@ public:
   
 
 //------------------------------------------------- Surcharge d'opérateurs
-    CSVDataManager & operator = ( const CSVDataManager & unCSVDataManager ); 
-    // Mode d'emploi :
-    //
-    // Contrat :
-    //
-
 
 //-------------------------------------------- Constructeurs - destructeur
-    CSVDataManager ( const CSVDataManager & unCSVDataManager );
-    // Mode d'emploi (constructeur de copie) :
-    //
-    // Contrat :
-    //
-
     CSVDataManager ( );
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
+    // Constructeur de la classe CSVDataManager
 
-    virtual ~CSVDataManager ( );
+    ~CSVDataManager ( );
     // Mode d'emploi :
-    //
-    // Contrat :
-    //
+    // Destructeur de la classe CSVDataManager
 
 //------------------------------------------------------------------ PRIVE
 

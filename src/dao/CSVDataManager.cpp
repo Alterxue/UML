@@ -226,46 +226,24 @@ void CSVDataManager::loadMeasurements(DataContainer & container) const
   }
 } //----- Fin de loadMeasurements
 
-
-
-
 //------------------------------------------------- Surcharge d'opérateurs
-CSVDataManager & CSVDataManager::operator = ( const CSVDataManager & unCSVDataManager )
-// Algorithme :
-//
-{
-} //----- Fin de operator =
-
 
 //-------------------------------------------- Constructeurs - destructeur
-CSVDataManager::CSVDataManager ( const CSVDataManager & unCSVDataManager )
+CSVDataManager::CSVDataManager ( )
 // Algorithme :
 {
   #ifdef MAP
-      cout << "Appel au constructeur de copie de <CSVDataManager>" << endl;
+      cout << "Appel au constructeur de <CSVDataManager>" << endl;
   #endif
-} //----- Fin de CSVDataManager (constructeur de copie)
-
-
-CSVDataManager::CSVDataManager ( )
-// Algorithme :
-//
-{
-#ifdef MAP
-    cout << "Appel au constructeur de <CSVDataManager>" << endl;
-#endif
 } //----- Fin de CSVDataManager
-
 
 CSVDataManager::~CSVDataManager ( )
 // Algorithme :
-//
 {
-#ifdef MAP
-    cout << "Appel au destructeur de <CSVDataManager>" << endl;
-#endif
+  #ifdef MAP
+      cout << "Appel au destructeur de <CSVDataManager>" << endl;
+  #endif
 } //----- Fin de ~CSVDataManager
-
 
 //------------------------------------------------------------------ PRIVE
 
