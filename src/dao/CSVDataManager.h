@@ -13,6 +13,7 @@
 //--------------------------------------------------- Interfaces utilisées
 #include <list>
 #include <string>
+#include <vector>
 #include "../model/Sensor.h"
 #include "../model/Measurement.h"
 #include "../model/User.h"
@@ -62,6 +63,26 @@ public:
     void loadMeasurements(DataContainer & container) const;
     // Mode d'emploi : 
     // Charges les mesures et les associe au bon capteur
+
+    void saveSensors(const DataContainer & container) const;
+    // Mode d'emploi :
+    // Sauvegarde tous les sensors dans le fichier CSV
+
+    void saveUsers(const DataContainer & container) const;
+    // Mode d'emploi :
+    // Sauvegarde tous les utilisateurs dans le fichier CSV
+
+    void saveCleaners(const DataContainer & container) const;
+    // Mode d'emploi :
+    // Sauvegarde tous les air cleaners dans le fichier CSV
+
+    void saveProviders(const DataContainer & container) const;
+    // Mode d'emploi :
+    // Sauvegarde tous les providers dans le fichier CSV
+
+    void saveMeasurements(const DataContainer & container) const;
+    // Mode d'emploi :
+    // Sauvegarde toutes les mesures dans le fichier CSV
  
 
 

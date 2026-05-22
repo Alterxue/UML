@@ -101,7 +101,12 @@ public:
     static void reloadAllData();
     // Mode d'emploi :
     // Recharge toutes les données depuis les fichiers CSV
-    
+
+    static void saveAllData();
+    // Mode d'emploi :
+    // Sauvegarde toutes les données dans les fichiers CSV
+    // A IMPLEMENTER : nécessite une méthode de sérialisation dans CSVDataManager
+
     static void clearCorruptionFlags();
     // Mode d'emploi :
     // Réinitialise les drapeaux de corruption temporaires

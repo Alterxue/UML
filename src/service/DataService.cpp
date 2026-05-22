@@ -303,6 +303,24 @@ void DataService::reloadAllData() {
     cout << "Rechargement des données terminé" << endl;
 }
 
+void DataService::saveAllData() {
+    if (dataContainer == nullptr) {
+        cout << "ERROR: DataContainer not initialized" << endl;
+        return;
+    }
+
+    cout << "Saving all data to CSV files..." << endl;
+
+    // A IMPLEMENTER: This requires implementing serialization methods in CSVDataManager
+    // CSVDataManager csvDataManager;
+    // csvDataManager.saveSensors(*dataContainer);
+    // csvDataManager.saveUsers(*dataContainer);
+    // csvDataManager.saveCleaners(*dataContainer);
+    // csvDataManager.saveProviders(*dataContainer);
+    // csvDataManager.saveMeasurements(*dataContainer);
+
+    cout << "Data saving completed (functionality to be implemented)" << endl;
+}
 // Update sensor reliability status
 void DataService::updateSensorStatus(const string& sensorID, bool isReliable) {
     if (dataContainer == nullptr) {
