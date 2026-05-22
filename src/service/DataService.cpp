@@ -322,16 +322,7 @@ void DataService::updateSensorStatus(const string& sensorID, bool isReliable) {
     cout << "WARNING: Sensor " << sensorID << " not found for status update" << endl;
 } //----- Fin de updateSensorStatus
 
-// Mark a measurement as invalid (soft delete)
-void DataService::markMeasurementAsInvalid(Measurement& measurement) {
-    if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
-        return;
-    }
 
-    measurement.setIsValid(false);
-    cout << "Marked measurement as invalid for sensor " << measurement.getSensor()->getSensorID() << endl;
-} //----- Fin de markMeasurementAsInvalid
 
 
 

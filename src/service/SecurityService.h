@@ -37,18 +37,19 @@ public:
     // Mode d'emploi :
     // - Seule une agence gouvernementale peut vérifier la fiabilité d'un capteur
     // - Analyse les mesures du capteur sur une période donnée pour détecter des anomalies
-    // - Compare les mesures du capteur avec des capteurs de référence
-    // - Marque le capteur ainsi que ses mesurescomme fiable ou non fiable dans le DataContainer
+    // - Compare les mesures du capteur avec des les mesures de capteurs fiables voisins
+    // - Si trop de mesures sont considérées comme anormales, marque le capteur non fiable
     
     static vector<PrivateUser*> detectFraudulentUsers(const User& user);
     // Mode d'emploi :
     // - Seule une agence gouvernementale peut détecter les utilisateurs frauduleux
-    // - Renvoie un vecteur de pointeurs vers les utilisateurs privés marqués comme frauduleux, basé sur la fiabilité de leurs capteurs associés
+    // - Renvoie un vecteur de pointeurs vers les utilisateurs privés marqués comme frauduleux, 
+    // basé sur la fiabilité de leurs capteurs associés
 
     static void removeCorruptedData(const User& user);
     // Mode d'emploi :
     // - Seule une agence gouvernementale peut supprimer les données corrompues
-    // - Récupère tous les capteurs marqués comme non fiables et marque leurs données comme invalides
+    // - Récupère tous les capteurs marqués comme non fiables et marque leurs mesures comme invalides
     // - suppression douce : les données restent dans le système mais sont exclues des calculs et analyses futures
 
 

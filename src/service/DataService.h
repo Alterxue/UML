@@ -98,10 +98,6 @@ public:
     // Mode d'emploi :
     // Met à jour le statut de fiabilité d'un capteur en base de données
     
-    static void markMeasurementAsInvalid(Measurement& measurement);
-    // Mode d'emploi :
-    // Marque une mesure comme invalide (soft delete)
-    
     static void reloadAllData();
     // Mode d'emploi :
     // Recharge toutes les données depuis les fichiers CSV

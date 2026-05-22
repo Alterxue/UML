@@ -36,7 +36,7 @@ using namespace std;
 //------------------------------------------------------------- Constantes
 const double SEUIL_TOLERANCE = 0.30;  // 30% de tolérance
 const double SEUIL_FRAUDE = 0.50;     // 50% d'anomalies pour marquer comme frauduleux
-const time_t RELIABILITY_CHECK_PERIOD = 7 * 24 * 3600;  // 7 days for analysis
+const time_t RELIABILITY_CHECK_PERIOD = 7 * 24 * 3600;  // 7 jours en secondes pour l'analyse de fiabilité
 
 
 //----------------------------------------------------------------- PUBLIC
@@ -276,6 +276,7 @@ void SecurityService::removeCorruptedData(const User& user)
     return;
 }
 
+// A revoir peut être
 void SecurityService::initializeDatabase(const User& user) 
 // Algorithme
 // 1. Vérifier que l'utilisateur est une agence gouvernementale
