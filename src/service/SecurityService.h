@@ -33,7 +33,7 @@ class SecurityService
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    static bool checkSensorReliability(const User& user, string sensorID);
+    static void checkSensorReliability(const User& user, string sensorID);
     // Mode d'emploi :
     // - Seule une agence gouvernementale peut vérifier la fiabilité d'un capteur
     // - Analyse les mesures du capteur sur une période donnée pour détecter des anomalies

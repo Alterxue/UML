@@ -42,7 +42,7 @@ const time_t RELIABILITY_CHECK_PERIOD = 7 * 24 * 3600;  // 7 jours en secondes p
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-bool SecurityService::checkSensorReliability(const User& user, string targetSensorID) 
+void SecurityService::checkSensorReliability(const User& user, string targetSensorID) 
 // Algorithme
 // 1. Vérifier que l'utilisateur est une agence gouvernementale
 // 2. Récupérer le capteur à analyser et ses mesures
@@ -56,24 +56,24 @@ bool SecurityService::checkSensorReliability(const User& user, string targetSens
     // 1. Seule une agence gouvernementale peut vérifier la fiabilité d'un capteur
     if (user.getRole() != GOVERNMENT_AGENCY) {
         cout << "ERREUR : Seules les agences gouvernementales peuvent vérifier la fiabilité d'un capteur." << endl;
-        return false;
+        return;
     }
 
     // 2. Récupérer le capteur à analyser et ses mesures
     Sensor* capteurAAnalyser = DataService::getDataContainer()->getSensorByID(targetSensorID);
     if (capteurAAnalyser == nullptr) {
         cout << "ERREUR: Capteur " << targetSensorID << " non trouvé." << endl;
-        return false;
+        return;
     }
 
     if (capteurAAnalyser->getOwner() == nullptr || capteurAAnalyser->getOwner()->getRole() != PRIVATE_USER) {
         cout << "ERREUR : Seuls les capteurs appartenant à un utilisateur privé peuvent être analysés." << endl;
-        return false;
+        return;
     }
     
     if (capteurAAnalyser->getReliability() == false) {
         cout << "AVERTISSEMENT : Le capteur " << targetSensorID << " est déjà marqué comme non fiable." << endl;
-        return false;
+        return;
     }
 
 
@@ -81,7 +81,7 @@ bool SecurityService::checkSensorReliability(const User& user, string targetSens
     vector<Measurement*> mesuresCible = DataService::getMeasurementsBySensor(targetSensorID);
     if (mesuresCible.empty()) {
         cout << "ERREUR: Aucune mesure trouvée pour le capteur " << targetSensorID << endl;
-        return false;
+        return;
     }
     
     // 3. Récupérer les capteurs voisins fiables et les mesures fiables associées (moins de 10 km et marqués comme fiables)
@@ -101,7 +101,7 @@ bool SecurityService::checkSensorReliability(const User& user, string targetSens
     if (capteursVoisinsFiables.empty()) {
         cout << "AVERTISSEMENT : Aucun capteur fiable à proximité trouvé. Le capteur " << targetSensorID << " est considéré comme fiable." << endl;
         capteurAAnalyser->setReliability(true);
-        return true;
+        return;
     }
 
     vector<Measurement*> mesuresFiablesVoisins;
@@ -179,8 +179,6 @@ bool SecurityService::checkSensorReliability(const User& user, string targetSens
     }
     cout << "Résultat : " << (estFiable ? "FIABLE" : "FRAUDULEUX") << endl;
     cout << "Temps d'exécution de checkSensorReliability : " << duree.count() << " ms" << endl;
-    
-    return estFiable;
 }
 
 vector<PrivateUser*> SecurityService::detectFraudulentUsers(const User& user) 
@@ -213,7 +211,10 @@ vector<PrivateUser*> SecurityService::detectFraudulentUsers(const User& user)
         
         // 4. Pour chaque capteur, vérifier sa fiabilité avec checkSensorReliability
         for (const vector<Sensor*>::value_type& sensor : userSensors) {
-            if (sensor != nullptr && !checkSensorReliability(user, sensor->getSensorID())) {
+            if (sensor != nullptr) {
+                checkSensorReliability(user, sensor->getSensorID());
+            }
+            if (sensor != nullptr && sensor->getReliability() == false) {
                 userIsFraudulent = true;
                 break; // Si un capteur est non fiable, on peut arrêter de vérifier les autres capteurs de cet utilisateur
             }

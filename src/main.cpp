@@ -517,11 +517,7 @@ int main(){
                                 string targetSensorID;
                                 cout << "ID du capteur à vérifier: ";
                                 cin >> targetSensorID;
-                                if (SecurityService::checkSensorReliability(*Application.getCurrentGovernmentAgency(), targetSensorID)) {
-                                    cout << "Le capteur " << targetSensorID << " est fiable." << endl;
-                                } else {
-                                    cout << "Le capteur " << targetSensorID << " est défectueux ou frauduleux." << endl;
-                                }
+                                SecurityService::checkSensorReliability(*Application.getCurrentGovernmentAgency(), targetSensorID);
                                 break;}
                             case 7:{
                                 vector<PrivateUser*> fraudulentUsers = SecurityService::detectFraudulentUsers(*Application.getCurrentGovernmentAgency());
