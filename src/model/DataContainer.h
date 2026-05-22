@@ -106,6 +106,11 @@ public:
     // Mode d'emploi :
     // Permet de récupérer un fournisseur à partir de son ID
 
+    void removeSensor(const std::string& sensorID);
+    // Mode d'emploi :
+    // Supprime un capteur de la collection, ainsi que toutes les mesures
+    // qui lui sont associées, et libère la mémoire correspondante.
+
     void clear();
     // Mode d'emploi :
     // Vide et détruit toutes les données possédées par ce conteneur.

@@ -46,7 +46,7 @@ public:
     // - Renvoie un vecteur de pointeurs vers les utilisateurs privés marqués comme frauduleux, 
     // basé sur la fiabilité de leurs capteurs associés
 
-    static void removeCorruptedData(const User& user);
+    static void showCorruptedData(const User& user);
     // Mode d'emploi :
     // - Seule une agence gouvernementale peut supprimer les données corrompues
     // - Récupère tous les capteurs marqués comme non fiables et marque leurs mesures comme invalides

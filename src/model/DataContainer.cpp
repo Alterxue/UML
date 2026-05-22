@@ -178,6 +178,23 @@ void DataContainer::clear()
     allAttributes.clear();
 } //---- Fin de clear
 
+void DataContainer::removeSensor(const std::string& sensorID)
+{
+    map<string, Sensor*>::iterator sensorIt = allSensors.find(sensorID);
+    if (sensorIt != allSensors.end()) {
+        delete sensorIt->second;
+        allSensors.erase(sensorIt);
+    }
+    
+    map<string, vector<Measurement*>>::iterator measurementIt = measurementsBySensor.find(sensorID);
+    if (measurementIt != measurementsBySensor.end()) {
+        for (Measurement* measurement : measurementIt->second) {
+            delete measurement;
+        }
+        measurementsBySensor.erase(measurementIt);
+    }
+} //----- Fin de removeSensor
+
 //-------------------------------------------- Constructeurs - destructeur
 DataContainer::DataContainer()
 {

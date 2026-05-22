@@ -226,7 +226,7 @@ vector<PrivateUser*> SecurityService::detectFraudulentUsers(const User& user)
     return fraudulentUsers;
 }
 
-void SecurityService::removeCorruptedData(const User& user) 
+void SecurityService::showCorruptedData(const User& user) 
 // Algorithme :
 // 1. Vérifier que l'utilisateur est une agence gouvernementale
 // 2. Récupérer tous les capteurs marqués comme non fiables
@@ -280,6 +280,10 @@ void SecurityService::removeCorruptedData(const User& user)
 void SecurityService::initializeDatabase(const User& user) 
 // Algorithme
 // 1. Vérifier que l'utilisateur est une agence gouvernementale
+// 2. Identifier les capteurs non fiables dans le DataContainer actuel
+// 3. Supprimer du DataContainer les capteurs non fiables et toutes leurs mesures
+// 4. Vérifier l'intégrité des données après suppression
+// 5. Enregistrer le temps d'exécution
 {
     chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
     
@@ -288,44 +292,84 @@ void SecurityService::initializeDatabase(const User& user)
         cout << "ERREUR : Seules les agences gouvernementales peuvent initialiser la base de données." << endl;
         return;
     }
-    cout << "Initialisation de la base de données..." << endl;
     
-    // 2. Reload all data from CSV files via DataService
-    cout << "Chargement de l'état initial à partir des fichiers CSV..." << endl;
-    DataService::reloadAllData();
+    cout << "=== Nettoyage du DataContainer ===" << endl;
     
-    // 3. Build security baseline: Mark all government sensors as reliable
+    DataContainer* container = DataService::getDataContainer();
+    if (container == nullptr) {
+        cout << "ERREUR : DataContainer non initialisé" << endl;
+        return;
+    }
+    
+    // 2. Identifier tous les capteurs non fiables dans le DataContainer actuel
+    cout << "2. Identification des capteurs non fiables..." << endl;
     vector<Sensor*> allSensors = DataService::getAllSensors();
-    int reliableSensorCount = 0;
+    vector<string> unreliableSensorIDs;
+    int totalSensorCount = 0;
+    int unreliableSensorCount = 0;
     
-    for (const auto& sensor : allSensors) {
-        // Note: Sensors in the actual system would have a type attribute
-        // For now, we mark all as needing verification
+    for (const vector<Sensor*>::value_type& sensor : allSensors) {
         if (sensor != nullptr) {
-            DataService::updateSensorStatus(sensor->getSensorID(), true);
+            totalSensorCount++;
+            if (sensor->getReliability() == false) {
+                unreliableSensorIDs.push_back(sensor->getSensorID());
+                unreliableSensorCount++;
+                cout << "   Capteur non fiable détecté : " << sensor->getSensorID() << endl;
+            }
+        }
+    }
+    
+    cout << "   Total capteurs : " << totalSensorCount << endl;
+    cout << "   Capteurs non fiables détectés : " << unreliableSensorCount << endl;
+    
+    // 3. Supprimer du DataContainer les capteurs non fiables et leurs mesures
+    cout << "3. Suppression des capteurs non fiables du DataContainer..." << endl;
+    int removedSensorCount = 0;
+    int removedMeasurementCount = 0;
+    
+    for (const string& sensorID : unreliableSensorIDs) {
+        // Compter les mesures du capteur avant suppression
+        vector<Measurement*> measurements = DataService::getMeasurementsBySensor(sensorID);
+        removedMeasurementCount += measurements.size();
+        
+        // Supprimer le capteur et toutes ses mesures du DataContainer
+        container->removeSensor(sensorID);
+        removedSensorCount++;
+        
+        cout << "   Supprimé : " << sensorID << " (" << measurements.size() << " mesures)" << endl;
+    }
+    
+    cout << "   Total capteurs supprimés : " << removedSensorCount << endl;
+    cout << "   Total mesures supprimées : " << removedMeasurementCount << endl;
+    
+    // 4. Vérifier l'intégrité des données après suppression
+    cout << "4. Vérification de l'intégrité des données après suppression..." << endl;
+    vector<Sensor*> remainingSensors = DataService::getAllSensors();
+    vector<Measurement*> remainingMeasurements = DataService::getAllMeasurements();
+    
+    int reliableSensorCount = 0;
+    int validMeasurementCount = 0;
+    
+    for (const vector<Sensor*>::value_type& sensor : remainingSensors) {
+        if (sensor != nullptr && sensor->getReliability() == true) {
             reliableSensorCount++;
         }
     }
     
-    cout << "Reliable Sensors (initialized): " << reliableSensorCount << endl;
+    for (const vector<Measurement*>::value_type& measurement : remainingMeasurements) {
+        if (measurement != nullptr && measurement->getIsValid() == true) {
+            validMeasurementCount++;
+        }
+    }
     
-    // 4. Clear any temporary ban flags or corrupted states
-    cout << "Clearing temporary corruption flags..." << endl;
-    DataService::clearCorruptionFlags();
+    cout << "   Capteurs fiables restants : " << reliableSensorCount << endl;
+    cout << "   Mesures valides restantes : " << validMeasurementCount << endl;
     
-    // 5. Reset statistics cache
-    cout << "Resetting statistics cache..." << endl;
-    
-    // 6. Verify data integrity
-    cout << "Verifying data integrity..." << endl;
-    vector<Measurement*> allMeasurements = DataService::getAllMeasurements();
-    cout << "Total Measurements in System: " << allMeasurements.size() << endl;
-    
-    // 7. Log completion
+    // 5. Enregistrer le temps d'exécution
     auto tempsFin = chrono::high_resolution_clock::now();
     chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
-    cout << "=== Database Initialization Complete ===" << endl;
+    cout << "=== Nettoyage du DataContainer terminé ===" << endl;
     cout << "Temps d'exécution initializeDatabase : " << duree.count() << " ms" << endl;
 }
 

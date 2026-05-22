@@ -331,7 +331,7 @@ int main(){
                     int particularChoice;
                     do {
                         cout << "-- MENU FOURNISSEUR --" << endl;
-                        cout << "6. Voir l'impact d'un capteur" << endl;
+                        cout << "6. Voir l'impact d'un cleaner" << endl;
                         cout << "7. Calculer la moyenne AQI d'une zone" << endl;
                         cout << "8. Comparer les capteurs par similarité" << endl;
                         cout << "9. Analyser le rayon de purification" << endl;
@@ -342,18 +342,23 @@ int main(){
                         switch (particularChoice) {
                             case 6:
                                 // Logic to display the impact of a cleaner
+                                // fonction viewCleanerImpact()
                                 break;
                             case 7:
                                 // Logic to calculate average AQI in a zone
+                                // calculateLocalAQI()
                                 break;
                             case 8:
                                 // Logic to compare sensors by similarity
+                                // compareSensorsBySimilarity()
                                 break;
                             case 9:
                                 // Logic to analyze purification radius
+                                // analyzeCleanerRadius()
                                 break;
                             case 10:
                                 // Logic to consult zone statistics
+                                // getZoneStatistic()
                                 break;
                             case 11:
                                 break;
@@ -398,7 +403,7 @@ int main(){
                                 }
                                 break;}
                             case 8:
-                                SecurityService::removeCorruptedData(*Application.getCurrentGovernmentAgency());
+                                SecurityService::showCorruptedData(*Application.getCurrentGovernmentAgency());
                                 break;
                             case 9:
                                 SecurityService::initializeDatabase(*Application.getCurrentGovernmentAgency());
