@@ -92,7 +92,7 @@ void SecurityService::checkSensorReliability(const User& user, string targetSens
     for (const vector<Sensor*>::value_type& capteur : tousCapteurs) {
         if (capteur != nullptr && capteur->getReliability() == true && capteur->getSensorID() != targetSensorID) {
             double distance = capteur->calculateDistance(capteurAAnalyser->getLattitude(), capteurAAnalyser->getLongitude());
-            if (distance <= 10) {  // 10km
+            if (distance <= 50) {  // 50km
                 capteursVoisinsFiables.push_back(capteur);
             }
         }

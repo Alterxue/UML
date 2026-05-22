@@ -514,6 +514,37 @@ int main(){
 
                         switch (particularChoice) {
                             case 6:{
+                                vector<PrivateUser*> privateUsers = DataService::getAllPrivateUsers();
+                                cout << "Capteurs appartenant à des utilisateurs privés :" << endl;
+                                if (privateUsers.empty()) {
+                                    cout << "Aucun utilisateur privé trouvé." << endl;
+                                } else {
+                                    for (const auto& privateUser : privateUsers) {
+                                        if (privateUser == nullptr) {
+                                            continue;
+                                        }
+
+                                        cout << "- " << privateUser->getUserID() << " : ";
+                                        const vector<Sensor*>& userSensors = privateUser->getSensorsList();
+                                        if (userSensors.empty()) {
+                                            cout << "aucun capteur";
+                                        } else {
+                                            for (size_t index = 0; index < userSensors.size(); ++index) {
+                                                const Sensor* sensor = userSensors[index];
+                                                if (sensor == nullptr) {
+                                                    continue;
+                                                }
+
+                                                cout << sensor->getSensorID();
+                                                if (index + 1 < userSensors.size()) {
+                                                    cout << ", ";
+                                                }
+                                            }
+                                        }
+                                        cout << endl;
+                                    }
+                                }
+
                                 string targetSensorID;
                                 cout << "ID du capteur à vérifier: ";
                                 cin >> targetSensorID;
