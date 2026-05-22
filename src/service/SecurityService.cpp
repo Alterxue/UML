@@ -66,6 +66,18 @@ bool SecurityService::checkSensorReliability(const User& user, string targetSens
         return false;
     }
 
+    if (capteurAAnalyser->getOwner() == nullptr || capteurAAnalyser->getOwner()->getRole() != PRIVATE_USER) {
+        cout << "ERREUR : Seuls les capteurs appartenant à un utilisateur privé peuvent être analysés." << endl;
+        return false;
+    }
+    
+    if (capteurAAnalyser->getReliability() == false) {
+        cout << "AVERTISSEMENT : Le capteur " << targetSensorID << " est déjà marqué comme non fiable." << endl;
+        return false;
+    }
+
+
+
     vector<Measurement*> mesuresCible = DataService::getMeasurementsBySensor(targetSensorID);
     if (mesuresCible.empty()) {
         cout << "ERREUR: Aucune mesure trouvée pour le capteur " << targetSensorID << endl;

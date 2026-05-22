@@ -50,6 +50,11 @@ string Sensor::getSensorID() const
     return this->sensorID;
 } //----- Fin de getSensorID
 
+PrivateUser* Sensor::getOwner() const
+{
+    return this->owner;
+} //----- Fin de getOwner
+
 void Sensor::setReliability(bool reliability)
 {
     this->isReliable = reliability;

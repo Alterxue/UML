@@ -54,6 +54,10 @@ public:
     // Mode d'emploi :
     // Retourne l'ID du capteur
 
+    PrivateUser* getOwner() const;
+    // Mode d'emploi :
+    // Retourne le propriétaire du capteur, ou nullptr s'il n'en a pas.
+
     void setReliability(bool reliability);
     // Mode d'emploi : 
     // Permet de marquer le capteur comme fiable ou non
