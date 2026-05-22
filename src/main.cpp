@@ -60,6 +60,7 @@ int main(){
     cout << dataContainer.getAllUsers().size() << " utilisateurs chargés." << endl;
     cout << dataContainer.getAllAirCleaners().size() << " air cleaners chargés." << endl;
     cout << dataContainer.getAllProviders().size() << " fournisseurs chargés." << endl;
+    cout << DataService::getAllMeasurements().size() << " mesures chargées." << endl;
 
     cout << "" << endl;
     bool login = false;
@@ -109,7 +110,7 @@ int main(){
         switch (choice) {
             case 1:
             {
-                cout << "Choisissez un capteur a analyser (ID) : " << endl;
+                cout << "Choisissez un capteur a analyser (ID) : ";
                 string sensorID;
                 cin >> sensorID;
 
@@ -140,7 +141,6 @@ int main(){
             }
             case 2:
             {
-                User* currentUser = Application.getCurrentUser();
                 double lat = 0.0;
                 double lon = 0.0;
                 cout << "Latitude: ";
@@ -153,7 +153,7 @@ int main(){
                     break;
                 }
 
-                double aqi = StatisticsService::calculateAirQuality(*currentUser, lat, lon, time);
+                double aqi = StatisticsService::calculateAirQuality(lat, lon, time);
                 cout << "AQI calcule: " << aqi << endl;
                 break;
             }
@@ -341,25 +341,157 @@ int main(){
                         cin >> particularChoice;                      
                         switch (particularChoice) {
                             case 6:
-                                // Logic to display the impact of a cleaner
-                                // fonction viewCleanerImpact()
+                            {
+                                Provider* currentProvider = Application.getCurrentProvider();
+                                if (currentProvider == nullptr) {
+                                    cout << "Fournisseur non initialise." << endl;
+                                    break;
+                                }
+
+                                const vector<AirCleaner*>& cleaners = currentProvider->getMyCleaners();
+                                if (cleaners.empty()) {
+                                    cout << "Aucun cleaner associe a votre compte." << endl;
+                                    break;
+                                }
+
+                                cout << "Vos cleaners :" << endl;
+                                for (const auto* cleaner : cleaners) {
+                                    if (cleaner != nullptr) {
+                                        cout << "- " << cleaner->getAirCleanerID() << endl;
+                                    }
+                                }
+
+                                string cleanerID;
+                                cout << "ID du cleaner a analyser : ";
+                                cin >> cleanerID;
+
+                                DateTime startTime;
+                                DateTime endTime;
+                                if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
+                                    break;
+                                }
+                                if (!readDateTime("Fin (YYYY-MM-DD HH:MM:SS): ", endTime)) {
+                                    break;
+                                }
+
+                                TimeRange period(startTime, endTime);
+                                double impact = StatisticsService::viewCleanerImpact(*currentProvider, cleanerID, period);
+                                cout << "Impact du cleaner : " << impact << endl;
                                 break;
+                            }
                             case 7:
-                                // Logic to calculate average AQI in a zone
-                                // calculateLocalAQI()
+                            {
+                                Provider* currentProvider = Application.getCurrentProvider();
+                                if (currentProvider == nullptr) {
+                                    cout << "Fournisseur non initialise." << endl;
+                                    break;
+                                }
+
+                                double lat = 0.0;
+                                double lon = 0.0;
+                                double radius = 0.0;
+                                cout << "Latitude: ";
+                                cin >> lat;
+                                cout << "Longitude: ";
+                                cin >> lon;
+                                cout << "Rayon (km): ";
+                                cin >> radius;
+
+                                DateTime startTime;
+                                DateTime endTime;
+                                if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
+                                    break;
+                                }
+                                if (!readDateTime("Fin (YYYY-MM-DD HH:MM:SS): ", endTime)) {
+                                    break;
+                                }
+
+                                TimeRange period(startTime, endTime);
+                                double aqi = StatisticsService::calculateAreaMean(*currentProvider, lat, lon, radius, period);
+                                cout << "AQI moyen de la zone : " << aqi << endl;
                                 break;
+                            }
                             case 8:
-                                // Logic to compare sensors by similarity
-                                // compareSensorsBySimilarity()
+                            {
+                                Provider* currentProvider = Application.getCurrentProvider();
+                                if (currentProvider == nullptr) {
+                                    cout << "Fournisseur non initialise." << endl;
+                                    break;
+                                }
+
+                                string targetSensorID;
+                                cout << "ID du capteur cible : ";
+                                cin >> targetSensorID;
+
+                                DateTime startTime;
+                                DateTime endTime;
+                                if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
+                                    break;
+                                }
+                                if (!readDateTime("Fin (YYYY-MM-DD HH:MM:SS): ", endTime)) {
+                                    break;
+                                }
+
+                                TimeRange period(startTime, endTime);
+                                vector<Sensor> similaires = StatisticsService::compareSensorsBySimilarity(*currentProvider, targetSensorID, period);
+                                if (similaires.empty()) {
+                                    cout << "Aucun capteur similaire trouve." << endl;
+                                } else {
+                                    cout << "Capteurs similaires :" << endl;
+                                    for (const auto& sensor : similaires) {
+                                        cout << "- " << sensor.getSensorID() << endl;
+                                    }
+                                }
                                 break;
+                            }
                             case 9:
-                                // Logic to analyze purification radius
-                                // analyzeCleanerRadius()
+                            {
+                                Provider* currentProvider = Application.getCurrentProvider();
+                                if (currentProvider == nullptr) {
+                                    cout << "Fournisseur non initialise." << endl;
+                                    break;
+                                }
+
+                                string cleanerID;
+                                cout << "ID du cleaner a analyser : ";
+                                cin >> cleanerID;
+
+                                double rayon = StatisticsService::analyzeCleanerRadius(*currentProvider, cleanerID);
+                                cout << "Rayon de purification utile : " << rayon << " km" << endl;
                                 break;
+                            }
                             case 10:
-                                // Logic to consult zone statistics
-                                // getZoneStatistic()
+                            {
+                                Provider* currentProvider = Application.getCurrentProvider();
+                                if (currentProvider == nullptr) {
+                                    cout << "Fournisseur non initialise." << endl;
+                                    break;
+                                }
+
+                                double lat = 0.0;
+                                double lon = 0.0;
+                                double radius = 0.0;
+                                cout << "Latitude: ";
+                                cin >> lat;
+                                cout << "Longitude: ";
+                                cin >> lon;
+                                cout << "Rayon (km): ";
+                                cin >> radius;
+
+                                DateTime startTime;
+                                DateTime endTime;
+                                if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
+                                    break;
+                                }
+                                if (!readDateTime("Fin (YYYY-MM-DD HH:MM:SS): ", endTime)) {
+                                    break;
+                                }
+
+                                TimeRange period(startTime, endTime);
+                                string statistics = StatisticsService::getZoneStatistic(*currentProvider, lat, lon, radius, period);
+                                cout << statistics << endl;
                                 break;
+                            }
                             case 11:
                                 break;
                             default:
@@ -373,8 +505,8 @@ int main(){
                         cout << "-- MENU AGENCE GOUVERNEMENTALE --" << endl;
                         cout << "6. Vérifier si un capteur est défectueux" << endl;
                         cout << "7. Identifier les comportements frauduleux" << endl;
-                        cout << "8. Exclure les données corrompues" << endl;
-                        cout << "9. Restaurer la base de données à un état sécurisé" << endl;
+                        cout << "8. Recensement des capteurs et mesure des données corrompues" << endl;
+                        cout << "9. Supprimer les données corrompues" << endl;
                         cout << "10. Retour au menu principal" << endl;
                         cout << "Votre choix : ";
                         cin >> particularChoice;

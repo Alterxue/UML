@@ -34,6 +34,10 @@ using namespace std;
 void CSVDataManager::loadAttributes(DataContainer & container) const
 {
   ifstream file("data/attributes.csv");
+  if (!file.is_open()) {
+    cout << "ERREUR : impossible d'ouvrir le fichier data/attributes.csv" << endl;
+    return;
+  }
   string line;
   getline(file, line); // Saute la première ligne de attributes.csv
 
@@ -55,6 +59,10 @@ void CSVDataManager::loadAttributes(DataContainer & container) const
 void CSVDataManager::loadSensors(DataContainer & container) const
 {
   ifstream file("data/sensors.csv");
+  if (!file.is_open()) {
+    cout << "ERREUR : impossible d'ouvrir le fichier data/sensors.csv" << endl;
+    return;
+  }
   string line;
 
   while (getline(file, line)) {
@@ -78,6 +86,10 @@ void CSVDataManager::loadSensors(DataContainer & container) const
 void CSVDataManager::loadUsers(DataContainer & container) const
 {
   ifstream file("data/users.csv");
+  if (!file.is_open()) {
+    cout << "ERREUR : impossible d'ouvrir le fichier data/users.csv" << endl;
+    return;
+  }
   string line;
 
   while (getline(file, line)) {
@@ -114,6 +126,10 @@ void CSVDataManager::loadUsers(DataContainer & container) const
 void CSVDataManager::loadCleaners(DataContainer & container) const
 {
   ifstream file("data/cleaners.csv");
+  if (!file.is_open()) {
+    cout << "ERREUR : impossible d'ouvrir le fichier data/cleaners.csv" << endl;
+    return;
+  }
   string line;
 
   while (getline(file, line)) {
@@ -159,6 +175,10 @@ void CSVDataManager::loadCleaners(DataContainer & container) const
 void CSVDataManager::loadProviders(DataContainer & container) const
 {
   ifstream file("data/providers.csv");
+  if (!file.is_open()) {
+    cout << "ERREUR : impossible d'ouvrir le fichier data/providers.csv" << endl;
+    return;
+  }
   string line;
 
   while (getline(file, line)) {
@@ -193,6 +213,10 @@ void CSVDataManager::loadProviders(DataContainer & container) const
 void CSVDataManager::loadMeasurements(DataContainer & container) const
 {
   ifstream file("data/measurements.csv");
+  if (!file.is_open()) {
+    cout << "ERREUR : impossible d'ouvrir le fichier data/measurements.csv" << endl;
+    return;
+  }
   string line;
 
   while (getline(file, line)) {

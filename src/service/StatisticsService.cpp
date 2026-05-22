@@ -33,25 +33,30 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-
-double StatisticsService::calculateAirQuality(const User& user, double lat, double lon, DateTime time){
+double StatisticsService::calculateAirQuality(double lat, double lon, DateTime time)
+// Algorithme :
+// 1. Récupérer tous les capteurs et toutes les mesures du système.
+// 2. Garder uniquement les capteurs fiables et les mesures à l'instant demandé.
+// 3. Pondérer chaque mesure par la distance du capteur au point étudié.
+// 4. Calculer une moyenne par polluant puis la convertir en indice ATMO global.
+{
     // commencer a compter le temps
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // obtenir les listes de capteurs et mesures
-    vector<Sensor*> tousCapteurs = DataService::getSensors(user);
-    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
+    vector<Sensor*> tousCapteurs = DataService::getAllSensors();
+    vector<Measurement*> toutesMesures = DataService::getAllMeasurements();
     
     map<string, double> sommesPonderees;  
     map<string, double> sommePoids;      
-    for (const auto& capteur : tousCapteurs){
+    for (const vector<Sensor*>::value_type& capteur : tousCapteurs){
         if (capteur == nullptr) {
             continue;
         }
         if (capteur->getReliability() == true){
             double distance = capteur->calculateDistance(lat,lon);
-            double poids = (distance < 0.1) ? 100 : 1 / (distance * distance);
-            for(const auto& mesure : toutesMesures){
+            double poids = (distance < 0.1) ? 100 : (1 / (distance * distance));
+            for(const vector<Measurement*>::value_type& mesure : toutesMesures){
                 if(mesure != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID() && mesure->getMeasureDate() == time){
                     string attrID = mesure->getAttribute()->getAttributeID();
                     sommesPonderees[attrID] += (mesure->getValue() * poids);
@@ -62,7 +67,7 @@ double StatisticsService::calculateAirQuality(const User& user, double lat, doub
     }
     
     map<string, double> moyennesEstimees;
-    for (const auto& pair : sommesPonderees) {
+    for (const map<string, double>::value_type& pair : sommesPonderees) {
         string attributeID = pair.first;
         double sommePonderee = pair.second;
         
@@ -83,6 +88,11 @@ double StatisticsService::calculateAirQuality(const User& user, double lat, doub
 }
 
 double StatisticsService::calculateAreaMean(const User& user, double lat, double lon, double radius, TimeRange period){
+// Algorithme :
+// 1. Sélectionner les capteurs fiables situés dans le rayon demandé.
+// 2. Récupérer les mesures de ces capteurs dans la période fournie.
+// 3. Calculer la moyenne de chaque polluant.
+// 4. Convertir ces moyennes en indice ATMO final.
     //le temps de début
     auto tempsDebut = chrono::high_resolution_clock::now();
     
@@ -147,6 +157,11 @@ double StatisticsService::calculateAreaMean(const User& user, double lat, double
 
 
 vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, string targetSensor, TimeRange period){
+// Algorithme :
+// 1. Extraire les mesures du capteur cible sur la période.
+// 2. Comparer chaque autre capteur fiable sur les mêmes horodatages et attributs.
+// 3. Calculer un écart moyen par capteur.
+// 4. Trier les capteurs par écart croissant pour obtenir les plus similaires.
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     //Récupération de toutes les données
@@ -241,6 +256,10 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
 
 
 double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerID){
+// Algorithme :
+// 1. Récupérer le purificateur et sa période de fonctionnement.
+// 2. Comparer la qualité de l'air avant et pendant l'activité pour des rayons croissants.
+// 3. Conserver le plus grand rayon dont l'amélioration reste supérieure au seuil choisi.
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     AirCleaner* cleaner = DataService::getCleanerById(cleanerID);
@@ -293,6 +312,11 @@ double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerI
 
 
 string StatisticsService::getZoneStatistic(const User& user, double lat, double lon, double radius, TimeRange period){
+// Algorithme :
+// 1. Récupérer les capteurs de la zone et les mesures de la période.
+// 2. Calculer une moyenne AQI globale et identifier les extrêmes.
+// 3. Déterminer le polluant dominant par moyenne.
+// 4. Renvoyer un résumé textuel complet de la zone.
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // Get all sensors in the area
@@ -376,6 +400,11 @@ string StatisticsService::getZoneStatistic(const User& user, double lat, double 
 
 
 double StatisticsService::viewCleanerImpact(const User& user, string cleanerID, TimeRange period){
+// Algorithme :
+// 1. Localiser le purificateur et définir un rayon d'effet par défaut.
+// 2. Séparer la période en avant et après activation.
+// 3. Calculer la qualité moyenne de l'air sur chaque sous-période.
+// 4. Retourner la différence d'impact entre avant et après.
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     AirCleaner* cleaner = DataService::getCleanerById(cleanerID);
@@ -429,6 +458,11 @@ double StatisticsService::viewCleanerImpact(const User& user, string cleanerID, 
 // Utilise l'interpolation spatiale basée sur les capteurs voisins
 // Cette fonction est similaire à calculateAirQuality mais sans paramètre User
 double StatisticsService::estimateAirQuality(double lat, double lon){
+// Algorithme :
+// 1. Récupérer tous les capteurs et toutes les mesures du système.
+// 2. Ne garder que les capteurs fiables.
+// 3. Pondérer chaque mesure par la distance au point étudié.
+// 4. Convertir les moyennes pondérées en indice ATMO estimé.
     // Enregistrer le temps de début
     auto tempsDebut = chrono::high_resolution_clock::now();
     
@@ -483,6 +517,11 @@ double StatisticsService::estimateAirQuality(double lat, double lon){
 
     
 double StatisticsService::calculateLocalAQI(const User& user, double lat, double lon, double radius, TimeRange period){
+// Algorithme :
+// 1. Récupérer le capteur le plus proche dans le rayon demandé.
+// 2. Filtrer ses mesures sur la période choisie.
+// 3. Calculer la moyenne de chaque polluant localement.
+// 4. Convertir ces moyennes en indice ATMO local.
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // 1. Récupération du capteur le plus proche (normalement à distance ~0)
@@ -554,6 +593,10 @@ double StatisticsService::calculateLocalAQI(const User& user, double lat, double
 
 
 double StatisticsService::convertirVersIndiceATMO(map<string, double> moyennesEstimees) {
+// Algorithme :
+// 1. Convertir chaque polluant reconnu en indice ATMO élémentaire via ses seuils.
+// 2. Conserver le score le plus défavorable.
+// 3. Retourner l'indice global correspondant au pire polluant.
     double indiceMax = 0;
 
     // Pour chaque polluant (O3, NO2, SO2, PM10)
@@ -675,7 +718,7 @@ double StatisticsService::convertirVersIndiceATMO(map<string, double> moyennesEs
 //-------------------------------------------- Constructeurs - destructeur
 StatisticsService::StatisticsService ( )
 // Algorithme :
-//
+// Constructeur sans état, aucune initialisation spécifique.
 {
 #ifdef MAP
     cout << "Appel au constructeur de <Xxx>" << endl;
@@ -685,7 +728,7 @@ StatisticsService::StatisticsService ( )
 
 StatisticsService::~StatisticsService ( )
 // Algorithme :
-//
+// Destruction sans libération particulière, la classe ne possède pas d'état.
 {
 #ifdef MAP
     cout << "Appel au destructeur de <Xxx>" << endl;
