@@ -35,7 +35,7 @@ PrivateUser* AuthenticateService::loginPrivate(DataContainer& dc, string& id)
     else {
         return nullptr;
     }
-}
+} //----- Fin de loginPrivate
 
 Provider* AuthenticateService::loginProvider(DataContainer& dc, string& id)
 {
@@ -48,7 +48,7 @@ Provider* AuthenticateService::loginProvider(DataContainer& dc, string& id)
     else {
         return nullptr;
     }
-}
+} //----- Fin de loginProvider
 
 GovernmentAgency* AuthenticateService::loginGovernmentAgency(string& id)
 {
@@ -58,10 +58,8 @@ GovernmentAgency* AuthenticateService::loginGovernmentAgency(string& id)
     else {
         return nullptr;
     }
-}
+} //----- Fin de loginGovernmentAgency
     
-
-
 //-------------------------------------------- Constructeurs - destructeur
 AuthenticateService::AuthenticateService()
 {

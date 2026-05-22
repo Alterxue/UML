@@ -22,7 +22,7 @@
 
 //------------------------------------------------------------------------
 // Rôle de la classe <AuthenticateService>
-// Responsable de fournir une instance de `User` (ou d'une classe dérivée)
+// Responsable de fournir une instance de User (ou d'une classe dérivée)
 // correspondant à un id et à un Role donnés. Si pas d'id reconnu renvoie
 // un pointeur null 
 //------------------------------------------------------------------------
@@ -50,8 +50,12 @@ public:
 
 //-------------------------------------------- Constructeurs - destructeur
     AuthenticateService();
+    // Mode d'emploi :
+    // Constructeur de la classe AuthenticateService
 
     ~AuthenticateService();
+    // Mode d'emploi :
+    // Destructeur de la classe AuthenticateService
     
 //------------------------------------------------------------------ PRIVE
 protected:

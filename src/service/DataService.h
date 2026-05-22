@@ -46,16 +46,16 @@ public:
     // Permet d'accéder au DataContainer global, utilisé principalement pour les tests unitaires
 
     // =============== Requête de sur les capteurs ===============
-    static std::vector<Sensor*> getAllSensors();
-    // Mode d'emploi :
-    // Renvoie tous les capteurs présents dans le DataContainer, sans filtrage.
-
     static std::vector<Sensor*> getSensors(const User& user);
     // Mode d'emploi :
     // Renvoie les capteurs visibles pour un utilisateur donné.
     // - Agence gouvernementale : tous les capteurs
     // - Utilisateur privé : ses capteurs
     // - Autre rôle : ensemble vide
+
+    static std::vector<Sensor*> getAllSensors();
+    // Mode d'emploi :
+    // Renvoie tous les capteurs présents dans le DataContainer, sans filtrage.
 
     static std::vector<Sensor*> getSensorsByUser(const std::string& userID);
     // Mode d'emploi :
@@ -67,21 +67,21 @@ public:
     // Renvoie les capteurs situés dans un rayon donné autour d'une position géographique
     
     // =============== Requêtes sur les mesures ===============
-    static std::vector<Measurement*> getAllMeasurements();
-    // Mode d'emploi :
-    // Renvoie toutes les mesures de tous les capteurs, sans filtrage
-
     static std::vector<Measurement*> getMeasurements(const User& user);
     // Mode d'emploi :
     // Renvoie les mesures visibles pour un utilisateur donné, en fonction de ses capteurs accessibles
     
-    static std::vector<Measurement*> getMeasurementsBySensor(const std::string& sensorID);
+    static std::vector<Measurement*> getAllMeasurements();
     // Mode d'emploi :
-    // Renvoie la liste des mesures associées au capteur identifié par sensorID
+    // Renvoie toutes les mesures de tous les capteurs, sans filtrage
 
     static std::vector<Measurement*> getUserHistory(const PrivateUser& user);
     // Mode d'emploi :
     // Renvoie l'historique des contributions du PrivateUser à partir de ses capteurs
+
+    static std::vector<Measurement*> getMeasurementsBySensor(const std::string& sensorID);
+    // Mode d'emploi :
+    // Renvoie la liste des mesures associées au capteur identifié par sensorID
     
     static void addMeasurement(DateTime measureDate, Sensor* sensor, Attribute* attribute, double value);
     // Mode d'emploi :

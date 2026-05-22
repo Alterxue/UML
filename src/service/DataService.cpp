@@ -46,7 +46,7 @@ void DataService::initializeDataContainer(DataContainer* container)
         return;
     }
     dataContainer = container;
-    cout << "DataService initialized with DataContainer" << endl;
+    cout << "DataService initialisé avec DataContainer" << endl;
 } //----- Fin de initializeDataContainer
 
 DataContainer* DataService::getDataContainer() 
@@ -55,28 +55,12 @@ DataContainer* DataService::getDataContainer()
 } //----- Fin de getDataContainer
 
 // =============== Requête de sur les capteurs ===============
-vector<Sensor*> DataService::getAllSensors() 
-{
-    vector<Sensor*> result;
-    if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
-        return result;
-    }
-    const map<string, Sensor*>& sensors = dataContainer->getAllSensors(); 
-    result.reserve(sensors.size()); // Préallouer de la mémoire pour éviter les reallocations
-    for (const map<string, Sensor*>::value_type& pair : sensors) {
-        Sensor* ptr = pair.second;
-        if (ptr != nullptr) result.push_back(ptr);
-    }
-    return result;
-} //----- Fin de getAllSensors
-
 vector<Sensor*> DataService::getSensors(const User& user) 
 {
     vector<Sensor*> result;
 
     if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
+        cout << "ERREUR: DataContainer non initialisé" << endl;
         return result;
     }
 
@@ -89,6 +73,22 @@ vector<Sensor*> DataService::getSensors(const User& user)
     }
     return result;
 } //----- Fin de getSensors
+
+vector<Sensor*> DataService::getAllSensors() 
+{
+    vector<Sensor*> result;
+    if (dataContainer == nullptr) {
+        cout << "ERREUR: DataContainer non initialisé" << endl;
+        return result;
+    }
+    const map<string, Sensor*>& sensors = dataContainer->getAllSensors(); 
+    result.reserve(sensors.size()); // Préallouer de la mémoire pour éviter les reallocations
+    for (const map<string, Sensor*>::value_type& pair : sensors) {
+        Sensor* ptr = pair.second;
+        if (ptr != nullptr) result.push_back(ptr);
+    }
+    return result;
+} //----- Fin de getAllSensors
 
 vector<Sensor*> DataService::getSensorsByUser(const string& userID)
 {
@@ -130,12 +130,35 @@ vector<Sensor*> DataService::getSensorsInArea(double lat, double lon, double rad
 } //----- Fin de getSensorsInArea
 
 // =============== Requêtes sur les mesures ===============
+vector<Measurement*> DataService::getMeasurements(const User& user) 
+{
+    if (dataContainer == nullptr) {
+        cout << "ERREUR: DataContainer non initialisé" << endl;
+        return vector<Measurement*>();
+    }
+    
+    // Si agence gouvernementale, accès à toutes les mesures
+    if (user.getRole() == GOVERNMENT_AGENCY) {
+        return getAllMeasurements();
+    }
+    
+    // Si utilisateur privé, accès à l'historique de ses contributions
+    if (user.getRole() == PRIVATE_USER) { 
+        PrivateUser* privateUser = dataContainer->getPrivateUserByID(user.getUserID());
+        if (privateUser != nullptr) {
+            return getUserHistory(*privateUser);
+        }   
+    }
+
+    return vector<Measurement*>();
+} //----- Fin de getMeasurements
+
 vector<Measurement*> DataService::getAllMeasurements() 
 {
     vector<Measurement*> result;
     
     if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
+        cout << "ERREUR: DataContainer non initialisé" << endl;
         return result;
     }
     
@@ -150,63 +173,6 @@ vector<Measurement*> DataService::getAllMeasurements()
     
     return result;
 } //----- Fin de getAllMeasurements
-
-vector<Measurement*> DataService::getMeasurements(const User& user) 
-{
-    vector<Measurement*> result;
-    
-    if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
-        return result;
-    }
-    
-    // Si agence gouvernementale, retourner toutes les mesures
-    if (user.getRole() == GOVERNMENT_AGENCY) {
-        return getAllMeasurements();
-    }
-    
-    // Si PrivateUser, retourner les mesures de ses capteurs
-    if (user.getRole() == PRIVATE_USER) { 
-        const vector<Sensor*>& userSensors = getSensorsByUser(user.getUserID());
-        for (const vector<Sensor*>::value_type& sensor : userSensors) {
-            if (sensor != nullptr) {
-                const vector<Measurement*>& sensorMeasurements = sensor->getMeasurements();
-                for (const vector<Measurement*>::value_type& measurement : sensorMeasurements) {
-                    if (measurement != nullptr) {
-                        result.push_back(measurement);
-                    }
-                }
-            }
-        }   
-    }
-    return result;
-} //----- Fin de getMeasurements
-
-vector<Measurement*> DataService::getMeasurementsBySensor(const string& sensorID) 
-{
-    vector<Measurement*> result;
-    
-    if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
-        return result;
-    }
-    
-    const map<string, vector<Measurement*>>& measurementsBySensor = dataContainer->getAllMeasurementsBySensor();
-    map<string, vector<Measurement*>>::const_iterator it = measurementsBySensor.find(sensorID);
-
-    if (it != measurementsBySensor.end()) {
-        for (Measurement* measurement : it->second) {
-            if (measurement != nullptr) {
-                result.push_back(measurement);
-            }
-        }
-    } 
-    else {
-        cout << "AVERTISSEMENT: Capteur " << sensorID << " non trouvé." << endl;
-    }
-    
-    return result;
-} //----- Fin de getMeasurementsBySensor
 
 vector<Measurement*> DataService::getUserHistory(const PrivateUser& user)
 {
@@ -234,6 +200,32 @@ vector<Measurement*> DataService::getUserHistory(const PrivateUser& user)
     return result;
 } //----- Fin de getUserHistory
 
+vector<Measurement*> DataService::getMeasurementsBySensor(const string& sensorID) 
+{
+    vector<Measurement*> result;
+    
+    if (dataContainer == nullptr) {
+        cout << "ERREUR: DataContainer non initialisé" << endl;
+        return result;
+    }
+    
+    const map<string, vector<Measurement*>>& measurementsBySensor = dataContainer->getAllMeasurementsBySensor();
+    map<string, vector<Measurement*>>::const_iterator it = measurementsBySensor.find(sensorID);
+
+    if (it != measurementsBySensor.end()) {
+        for (Measurement* measurement : it->second) {
+            if (measurement != nullptr) {
+                result.push_back(measurement);
+            }
+        }
+    } 
+    else {
+        cout << "AVERTISSEMENT: Capteur " << sensorID << " non trouvé." << endl;
+    }
+    
+    return result;
+} //----- Fin de getMeasurementsBySensor
+
 // Add a new measurement
 void DataService::addMeasurement(DateTime measureDate, Sensor* sensor, Attribute* attribute, double value) {
     if (dataContainer == nullptr) {
@@ -258,7 +250,7 @@ vector<PrivateUser*> DataService::getAllPrivateUsers() {
     vector<PrivateUser*> result;
 
     if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
+        cout << "ERREUR: DataContainer non initialisé" << endl;
         return result;
     }
 
@@ -276,7 +268,7 @@ vector<PrivateUser*> DataService::getAllPrivateUsers() {
 // =============== Requêtes sur les AirCleaners ===============
 AirCleaner* DataService::getCleanerById(const string& cleanerID) {
     if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
+        cout << "ERREUR: DataContainer non initialisé" << endl;
         return nullptr;
     }
 
@@ -305,21 +297,20 @@ void DataService::reloadAllData() {
 
 void DataService::saveAllData() {
     if (dataContainer == nullptr) {
-        cout << "ERROR: DataContainer not initialized" << endl;
+        cout << "ERREUR: DataContainer non initialisé" << endl;
         return;
     }
 
-    cout << "Saving all data to CSV files..." << endl;
+    cout << "Sauvegarde des données dans les fichiers CSV..." << endl;
 
-    // A IMPLEMENTER: This requires implementing serialization methods in CSVDataManager
-    // CSVDataManager csvDataManager;
-    // csvDataManager.saveSensors(*dataContainer);
-    // csvDataManager.saveUsers(*dataContainer);
-    // csvDataManager.saveCleaners(*dataContainer);
-    // csvDataManager.saveProviders(*dataContainer);
-    // csvDataManager.saveMeasurements(*dataContainer);
+    CSVDataManager csvDataManager;
+    csvDataManager.saveSensors(*dataContainer);
+    csvDataManager.saveUsers(*dataContainer);
+    csvDataManager.saveCleaners(*dataContainer);
+    csvDataManager.saveProviders(*dataContainer);
+    csvDataManager.saveMeasurements(*dataContainer);
 
-    cout << "Data saving completed (functionality to be implemented)" << endl;
+    cout << "Sauvegarde des données terminée" << endl;
 }
 // Update sensor reliability status
 void DataService::updateSensorStatus(const string& sensorID, bool isReliable) {
