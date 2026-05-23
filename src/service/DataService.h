@@ -9,7 +9,6 @@
 //---------- Interface de la classe <DataService> (fichier DataService.h) ----------------
 #if ! defined ( DATASERVICE_H )
 #define DATASERVICE_H
-using namespace std;
 #include <vector>
 #include <ctime>
 #include <string>
@@ -91,6 +90,10 @@ public:
     static std::vector<PrivateUser*> getAllPrivateUsers();
     
     // =============== Requêtes sur les AirCleaners ===============
+    static std::vector<AirCleaner*> getAllAirCleaners();
+    // Mode d'emploi :
+    // Renvoie tous les air cleaners présents dans le DataContainer, sans filtrage.
+
     static AirCleaner* getCleanerById(const std::string& cleanerID);
     
     // =============== Requêtes de maintenance ===============

@@ -71,7 +71,6 @@ int main(){
         cout << "1. Utilisateur privé" << endl;
         cout << "2. Fournisseur" << endl;
         cout << "3. Agence gouvernementale" << endl;
-        cout << "Vous êtes un : ";
         cin >> roleChoice;
     
         string userID;
@@ -103,8 +102,9 @@ int main(){
         cout << "3. Calculer la qualité de l'air dans une zone sur une période donnée" << endl;
         cout << "4. Comparer des capteurs par similarité" << endl;
         cout << "5. Calculer la qualité de l'air globale à une position et date données" << endl;
-        cout << "6. Menu spécial" << endl;
-        cout << "7. Quitter" << endl;
+        cout << "6. Consulter les purificateurs" << endl;
+        cout << "7. Menu spécial" << endl;
+        cout << "8. Quitter" << endl;
         cout << "Votre choix : ";
         cin >> choice;
 
@@ -115,12 +115,6 @@ int main(){
                 string sensorID;
                 cin >> sensorID;
 
-                Sensor* sensor = dataContainer.getSensorByID(sensorID);
-                User* currentUser = Application.getCurrentUser();
-                if (sensor == nullptr) {
-                    cout << "Capteur non trouve, veuillez reessayer." << endl;
-                    break;
-                }
                 DateTime startTime;
                 DateTime endTime;
                 if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
@@ -130,35 +124,71 @@ int main(){
                     break;
                 }
 
-                double radiusKm = 0.0;
-                cout << "Rayon (km): ";
-                cin >> radiusKm;
-
-                double radiusMeters = radiusKm * 1000.0;
                 TimeRange period(startTime, endTime);
-                double aqi = StatisticsService::calculateLocalAQI(*currentUser, sensor->getLattitude(), sensor->getLongitude(), radiusMeters, period);
-                cout << "AQI local: " << aqi << endl;
+                string report = StatisticsService::analyzeSensorData(sensorID, period);
+                cout << report << endl;
                 break;
             }
             case 2:
             {
+                User* currentUser = Application.getCurrentUser();
+                if (currentUser == nullptr) {
+                    cout << "Utilisateur non initialise." << endl;
+                    break;
+                }
+
                 double lat = 0.0;
                 double lon = 0.0;
+                double radius = 0.0;
                 cout << "Latitude: ";
                 cin >> lat;
                 cout << "Longitude: ";
                 cin >> lon;
+                cout << "Rayon (km): ";
+                cin >> radius;
 
                 DateTime time;
                 if (!readDateTime("Date (YYYY-MM-DD HH:MM:SS): ", time)) {
                     break;
                 }
 
-                double aqi = StatisticsService::calculateAirQuality(lat, lon, time);
-                cout << "AQI calcule: " << aqi << endl;
+                double aqi = StatisticsService::calculateAreaMean(*currentUser, lat, lon, radius, time);
+                cout << "index ATMO calculé: " << aqi << endl;
                 break;
             }
             case 3:
+            {
+                User* currentUser = Application.getCurrentUser();
+                if (currentUser == nullptr) {
+                    cout << "Utilisateur non initialise." << endl;
+                    break;
+                }
+
+                double lat = 0.0;
+                double lon = 0.0;
+                double radius = 0.0;
+                cout << "Latitude: ";
+                cin >> lat;
+                cout << "Longitude: ";
+                cin >> lon;
+                cout << "Rayon (km): ";
+                cin >> radius;
+
+                DateTime startTime;
+                DateTime endTime;
+                if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
+                    break;
+                }
+                if (!readDateTime("Fin (YYYY-MM-DD HH:MM:SS): ", endTime)) {
+                    break;
+                }
+
+                TimeRange period(startTime, endTime);
+                double aqi = StatisticsService::calculateAreaMean(*currentUser, lat, lon, radius, period);
+                cout << "index ATMO moyen sur la periode: " << aqi << endl;
+                break;
+            }
+            case 4:
             {
                 User* currentUser = Application.getCurrentUser();
                 if (currentUser == nullptr) {
@@ -184,14 +214,14 @@ int main(){
                 if (similaires.empty()) {
                     cout << "Aucun capteur similaire trouve." << endl;
                 } else {
-                    cout << "Capteurs similaires:" << endl;
-                    for (const auto& sensor : similaires) {
-                        cout << "- " << sensor.getSensorID() << endl;
+                    cout << "Top 3 capteurs les plus similaires:" << endl;
+                    for (size_t i = 0; i < similaires.size() && i < 3; ++i) {
+                        cout << i+1 << ". " << similaires[i].getSensorID() << endl;
                     }
                 }
                 break;
             }
-            case 4:
+            case 5:
             {
                 double lat = 0.0;
                 double lon = 0.0;
@@ -200,13 +230,48 @@ int main(){
                 cout << "Longitude: ";
                 cin >> lon;
 
-                double aqi = StatisticsService::estimateAirQuality(lat, lon);
-                cout << "AQI estime: " << aqi << endl;
+                DateTime time;
+                if (!readDateTime("Date (YYYY-MM-DD HH:MM:SS): ", time)) {
+                    break;
+                }
+
+                double aqi = StatisticsService::calculateAirQuality(lat, lon, time);
+                cout << "index ATMO global: " << aqi << endl;
                 break;
             }
-            case 5:
-            {} 
             case 6:
+            {
+                vector<AirCleaner*> cleaners = DataService::getAllAirCleaners();
+                if (cleaners.empty()) {
+                    cout << "Aucun purificateur disponible." << endl;
+                    break;
+                }
+
+                cout << "Liste des purificateurs :" << endl;
+                for (const auto* cleaner : cleaners) {
+                    if (cleaner == nullptr) {
+                        continue;
+                    }
+
+                    Provider* provider = cleaner->getProvider();
+                    TimeRange workingPeriod = cleaner->getWorkingPeriod();
+
+                    cout << "- " << cleaner->getAirCleanerID()
+                         << " | position=(" << cleaner->getLattitude() << ", " << cleaner->getLongitude() << ")"
+                         << " | debut=" << formatDateTime(workingPeriod.getStart())
+                         << " | fin=" << formatDateTime(workingPeriod.getEnd())
+                         << " | fournisseur=";
+
+                    if (provider != nullptr) {
+                        cout << provider->getUserID();
+                    } else {
+                        cout << "non renseigne";
+                    }
+                    cout << endl;
+                }
+                break;
+            }
+            case 7:
                 if (roleChoice == 1) {
                     int particularChoice;
                     do {
@@ -222,19 +287,18 @@ int main(){
 
                         switch (particularChoice) {
                             case 6:
+                            {
+                                if (Application.getCurrentPrivateUser()->getIsFraudulent() == true) {
+                                    cout << "ATTENTION : Vous êtes identifié comme un utilisateur frauduleux." << endl;
+                                }
                                 cout << "Votre solde de points : "
                                      << Application.getCurrentPrivateUser()->getPoints() << " points" << endl;
                                 break;
+                            }
                             case 7:
                             {
-                                double lat = 0.0;
-                                double lon = 0.0;
                                 double radius = 0.0;
-                                cout << "Latitude: ";
-                                cin >> lat;
-                                cout << "Longitude: ";
-                                cin >> lon;
-                                cout << "Rayon (km): ";
+                                cout << "Rayon (km) autour de votre position (ex: 5.0): ";
                                 cin >> radius;
 
                                 DateTime startTime;
@@ -247,15 +311,15 @@ int main(){
                                 }
 
                                 TimeRange period(startTime, endTime);
-                                double aqi = StatisticsService::calculateAreaMean(*Application.getCurrentPrivateUser(), lat, lon, radius, period);
-                                cout << "AQI moyen: " << aqi << endl;
+                                double aqi = StatisticsService::calculateUserZoneAQI(*Application.getCurrentPrivateUser(), radius, period);
+                                cout << "AQI moyen de votre zone: " << aqi << endl;
                                 break;
                             }
                             case 8:
                             {
-                                string targetSensorID;
-                                cout << "ID du capteur cible: ";
-                                cin >> targetSensorID;
+                                double radius = 0.0;
+                                cout << "Rayon (km) autour de votre position (ex: 5.0): ";
+                                cin >> radius;
 
                                 DateTime startTime;
                                 DateTime endTime;
@@ -267,13 +331,22 @@ int main(){
                                 }
 
                                 TimeRange period(startTime, endTime);
-                                vector<Sensor> similaires = StatisticsService::compareSensorsBySimilarity(*Application.getCurrentPrivateUser(), targetSensorID, period);
-                                if (similaires.empty()) {
-                                    cout << "Aucun capteur similaire trouve." << endl;
+                                map<string, vector<Sensor>> results = StatisticsService::compareNeighborhoodSensors(*Application.getCurrentPrivateUser(), 0.0, 0.0, radius, period);
+                                if (results.empty()) {
+                                    cout << "Aucun capteur trouve dans le voisinage." << endl;
                                 } else {
-                                    cout << "Capteurs similaires:" << endl;
-                                    for (const auto& sensor : similaires) {
-                                        cout << "- " << sensor.getSensorID() << endl;
+                                    cout << "Resultats de comparaison du voisinage :" << endl;
+                                    for (const auto& entry : results) {
+                                        cout << "Capteur cible: " << entry.first << endl;
+                                        const auto& simil = entry.second;
+                                        if (simil.empty()) {
+                                            cout << "  Aucun capteur similaire trouve." << endl;
+                                        } else {
+                                            cout << "  Capteurs similaires :" << endl;
+                                            for (const auto& s : simil) {
+                                                cout << "   - " << s.getSensorID() << endl;
+                                            }
+                                        }
                                     }
                                 }
                                 break;
@@ -300,6 +373,24 @@ int main(){
                                 Attribute* attribute = dataContainer.getAttributeByID(attributeID);
                                 if (sensor == nullptr || attribute == nullptr) {
                                     cout << "Capteur ou attribut invalide." << endl;
+                                    break;
+                                }
+
+                                // Vérifier que le capteur appartient à l'utilisateur privé courant
+                                PrivateUser* currentPrivate = Application.getCurrentPrivateUser();
+                                bool belongsToUser = false;
+                                if (currentPrivate != nullptr) {
+                                    const vector<Sensor*>& userSensors = currentPrivate->getSensorsList();
+                                    for (Sensor* s : userSensors) {
+                                        if (s != nullptr && s->getSensorID() == sensor->getSensorID()) {
+                                            belongsToUser = true;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (!belongsToUser) {
+                                    cout << "Erreur: ce capteur n'appartient pas a votre compte." << endl;
                                     break;
                                 }
 
@@ -335,11 +426,10 @@ int main(){
                     do {
                         cout << "-- MENU FOURNISSEUR --" << endl;
                         cout << "6. Voir l'impact d'un cleaner" << endl;
-                        cout << "7. Calculer la moyenne AQI d'une zone" << endl;
-                        cout << "8. Comparer les capteurs par similarité" << endl;
-                        cout << "9. Analyser le rayon de purification" << endl;
-                        cout << "10. Consulter les statistiques de zone" << endl;
-                        cout << "11. Retour au menu principal" << endl;  
+                        cout << "7. Comparer les capteurs par similarité" << endl;
+                        cout << "8. Analyser le rayon de purification" << endl;
+                        cout << "9. Consulter les statistiques de zone" << endl;
+                        cout << "10. Retour au menu principal" << endl;  
                         cout << "Votre choix : ";
                         cin >> particularChoice;                      
                         switch (particularChoice) {
@@ -390,38 +480,6 @@ int main(){
                                     break;
                                 }
 
-                                double lat = 0.0;
-                                double lon = 0.0;
-                                double radius = 0.0;
-                                cout << "Latitude: ";
-                                cin >> lat;
-                                cout << "Longitude: ";
-                                cin >> lon;
-                                cout << "Rayon (km): ";
-                                cin >> radius;
-
-                                DateTime startTime;
-                                DateTime endTime;
-                                if (!readDateTime("Debut (YYYY-MM-DD HH:MM:SS): ", startTime)) {
-                                    break;
-                                }
-                                if (!readDateTime("Fin (YYYY-MM-DD HH:MM:SS): ", endTime)) {
-                                    break;
-                                }
-
-                                TimeRange period(startTime, endTime);
-                                double aqi = StatisticsService::calculateAreaMean(*currentProvider, lat, lon, radius, period);
-                                cout << "AQI moyen de la zone : " << aqi << endl;
-                                break;
-                            }
-                            case 8:
-                            {
-                                Provider* currentProvider = Application.getCurrentProvider();
-                                if (currentProvider == nullptr) {
-                                    cout << "Fournisseur non initialise." << endl;
-                                    break;
-                                }
-
                                 string targetSensorID;
                                 cout << "ID du capteur cible : ";
                                 cin >> targetSensorID;
@@ -447,7 +505,7 @@ int main(){
                                 }
                                 break;
                             }
-                            case 9:
+                            case 8:
                             {
                                 Provider* currentProvider = Application.getCurrentProvider();
                                 if (currentProvider == nullptr) {
@@ -463,7 +521,7 @@ int main(){
                                 cout << "Rayon de purification utile : " << rayon << " km" << endl;
                                 break;
                             }
-                            case 10:
+                            case 9:
                             {
                                 Provider* currentProvider = Application.getCurrentProvider();
                                 if (currentProvider == nullptr) {
@@ -495,12 +553,12 @@ int main(){
                                 cout << statistics << endl;
                                 break;
                             }
-                            case 11:
+                            case 10:
                                 break;
                             default:
                                 cout << "Choix invalide, veuillez réessayer." << endl;
                             }
-                    }while(particularChoice != 11);
+                    }while(particularChoice != 10);
                     
                 } else if (roleChoice == 3) {
                     int particularChoice;
@@ -578,12 +636,12 @@ int main(){
                     } while(particularChoice != 10);
                 }
                 break; 
-            case 6:
+            case 8:
                 cout << "Merci d'avoir utilisé AirWatcherSystem !" << endl;
                 break;
             default:
                 cout << "Choix invalide, veuillez réessayer."<<endl;}
-    } while (choice != 6);
+    } while (choice != 8);
 
     DataService::saveAllData();
     

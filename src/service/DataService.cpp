@@ -266,6 +266,25 @@ vector<PrivateUser*> DataService::getAllPrivateUsers() {
 } //----- Fin de getAllPrivateUsers
 
 // =============== Requêtes sur les AirCleaners ===============
+vector<AirCleaner*> DataService::getAllAirCleaners() {
+    vector<AirCleaner*> result;
+
+    if (dataContainer == nullptr) {
+        cout << "ERREUR: DataContainer non initialisé" << endl;
+        return result;
+    }
+
+    const map<string, AirCleaner*>& airCleaners = dataContainer->getAllAirCleaners();
+    result.reserve(airCleaners.size());
+    for (const map<string, AirCleaner*>::value_type& pair : airCleaners) {
+        if (pair.second != nullptr) {
+            result.push_back(pair.second);
+        }
+    }
+
+    return result;
+} //----- Fin de getAllAirCleaners
+
 AirCleaner* DataService::getCleanerById(const string& cleanerID) {
     if (dataContainer == nullptr) {
         cout << "ERREUR: DataContainer non initialisé" << endl;

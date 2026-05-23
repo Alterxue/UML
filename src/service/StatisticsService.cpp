@@ -21,6 +21,7 @@ using namespace std;
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <sstream>
 #include "../model/Sensor.h"
 #include "../model/TimeRange.h"
@@ -286,6 +287,55 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
     return listeTriee;
 } //----- Fin de compareSensorsBySimilarity
 
+map<string, vector<Sensor>> StatisticsService::compareNeighborhoodSensors(const User& user, double lat, double lon, double radius, TimeRange period)
+// Algorithme :
+// 1. Récupérer les capteurs dans la zone via DataService::getSensorsInArea.
+// 2. Pour chaque capteur fiable trouvé, appeler compareSensorsBySimilarity(user, sensorID, period).
+// 3. Retourner une map associant chaque capteur cible à sa liste de capteurs similaires.
+{
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
+
+    std::map<std::string, std::vector<Sensor>> result;
+    // Calculer le centre à partir des capteurs de l'utilisateur (même logique que calculateUserZoneAQI)
+    vector<Sensor*> userSensors = DataService::getSensors(user);
+    if (userSensors.empty()) {
+        return result;
+    }
+    double sumLat = 0.0;
+    double sumLon = 0.0;
+    int count = 0;
+    for (Sensor* s : userSensors) {
+        if (s != nullptr) {
+            sumLat += s->getLattitude();
+            sumLon += s->getLongitude();
+            ++count;
+        }
+    }
+    if (count == 0) return result;
+    double centerLat = sumLat / count;
+    double centerLon = sumLon / count;
+
+    vector<Sensor*> liste = DataService::getSensorsInArea(centerLat, centerLon, radius);
+    if (liste.empty()) {
+        return result;
+    }
+
+    for (Sensor* s : liste) {
+        if (s == nullptr) continue;
+        if (s->getReliability() == false) continue; // ignorer les capteurs non fiables
+
+        std::string targetID = s->getSensorID();
+        std::vector<Sensor> similaires = compareSensorsBySimilarity(user, targetID, period);
+        result[targetID] = similaires;
+    }
+
+    chrono::high_resolution_clock::time_point tempsFin = chrono::high_resolution_clock::now();
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+    cout << "Temps d'exécution compareNeighborhoodSensors : " << duree.count() << " ms" << endl;
+
+    return result;
+} //----- Fin de compareNeighborhoodSensors
+
 double StatisticsService::calculateAirQuality(double lat, double lon, const DateTime& time)
 // Algorithme :
 // 1. Récupérer tous les capteurs et toutes les mesures du système.
@@ -467,20 +517,103 @@ double StatisticsService::convertirVersIndiceATMO(map<string, double> moyennesEs
     return indiceMax;
 } //----- Fin de convertirVersIndiceATMO
 
-
-
-
-
-double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerID){
+double StatisticsService::calculateUserZoneAQI(const User& user, double radius, const TimeRange& period)
 // Algorithme :
-// 1. Récupérer le purificateur et sa période de fonctionnement.
-// 2. Comparer la qualité de l'air avant et pendant l'activité pour des rayons croissants.
-// 3. Conserver le plus grand rayon dont l'amélioration reste supérieure au seuil choisi.
+// 1. Récupérer la liste des capteurs appartenant à l'utilisateur.
+// 2. Calculer un centre approximatif (moyenne des lat/lon des capteurs).
+// 3. Appeler `calculateAreaMean` avec ce centre et le rayon fourni.
+{
+    // Récupération des capteurs de l'utilisateur
+    vector<Sensor*> userSensors = DataService::getSensors(user);
+    if (userSensors.empty()) {
+        return 0.0;
+    }
+
+    double sumLat = 0.0;
+    double sumLon = 0.0;
+    int count = 0;
+    for (Sensor* s : userSensors) {
+        if (s != nullptr) {
+            sumLat += s->getLattitude();
+            sumLon += s->getLongitude();
+            ++count;
+        }
+    }
+    if (count == 0) return 0.0;
+
+    double centerLat = sumLat / count;
+    double centerLon = sumLon / count;
+
+    return calculateAreaMean(user, centerLat, centerLon, radius, period);
+} //----- Fin de calculateUserZoneAQI
+
+double StatisticsService::viewCleanerImpact(const User& user, string cleanerID, TimeRange period)
+// Algorithme :
+// 1. Localiser le purificateur et définir un rayon d'effet par défaut.
+// 2. Séparer la période en avant et après activation.
+// 3. Calculer la qualité moyenne de l'air sur chaque sous-période.
+// 4. Retourner la différence d'impact entre avant et après.
+{
+
     chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
     
     AirCleaner* cleaner = DataService::getCleanerById(cleanerID);
     if (cleaner == nullptr) {
         cout << "ERROR: Cleaner " << cleanerID << " not found" << endl;
+        return 0.0;
+    }
+    double rayonEffet = 5.0;    
+    double cleaner_lat = cleaner->getLattitude();     
+    double cleaner_lon = cleaner->getLongitude();       
+    DateTime cleanerStartTime = cleaner->getWorkingPeriod().getStart();          
+
+    //Identifier les capteurs impactés (dans le rayon d'action du purificateur)
+    vector<Sensor*> tousCapteurs = DataService::getSensors(user);
+    vector<string> capteursImpactes;
+    
+    for (const auto& capteur : tousCapteurs) {
+        if (capteur == nullptr) {
+            continue;
+        }
+        double distance = capteur->calculateDistance(cleaner_lat, cleaner_lon);
+        if (distance <= rayonEffet) {
+            capteursImpactes.push_back(capteur->getSensorID());
+        }
+    }
+    
+    //Séparer la période en "Avant" et "Après" activation
+    TimeRange periodeAvant(period.getStart(), cleanerStartTime);
+    TimeRange periodeApres(cleanerStartTime, period.getEnd());
+    
+    //Calculer la qualité moyenne pour chaque période
+    double qualiteAvant = calculateAreaMean(user, cleaner_lat, cleaner_lon, rayonEffet, periodeAvant);
+    double qualiteApres = calculateAreaMean(user, cleaner_lat, cleaner_lon, rayonEffet, periodeApres);
+    
+    // Calculer l'impact (différence)Sub
+    // Impact positif = amélioration (pollution baisse)
+    double impactRelatif = qualiteAvant - qualiteApres;
+    
+    // Enregistrer le temps de fin
+    auto tempsFin = chrono::high_resolution_clock::now();
+    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+    
+    cout << "Analyse effectuée en : " << duree.count() << " ms" << endl;
+    cout << "Qualité avant: " << qualiteAvant << " | Après: " << qualiteApres << endl;
+    
+    return impactRelatif;
+} //----- Fin de viewCleanerImpact
+
+double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerID)
+// Algorithme :
+// 1. Récupérer le purificateur et sa période de fonctionnement.
+// 2. Comparer la qualité de l'air avant et pendant l'activité pour des rayons croissants.
+// 3. Conserver le plus grand rayon dont l'amélioration reste supérieure au seuil choisi.
+{
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
+    
+    AirCleaner* cleaner = DataService::getCleanerById(cleanerID);
+    if (cleaner == nullptr) {
+        cout << "ERREUR : Purificateur " << cleanerID << " non trouvé" << endl;
         return 0.0;
     }
     TimeRange workingPeriod = cleaner->getWorkingPeriod();
@@ -524,15 +657,15 @@ double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerI
     
     //renvoyer le radius utile
     return rayonImpact;
-}
+} //----- Fin de analyzeCleanerRadius
 
-
-string StatisticsService::getZoneStatistic(const User& user, double lat, double lon, double radius, TimeRange period){
+string StatisticsService::getZoneStatistic(const User& user, double lat, double lon, double radius, TimeRange period)
 // Algorithme :
 // 1. Récupérer les capteurs de la zone et les mesures de la période.
 // 2. Calculer une moyenne AQI globale et identifier les extrêmes.
 // 3. Déterminer le polluant dominant par moyenne.
 // 4. Renvoyer un résumé textuel complet de la zone.
+{
     auto tempsDebut = chrono::high_resolution_clock::now();
     
     // Get all sensors in the area
@@ -612,167 +745,74 @@ string StatisticsService::getZoneStatistic(const User& user, double lat, double 
     cout << "Temps d'exécution getZoneStatistic : " << duree.count() << " ms" << endl;
     
     return resultat;
-}
+} //----- Fin de getZoneStatistic
 
-
-double StatisticsService::viewCleanerImpact(const User& user, string cleanerID, TimeRange period){
+double StatisticsService::calculateLocalAQI(const User& user, double lat, double lon, double radius, TimeRange period)
 // Algorithme :
-// 1. Localiser le purificateur et définir un rayon d'effet par défaut.
-// 2. Séparer la période en avant et après activation.
-// 3. Calculer la qualité moyenne de l'air sur chaque sous-période.
-// 4. Retourner la différence d'impact entre avant et après.
-    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
-    
-    AirCleaner* cleaner = DataService::getCleanerById(cleanerID);
-    if (cleaner == nullptr) {
-        cout << "ERROR: Cleaner " << cleanerID << " not found" << endl;
-        return 0.0;
-    }
-    double rayonEffet = 5.0;    
-    double cleaner_lat = cleaner->getLattitude();     
-    double cleaner_lon = cleaner->getLongitude();       
-    DateTime cleanerStartTime = cleaner->getWorkingPeriod().getStart();          
-
-    //Identifier les capteurs impactés (dans le rayon d'action du purificateur)
-    vector<Sensor*> tousCapteurs = DataService::getSensors(user);
-    vector<string> capteursImpactes;
-    
-    for (const auto& capteur : tousCapteurs) {
-        if (capteur == nullptr) {
-            continue;
-        }
-        double distance = capteur->calculateDistance(cleaner_lat, cleaner_lon);
-        if (distance <= rayonEffet) {
-            capteursImpactes.push_back(capteur->getSensorID());
-        }
-    }
-    
-    //Séparer la période en "Avant" et "Après" activation
-    TimeRange periodeAvant(period.getStart(), cleanerStartTime);
-    TimeRange periodeApres(cleanerStartTime, period.getEnd());
-    
-    //Calculer la qualité moyenne pour chaque période
-    double qualiteAvant = calculateAreaMean(user, cleaner_lat, cleaner_lon, rayonEffet, periodeAvant);
-    double qualiteApres = calculateAreaMean(user, cleaner_lat, cleaner_lon, rayonEffet, periodeApres);
-    
-    // Calculer l'impact (différence)Sub
-    // Impact positif = amélioration (pollution baisse)
-    double impactRelatif = qualiteAvant - qualiteApres;
-    
-    // Enregistrer le temps de fin
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
-    
-    cout << "Analyse effectuée en : " << duree.count() << " ms" << endl;
-    cout << "Qualité avant: " << qualiteAvant << " | Après: " << qualiteApres << endl;
-    
-    return impactRelatif;
-}
-
-
-// Estimer la qualité de l'air à une position précise (même sans capteur)
-// Utilise l'interpolation spatiale basée sur les capteurs voisins
-// Cette fonction est similaire à calculateAirQuality mais sans paramètre User
-double StatisticsService::estimateAirQuality(double lat, double lon){
-// Algorithme :
-// 1. Récupérer tous les capteurs et toutes les mesures du système.
-// 2. Ne garder que les capteurs fiables.
-// 3. Pondérer chaque mesure par la distance au point étudié.
-// 4. Convertir les moyennes pondérées en indice ATMO estimé.
-    // Enregistrer le temps de début
-    auto tempsDebut = chrono::high_resolution_clock::now();
-    
-    // Récupérer tous les capteurs et mesures (sans filtrage par utilisateur
-    vector<Sensor*> tousCapteurs = DataService::getAllSensors();
-    vector<Measurement*> toutesMesures = DataService::getAllMeasurements();
-    
-    // Initialiser les structures pour l'interpolation spatiale (IDW)
-    map<string, double> sommesPonderees;  // {attributeID: somme_valeurs_pondérées}
-    map<string, double> sommePoids;       // {attributeID: somme_poids}
-    
-    //Parcourir les capteurs pour l'interpolation
-    for (const auto& capteur : tousCapteurs) {
-        if (capteur == nullptr) {
-            continue;
-        }
-        // Utiliser uniquement les capteurs fiables
-        if (capteur->getReliability()== true) {
-            // Calculer la distance entre le capteur et le point d'intérêt
-            double distance = capteur->calculateDistance(lat, lon);
-            
-            // Calculer le poids (inverse de la distance au carré)
-            double poids = (distance < 0.1) ? 100.0 : 1.0 / (distance * distance);
-            
-            // Chercher les mesures de ce capteur
-            for (const auto& mesure : toutesMesures) {
-               if (mesure != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID()) {
-                    string attrID = mesure->getAttribute()->getAttributeID();
-                    sommesPonderees[attrID] += (mesure->getValue() * poids);
-                    sommePoids[attrID] += poids;
-                }
-            }
-        }
-    }
-    map<string, double> moyennesEstimees;
-    for (const auto& pair : sommesPonderees) {
-        string attributeID = pair.first;
-        if (sommePoids[attributeID] > 0) {
-            moyennesEstimees[attributeID] = pair.second / sommePoids[attributeID];
-        }
-    }
-    
-    double indiceGlobal = StatisticsService::convertirVersIndiceATMO(moyennesEstimees);
-
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
-    
-    cout << "Temps d'exécution estimateAirQuality : " << duree.count() << " ms" << endl;
-    return indiceGlobal;
-}
-
-
-    
-double StatisticsService::calculateLocalAQI(const User& user, double lat, double lon, double radius, TimeRange period){
-// Algorithme :
-// 1. Récupérer le capteur le plus proche dans le rayon demandé.
+// 1. Vérifier que l'appelant est un utilisateur privé.
+// 2. Récupérer le capteur fiable le plus proche dans le rayon demandé.
 // 2. Filtrer ses mesures sur la période choisie.
 // 3. Calculer la moyenne de chaque polluant localement.
 // 4. Convertir ces moyennes en indice ATMO local.
-    auto tempsDebut = chrono::high_resolution_clock::now();
-    
-    // 1. Récupération du capteur le plus proche (normalement à distance ~0)
-    vector<Sensor*> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
-    
-    // Si aucun capteur dans la zone, retourner erreur
-    if (listeCapteurs.empty()) {
-        cout << "ERROR: No sensor found in this area" << endl;
+{
+    chrono::high_resolution_clock::time_point tempsDebut = std::chrono::high_resolution_clock::now();
+
+    // Vérifie que l'appelant est un utilisateur privé
+    if (user.getRole() != Role::PRIVATE_USER) {
+        cout << "ERREUR : Seuls les utilisateurs privés peuvent calculer l'indice AQI local" << endl;
         return 0.0;
     }
     
-    // 2. Récupération des mesures pour ce capteur précis sur la période
-    // On prend le capteur le plus proche (le premier de la liste)
-    Sensor* capteurLocal = listeCapteurs.front();
-    vector<Measurement*> mesures = DataService::getMeasurements(user);
+    // 2. Récupération des capteurs dans la zone puis sélection du plus proche fiable.
+    vector<Sensor*> listeCapteursProches = DataService::getSensorsInArea(lat, lon, radius);
     
-    // Filtrer les mesures pour ce capteur spécifique et cette période
+    // Si aucun capteur dans la zone, retourner erreur
+    if (listeCapteursProches.empty()) {
+        cout << "ERREUR : Aucun capteur trouvé dans cette zone" << endl;
+        return 0.0;
+    }
+    
+    // Trouver le capteur le plus proche et fiable
+    Sensor* capteurLocal = nullptr;
+    double distanceMin = numeric_limits<double>::max();
+    for (const vector<Sensor*>::value_type& capteur : listeCapteursProches) {
+        if (capteur != nullptr && capteur->getReliability() == true) {
+            double distance = capteur->calculateDistance(lat, lon);
+            if (distance < distanceMin) {
+                distanceMin = distance;
+                capteurLocal = capteur;
+            }
+        }
+    }
+
+    if (capteurLocal == nullptr) {
+        cout << "ERREUR : Aucun capteur fiable disponible dans cette zone" << endl;
+        return 0.0;
+    }
+
+    // 3. Récupération et filtrage des mesures du capteur retenu sur la période demandée.
+    vector<Measurement*> mesures = DataService::getMeasurementsBySensor(capteurLocal->getSensorID());
+    
     vector<Measurement*> mesuresLocales;
-    for (const auto& mesure : mesures) {
-        if (mesure != nullptr && capteurLocal != nullptr && mesure->getSensor()->getSensorID() == capteurLocal->getSensorID() && period.contains(mesure->getMeasureDate())) {
+    for (const vector<Measurement*>::value_type& mesure : mesures) {
+        if (mesure != nullptr && 
+            mesure->getSensor()->getSensorID() == capteurLocal->getSensorID() && 
+            period.contains(mesure->getMeasureDate())) {
             mesuresLocales.push_back(mesure);
         }
     }
     
-    // Si pas de mesures pour ce capteur, retourner erreur
+    // Si pas de mesures pour ce capteur, retourner erreur.
     if (mesuresLocales.empty()) {
-        cout << "ERROR: No measurements available for this sensor in the given period" << endl;
+        cout << "ERREUR : Aucune mesure disponible pour ce capteur dans la période donnée" << endl;
         return 0.0;
     }
     
-    // 3. Calcul des moyennes par polluant pour ce capteur
+    // 4. Calcul des moyennes par polluant pour ce capteur.
     map<string, double> sommeAttributs;
     map<string, int> comptesAttributs;
     
-    for (const auto& mesure : mesuresLocales) {
+    for (const vector<Measurement*>::value_type& mesure : mesuresLocales) {
         if (mesure != nullptr) {
             string attrID = mesure->getAttribute()->getAttributeID();
             sommeAttributs[attrID] += mesure->getValue();
@@ -782,7 +822,7 @@ double StatisticsService::calculateLocalAQI(const User& user, double lat, double
     
     // Calculer les moyennes simples
     map<string, double> moyennesParAttribut;
-    for (const auto& pair : sommeAttributs) {
+    for (const map<string, double>::value_type& pair : sommeAttributs) {
         string attributeID = pair.first;
         double sommeValue = pair.second;
         
@@ -795,16 +835,27 @@ double StatisticsService::calculateLocalAQI(const User& user, double lat, double
     double indiceGlobal = StatisticsService::convertirVersIndiceATMO(moyennesParAttribut);
     
     // Enregistrer le temps de fin
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+    chrono::high_resolution_clock::time_point tempsFin = chrono::high_resolution_clock::now();
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
     cout << "Temps d'exécution calculateLocalAQI : " << duree.count() << " ms" << endl;
-    if (capteurLocal != nullptr) {
-        cout << "Local AQI for sensor " << capteurLocal->getSensorID()<< " : " << indiceGlobal << endl;
-    }
     
     return indiceGlobal;
-}
+} //----- Fin de calculateLocalAQI
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
     
 
 

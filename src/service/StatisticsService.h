@@ -55,40 +55,55 @@ public:
     // Mode d'emploi :
     // Compare un capteur cible aux autres capteurs fiables et les trie par similarité croissante.
 
+    static std::map<std::string, std::vector<Sensor>> compareNeighborhoodSensors(const User& user, double lat, double lon, double radius, TimeRange period);
+    // Mode d'emploi :
+    // Sélectionne les capteurs dans un rayon autour d'une position puis, pour
+    // chaque capteur fiable trouvé, appelle `compareSensorsBySimilarity`.
+    // Renvoie une map {targetSensorID: liste des capteurs similaires}.
+
     static double calculateAirQuality(double lat, double lon, const DateTime& time);
     // Mode d'emploi :
     // Calcule l'indice ATMO global à un instant donné sur l'ensemble du système,
     // en pondérant les mesures des capteurs fiables par leur distance.
 
-    static double estimateAirQuality(double lat, double lon);
-    // Mode d'emploi :
-    // Estime la qualité de l'air à une position géographique sans filtrage par utilisateur.
-
     static double convertirVersIndiceATMO(std::map<std::string, double> moyennesEstimees);
     // Mode d'emploi :
     // Convertit des moyennes de polluants en indice ATMO final en gardant le pire score.
 
-
+    static double calculateUserZoneAQI(const User& user, double radius, const TimeRange& period);
+    // Mode d'emploi :
+    // Calcule l'indice ATMO moyen de la zone autour de l'utilisateur.
+    // La position centrale est déterminée à partir des capteurs de l'utilisateur
+    // (moyenne des positions). Utilise `calculateAreaMean` en interne.
 
     static double viewCleanerImpact(const User& user, std::string cleanerID, TimeRange period);
     // Mode d'emploi :
     // Mesure l'amélioration de la qualité de l'air autour d'un purificateur sur une période donnée.
 
-    
-
-    
-
     static double analyzeCleanerRadius(const User& user, std::string cleanerID);
     // Mode d'emploi :
     // Détermine le rayon d'influence utile d'un purificateur en testant plusieurs rayons.
+    
+
+    static double calculateLocalAQI(const User& user, double lat, double lon, double radius, TimeRange period);
+    // Mode d'emploi :
+    // Calcule l'indice ATMO local à partir du capteur le plus proche dans la zone.
+
+    
+
+
+
+
+ 
+
+    
+
 
     static std::string getZoneStatistic(const User& user, double lat, double lon, double radius, TimeRange period);
     // Mode d'emploi :
     // Produit un résumé textuel d'une zone: moyenne AQI, pics, minimum et polluant dominant.
 
-    static double calculateLocalAQI(const User& user, double lat, double lon, double radius, TimeRange period);
-    // Mode d'emploi :
-    // Calcule l'indice ATMO local à partir du capteur le plus proche dans la zone.
+
 
     
 
