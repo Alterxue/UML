@@ -97,7 +97,7 @@ public:
     static AirCleaner* getCleanerById(const std::string& cleanerID);
     
     // =============== Requêtes de maintenance ===============
-    static void updateSensorStatus(const string& sensorID, bool isReliable);
+    static void updateSensorStatus(const std::string& sensorID, bool isReliable);
     // Mode d'emploi :
     // Met à jour le statut de fiabilité d'un capteur en base de données
     

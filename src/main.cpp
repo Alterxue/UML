@@ -152,7 +152,7 @@ int main(){
                     break;
                 }
 
-                double aqi = StatisticsService::calculateAreaMean(*currentUser, lat, lon, radius, time);
+                double aqi = StatisticsService::calculateAreaMean(lat, lon, radius, time);
                 cout << "index ATMO calculé: " << aqi << endl;
                 break;
             }
@@ -184,7 +184,7 @@ int main(){
                 }
 
                 TimeRange period(startTime, endTime);
-                double aqi = StatisticsService::calculateAreaMean(*currentUser, lat, lon, radius, period);
+                double aqi = StatisticsService::calculateAreaMean(lat, lon, radius, period);
                 cout << "index ATMO moyen sur la periode: " << aqi << endl;
                 break;
             }
@@ -210,7 +210,7 @@ int main(){
                 }
 
                 TimeRange period(startTime, endTime);
-                vector<Sensor> similaires = StatisticsService::compareSensorsBySimilarity(*currentUser, targetSensorID, period);
+                vector<Sensor> similaires = StatisticsService::compareSensorsBySimilarity(targetSensorID, period);
                 if (similaires.empty()) {
                     cout << "Aucun capteur similaire trouve." << endl;
                 } else {
@@ -331,7 +331,7 @@ int main(){
                                 }
 
                                 TimeRange period(startTime, endTime);
-                                map<string, vector<Sensor>> results = StatisticsService::compareNeighborhoodSensors(*Application.getCurrentPrivateUser(), 0.0, 0.0, radius, period);
+                                map<string, vector<Sensor>> results = StatisticsService::compareNeighborhoodSensors(*Application.getCurrentPrivateUser(), radius, period);
                                 if (results.empty()) {
                                     cout << "Aucun capteur trouve dans le voisinage." << endl;
                                 } else {
@@ -494,7 +494,7 @@ int main(){
                                 }
 
                                 TimeRange period(startTime, endTime);
-                                vector<Sensor> similaires = StatisticsService::compareSensorsBySimilarity(*currentProvider, targetSensorID, period);
+                                vector<Sensor> similaires = StatisticsService::compareSensorsBySimilarity(targetSensorID, period);
                                 if (similaires.empty()) {
                                     cout << "Aucun capteur similaire trouve." << endl;
                                 } else {

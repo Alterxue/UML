@@ -33,14 +33,14 @@ class SecurityService
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    static void checkSensorReliability(const User& user, string sensorID);
+    static void checkSensorReliability(const User& user, std::string sensorID);
     // Mode d'emploi :
     // - Seule une agence gouvernementale peut vérifier la fiabilité d'un capteur
     // - Analyse les mesures du capteur sur une période donnée pour détecter des anomalies
     // - Compare les mesures du capteur avec des les mesures de capteurs fiables voisins
     // - Si trop de mesures sont considérées comme anormales, marque le capteur non fiable
     
-    static vector<PrivateUser*> detectFraudulentUsers(const User& user);
+    static std::vector<PrivateUser*> detectFraudulentUsers(const User& user);
     // Mode d'emploi :
     // - Seule une agence gouvernementale peut détecter les utilisateurs frauduleux
     // - Renvoie un vecteur de pointeurs vers les utilisateurs privés marqués comme frauduleux, 

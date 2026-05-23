@@ -43,19 +43,19 @@ public:
     // Mode d'emploi :
     // Analyse les données d'un capteur sur une période donnée et retourne un rapport textuel
     
-    static double calculateAreaMean(const User& user, double lat, double lon, double radius, const TimeRange& period);
+    static double calculateAreaMean(double lat, double lon, double radius, const TimeRange& period);
     // Mode d'emploi :
     // Calcule l'indice ATMO moyen d'une zone géographique sur une période donnée.
 
-    static double calculateAreaMean(const User& user, double lat, double lon, double radius, const DateTime& moment);
+    static double calculateAreaMean(double lat, double lon, double radius, const DateTime& moment);
     // Mode d'emploi :
     // Surcharge de calculateAreaMean pour calculer l'indice à un instant précis.
 
-    static std::vector<Sensor> compareSensorsBySimilarity(const User& user, std::string targetSensor, TimeRange period);
+    static std::vector<Sensor> compareSensorsBySimilarity(std::string targetSensor, TimeRange period);
     // Mode d'emploi :
     // Compare un capteur cible aux autres capteurs fiables et les trie par similarité croissante.
 
-    static std::map<std::string, std::vector<Sensor>> compareNeighborhoodSensors(const User& user, double lat, double lon, double radius, TimeRange period);
+    static std::map<std::string, std::vector<Sensor>> compareNeighborhoodSensors(const User& user, double radius, TimeRange period);
     // Mode d'emploi :
     // Sélectionne les capteurs dans un rayon autour d'une position puis, pour
     // chaque capteur fiable trouvé, appelle `compareSensorsBySimilarity`.
@@ -84,21 +84,6 @@ public:
     // Mode d'emploi :
     // Détermine le rayon d'influence utile d'un purificateur en testant plusieurs rayons.
     
-
-    static double calculateLocalAQI(const User& user, double lat, double lon, double radius, TimeRange period);
-    // Mode d'emploi :
-    // Calcule l'indice ATMO local à partir du capteur le plus proche dans la zone.
-
-    
-
-
-
-
- 
-
-    
-
-
     static std::string getZoneStatistic(const User& user, double lat, double lon, double radius, TimeRange period);
     // Mode d'emploi :
     // Produit un résumé textuel d'une zone: moyenne AQI, pics, minimum et polluant dominant.
