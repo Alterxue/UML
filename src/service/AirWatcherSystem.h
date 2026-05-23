@@ -13,12 +13,13 @@
 //--------------------------------------------------- Interfaces utilisées
 #include <string>
 
-#include "DataService.h"
-#include "StatisticsService.h"
-#include "SecurityService.h"
 #include "AuthenticateService.h"
 #include "../model/User.h"
-#include "../model/Role.h"
+
+class DataContainer;
+class PrivateUser;
+class Provider;
+class GovernmentAgency;
 
 //------------------------------------------------------------- Constantes
 
@@ -39,23 +40,21 @@ public:
     // Mode d'emploi :
     //
     // Contrat :
-    SecurityService * getSecurityService();
-    StatisticsService * getStatisticsService();
-    DataService * getDataService();
-
     User * getCurrentUser();
     PrivateUser * getCurrentPrivateUser();
     Provider * getCurrentProvider();
     GovernmentAgency * getCurrentGovernmentAgency();
 
-    bool setPrivateUser(DataContainer& dc,std::string& id);
+    bool setPrivateUser(DataContainer& dc, const std::string& id);
     // Mode d'emploi :
     // Va initialiser le PrivateUser courrant si il existe
     // et renvoyer true si la connexion a réussi
 
-    bool setProvider(DataContainer& dc, std::string& id);
+    bool setProvider(DataContainer& dc, const std::string& id);
 
-    bool setGovernmentAgency(std::string& id);
+    bool setGovernmentAgency(const std::string& id);
+
+    void logout();
 
 //-------------------------------------------- Constructeurs - destructeur
     AirWatcherSystem();
@@ -77,11 +76,10 @@ protected:
     PrivateUser* currentPrivateUser;
     Provider* currentProvider;
     GovernmentAgency* currentGovernmentAgency;
-    StatisticsService* statsService;
-    SecurityService* securityService;
-    DataService* dataService;
     AuthenticateService* authService;
     User* currentUser;
+
+    void clearCurrentUser();
 };
 
 

@@ -2,6 +2,8 @@
 #include "model/DataContainer.h"
 #include "service/AirWatcherSystem.h"
 #include "service/DataService.h"
+#include "service/StatisticsService.h"
+#include "service/SecurityService.h"
 #include "model/Role.h"
 #include "model/GovernmentAgency.h"
 
@@ -272,7 +274,20 @@ int main(){
                 break;
             }
             case 7:
-                if (roleChoice == 1) {
+            {
+                User* currentUser = Application.getCurrentUser();
+                if (currentUser == nullptr) {
+                    cout << "Utilisateur non initialise." << endl;
+                    break;
+                }
+
+                if (currentUser->getRole() == PRIVATE_USER) {
+                    PrivateUser* privateUser = dataContainer.getPrivateUserByID(currentUser->getUserID());
+                    if (privateUser == nullptr) {
+                        cout << "Utilisateur prive non trouve dans le DataContainer." << endl;
+                        break;
+                    }
+
                     int particularChoice;
                     do {
                         cout << "-- MENU PARTICULIER --" << endl;
@@ -288,11 +303,11 @@ int main(){
                         switch (particularChoice) {
                             case 6:
                             {
-                                if (Application.getCurrentPrivateUser()->getIsFraudulent() == true) {
+                                if (privateUser->getIsFraudulent() == true) {
                                     cout << "ATTENTION : Vous êtes identifié comme un utilisateur frauduleux." << endl;
                                 }
                                 cout << "Votre solde de points : "
-                                     << Application.getCurrentPrivateUser()->getPoints() << " points" << endl;
+                                     << privateUser->getPoints() << " points" << endl;
                                 break;
                             }
                             case 7:
@@ -311,7 +326,7 @@ int main(){
                                 }
 
                                 TimeRange period(startTime, endTime);
-                                double aqi = StatisticsService::calculateUserZoneAQI(*Application.getCurrentPrivateUser(), radius, period);
+                                double aqi = StatisticsService::calculateUserZoneAQI(*currentUser, radius, period);
                                 cout << "AQI moyen de votre zone: " << aqi << endl;
                                 break;
                             }
@@ -331,7 +346,7 @@ int main(){
                                 }
 
                                 TimeRange period(startTime, endTime);
-                                map<string, vector<Sensor>> results = StatisticsService::compareNeighborhoodSensors(*Application.getCurrentPrivateUser(), radius, period);
+                                map<string, vector<Sensor>> results = StatisticsService::compareNeighborhoodSensors(*currentUser, radius, period);
                                 if (results.empty()) {
                                     cout << "Aucun capteur trouve dans le voisinage." << endl;
                                 } else {
@@ -377,15 +392,12 @@ int main(){
                                 }
 
                                 // Vérifier que le capteur appartient à l'utilisateur privé courant
-                                PrivateUser* currentPrivate = Application.getCurrentPrivateUser();
                                 bool belongsToUser = false;
-                                if (currentPrivate != nullptr) {
-                                    const vector<Sensor*>& userSensors = currentPrivate->getSensorsList();
-                                    for (Sensor* s : userSensors) {
-                                        if (s != nullptr && s->getSensorID() == sensor->getSensorID()) {
-                                            belongsToUser = true;
-                                            break;
-                                        }
+                                const vector<Sensor*>& userSensors = privateUser->getSensorsList();
+                                for (Sensor* s : userSensors) {
+                                    if (s != nullptr && s->getSensorID() == sensor->getSensorID()) {
+                                        belongsToUser = true;
+                                        break;
                                     }
                                 }
 
@@ -401,7 +413,7 @@ int main(){
                             case 10:
                             {
                                 cout << "Affichage de l'historique de vos contributions..." << endl;
-                                vector<Measurement*> userHistory = DataService::getUserHistory(*Application.getCurrentPrivateUser());
+                                vector<Measurement*> userHistory = DataService::getUserHistory(*privateUser);
                                 if (userHistory.empty()) {
                                     cout << "Aucune contribution." << endl;
                                     break;
@@ -421,7 +433,13 @@ int main(){
                                 cout << "Choix invalide, veuillez réessayer." << endl;
                             }
                     }while(particularChoice != 11);
-                } else if (roleChoice == 2) {
+                } else if (currentUser->getRole() == PROVIDER) {
+                    Provider* currentProvider = dataContainer.getProviderByID(currentUser->getUserID());
+                    if (currentProvider == nullptr) {
+                        cout << "Fournisseur non trouve dans le DataContainer." << endl;
+                        break;
+                    }
+
                     int particularChoice;
                     do {
                         cout << "-- MENU FOURNISSEUR --" << endl;
@@ -435,12 +453,6 @@ int main(){
                         switch (particularChoice) {
                             case 6:
                             {
-                                Provider* currentProvider = Application.getCurrentProvider();
-                                if (currentProvider == nullptr) {
-                                    cout << "Fournisseur non initialise." << endl;
-                                    break;
-                                }
-
                                 const vector<AirCleaner*>& cleaners = currentProvider->getMyCleaners();
                                 if (cleaners.empty()) {
                                     cout << "Aucun cleaner associe a votre compte." << endl;
@@ -474,12 +486,6 @@ int main(){
                             }
                             case 7:
                             {
-                                Provider* currentProvider = Application.getCurrentProvider();
-                                if (currentProvider == nullptr) {
-                                    cout << "Fournisseur non initialise." << endl;
-                                    break;
-                                }
-
                                 string targetSensorID;
                                 cout << "ID du capteur cible : ";
                                 cin >> targetSensorID;
@@ -507,28 +513,16 @@ int main(){
                             }
                             case 8:
                             {
-                                Provider* currentProvider = Application.getCurrentProvider();
-                                if (currentProvider == nullptr) {
-                                    cout << "Fournisseur non initialise." << endl;
-                                    break;
-                                }
-
                                 string cleanerID;
                                 cout << "ID du cleaner a analyser : ";
                                 cin >> cleanerID;
 
-                                double rayon = StatisticsService::analyzeCleanerRadius(*currentProvider, cleanerID);
+                                double rayon = StatisticsService::analyzeCleanerRadius(*currentUser, cleanerID);
                                 cout << "Rayon de purification utile : " << rayon << " km" << endl;
                                 break;
                             }
                             case 9:
                             {
-                                Provider* currentProvider = Application.getCurrentProvider();
-                                if (currentProvider == nullptr) {
-                                    cout << "Fournisseur non initialise." << endl;
-                                    break;
-                                }
-
                                 double lat = 0.0;
                                 double lon = 0.0;
                                 double radius = 0.0;
@@ -549,7 +543,7 @@ int main(){
                                 }
 
                                 TimeRange period(startTime, endTime);
-                                string statistics = StatisticsService::getZoneStatistic(*currentProvider, lat, lon, radius, period);
+                                string statistics = StatisticsService::getZoneStatistic(*currentUser, lat, lon, radius, period);
                                 cout << statistics << endl;
                                 break;
                             }
@@ -560,7 +554,7 @@ int main(){
                             }
                     }while(particularChoice != 10);
                     
-                } else if (roleChoice == 3) {
+                } else if (currentUser->getRole() == GOVERNMENT_AGENCY) {
                     int particularChoice;
                     do {
                         cout << "-- MENU AGENCE GOUVERNEMENTALE --" << endl;
@@ -609,10 +603,10 @@ int main(){
                                 string targetSensorID;
                                 cout << "ID du capteur à vérifier: ";
                                 cin >> targetSensorID;
-                                SecurityService::checkSensorReliability(*Application.getCurrentGovernmentAgency(), targetSensorID);
+                                SecurityService::checkSensorReliability(*currentUser, targetSensorID);
                                 break;}
                             case 7:{
-                                vector<PrivateUser*> fraudulentUsers = SecurityService::detectFraudulentUsers(*Application.getCurrentGovernmentAgency());
+                                vector<PrivateUser*> fraudulentUsers = SecurityService::detectFraudulentUsers(*currentUser);
                                 if (fraudulentUsers.empty()) {
                                     cout << "Aucun utilisateur frauduleux détecté." << endl;
                                 } else {
@@ -623,10 +617,10 @@ int main(){
                                 }
                                 break;}
                             case 8:
-                                SecurityService::showCorruptedData(*Application.getCurrentGovernmentAgency());
+                                SecurityService::showCorruptedData(*currentUser);
                                 break;
                             case 9:
-                                SecurityService::initializeDatabase(*Application.getCurrentGovernmentAgency());
+                                SecurityService::initializeDatabase(*currentUser);
                                 break;
                             case 10:
                                 break;
@@ -635,7 +629,8 @@ int main(){
                             }  
                     } while(particularChoice != 10);
                 }
-                break; 
+                break;
+            }
             case 8:
                 cout << "Merci d'avoir utilisé AirWatcherSystem !" << endl;
                 break;
