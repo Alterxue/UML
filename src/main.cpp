@@ -99,11 +99,12 @@ int main(){
     do {
         cout << "-- Menu principal AirWatcher --" << endl;
         cout << "1. Analyser un capteur" << endl;
-        cout << "2. Calculer la qualité de l'air" << endl;
-        cout << "3. Comparer des capteurs" << endl;
-        cout << "4. Estimer la qualité de l'air" << endl;
-        cout << "5. Menu spécial" << endl;
-        cout << "6. Quitter" << endl;
+        cout << "2. Calculer la qualité de l'air dans une zone à un instant donné" << endl;
+        cout << "3. Calculer la qualité de l'air dans une zone sur une période donnée" << endl;
+        cout << "4. Comparer des capteurs par similarité" << endl;
+        cout << "5. Calculer la qualité de l'air globale à une position et date données" << endl;
+        cout << "6. Menu spécial" << endl;
+        cout << "7. Quitter" << endl;
         cout << "Votre choix : ";
         cin >> choice;
 
@@ -204,6 +205,8 @@ int main(){
                 break;
             }
             case 5:
+            {} 
+            case 6:
                 if (roleChoice == 1) {
                     int particularChoice;
                     do {

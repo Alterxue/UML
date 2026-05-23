@@ -21,11 +21,11 @@ using namespace std;
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <sstream>
 #include "../model/Sensor.h"
 #include "../model/TimeRange.h"
 #include "DataService.h"
 #include "StatisticsService.h"
-using namespace std;
 
 
 //------------------------------------------------------------- Constantes
@@ -33,77 +33,93 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-double StatisticsService::calculateAirQuality(double lat, double lon, DateTime time)
+string StatisticsService::analyzeSensorData(const string& sensorID, const TimeRange& period)
 // Algorithme :
-// 1. Récupérer tous les capteurs et toutes les mesures du système.
-// 2. Garder uniquement les capteurs fiables et les mesures à l'instant demandé.
-// 3. Pondérer chaque mesure par la distance du capteur au point étudié.
-// 4. Calculer une moyenne par polluant puis la convertir en indice ATMO global.
+// 1. Récupérer le capteur et ses mesures.
+// 2. Conserver uniquement les mesures valides dans la période demandée.
+// 3. Calculer les moyennes par attribut.
+// 4. Retourner un résumé textuel de l'analyse avec le temps d'exécution.
 {
-    // commencer a compter le temps
-    auto tempsDebut = chrono::high_resolution_clock::now();
-    
-    // obtenir les listes de capteurs et mesures
-    vector<Sensor*> tousCapteurs = DataService::getAllSensors();
-    vector<Measurement*> toutesMesures = DataService::getAllMeasurements();
-    
-    map<string, double> sommesPonderees;  
-    map<string, double> sommePoids;      
-    for (const vector<Sensor*>::value_type& capteur : tousCapteurs){
-        if (capteur == nullptr) {
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
+
+    // 1. Récupérer le capteur demandé.
+    Sensor* sensor = DataService::getDataContainer()->getSensorByID(sensorID);
+    if (sensor == nullptr) {
+        return "ERREUR: capteur introuvable";
+    }
+
+    // 2. Récupérer toutes les mesures associées à ce capteur.
+    vector<Measurement*> allMeasurements = DataService::getMeasurementsBySensor(sensorID);
+
+    int totalMeasurements = 0;
+    int validMeasurements = 0;
+    map<string, double> sumsByAttribute;
+    map<string, int> countsByAttribute;
+
+    // 3. Filtrer les mesures par période et garder uniquement les mesures valides.
+    for (const Measurement* measurement : allMeasurements) {
+        if (measurement == nullptr) {
             continue;
         }
-        if (capteur->getReliability() == true){
-            double distance = capteur->calculateDistance(lat,lon);
-            double poids = (distance < 0.1) ? 100 : (1 / (distance * distance));
-            for(const vector<Measurement*>::value_type& mesure : toutesMesures){
-                if(mesure != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID() && mesure->getMeasureDate() == time){
-                    string attrID = mesure->getAttribute()->getAttributeID();
-                    sommesPonderees[attrID] += (mesure->getValue() * poids);
-                    sommePoids[attrID] += poids;
-                }
-            }
+        if (!period.contains(measurement->getMeasureDate())) {
+            continue;
         }
-    }
-    
-    map<string, double> moyennesEstimees;
-    for (const map<string, double>::value_type& pair : sommesPonderees) {
-        string attributeID = pair.first;
-        double sommePonderee = pair.second;
-        
-        if (sommePoids[attributeID] > 0) {
-            moyennesEstimees[attributeID] = sommePonderee / sommePoids[attributeID];
+
+        totalMeasurements++;
+
+        if (measurement->getIsValid() == false) {
+            continue;
+        }
+
+        validMeasurements++;
+
+        if (measurement->getAttribute() != nullptr) {
+            string attributeID = measurement->getAttribute()->getAttributeID();
+            sumsByAttribute[attributeID] += measurement->getValue();
+            countsByAttribute[attributeID] += 1;
         }
     }
 
-    double indiceGlobal = 0.0;
-    indiceGlobal = StatisticsService::convertirVersIndiceATMO(moyennesEstimees);
-    
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
-    
-    cout << "Temps d'exécution calculateAirQuality : " << duree.count() << " ms" << endl;
-    
-    return indiceGlobal;
-}
+    // 4. Calculer les moyennes par attribut.
+    ostringstream report;
+    report << "Analyse du capteur " << sensorID << '\n';
+    report << "Latitude: " << sensor->getLattitude() << '\n';
+    report << "Longitude: " << sensor->getLongitude() << '\n';
+    report << "Mesures dans la periode: " << totalMeasurements << '\n';
+    report << "Mesures valides: " << validMeasurements << '\n';
 
-double StatisticsService::calculateAreaMean(const User& user, double lat, double lon, double radius, TimeRange period){
+    for (const map<string, double>::value_type& pair : sumsByAttribute) {
+        const string& attributeID = pair.first;
+        double average = pair.second / countsByAttribute[attributeID];
+        report << "- Moyenne " << attributeID << " = " << average << '\n';
+    }
+
+    // 5. Mesurer le temps d'exécution et l'ajouter au rapport.
+    chrono::high_resolution_clock::time_point tempsFin = chrono::high_resolution_clock::now();
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+
+    report << "Temps d'execution: " << duree.count() << " ms";
+
+    return report.str();
+} //----- Fin de analyzeSensorData
+
+double StatisticsService::calculateAreaMean(const User& user, double lat, double lon, double radius, const TimeRange& period)
 // Algorithme :
 // 1. Sélectionner les capteurs fiables situés dans le rayon demandé.
 // 2. Récupérer les mesures de ces capteurs dans la période fournie.
 // 3. Calculer la moyenne de chaque polluant.
 // 4. Convertir ces moyennes en indice ATMO final.
+{
     //le temps de début
-    auto tempsDebut = chrono::high_resolution_clock::now();
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
     
     // Récupération de toutes les données via DataService
-    vector<Sensor*> tousCapteurs = DataService::getSensors(user);
-    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
+    vector<Sensor*> tousCapteurs = DataService::getAllSensors();
+    vector<Measurement*> toutesMesures = DataService::getAllMeasurements();
     
     // Filtrage spatial et fiabilité - récupérer les capteurs dans la zone
     vector<Sensor*> capteursZone;
-    
-    for (const auto& capteur : tousCapteurs) {
+    for (const vector<Sensor*>::value_type& capteur : tousCapteurs) {
         if (capteur == nullptr) {
             continue;
         }
@@ -118,15 +134,18 @@ double StatisticsService::calculateAreaMean(const User& user, double lat, double
     map<string, double> sommesAttributs;    
     map<string, int> comptesAttributs;      
     
-    for (const auto& capteur : capteursZone) {
-        for (const auto& mesure : toutesMesures) {
-            if (capteur != nullptr && mesure != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID() && 
+    for (const vector<Sensor*>::value_type& capteur : capteursZone) {
+        for (const vector<Measurement*>::value_type& mesure : toutesMesures) {
+            if (capteur != nullptr && 
+                mesure != nullptr && 
+                mesure->getSensor() != nullptr &&
+                mesure->getSensor()->getSensorID() == capteur->getSensorID() && 
+                mesure->getIsValid() == true &&
                 period.contains(mesure->getMeasureDate())) {
 
                 string attrID = mesure->getAttribute()->getAttributeID();
                 sommesAttributs[attrID] += mesure->getValue();
                 comptesAttributs[attrID] += 1;
-
             }
         }
     }
@@ -134,8 +153,8 @@ double StatisticsService::calculateAreaMean(const User& user, double lat, double
     //Calcul des moyennes par attribut
     map<string, double> moyennes;
     
-    for (const auto& pair : sommesAttributs) {
-        string attributeID = pair.first;
+    for (const map<string, double>::value_type& pair : sommesAttributs) {
+        const string& attributeID = pair.first;
         double sommeAttribut = pair.second;
         
         if (comptesAttributs[attributeID] > 0) {
@@ -143,44 +162,53 @@ double StatisticsService::calculateAreaMean(const User& user, double lat, double
         }
     }
     
-    double indiceGlobal = 0.0;
-    indiceGlobal = StatisticsService::convertirVersIndiceATMO(moyennes);
+    double indiceGlobal = StatisticsService::convertirVersIndiceATMO(moyennes);
 
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+    chrono::high_resolution_clock::time_point tempsFin = chrono::high_resolution_clock::now();
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
     cout << "Temps d'exécution calculateAreaMean : " << duree.count() << " ms" << endl;
     
     // Retourner l'indice global
     return indiceGlobal;
-}
+} //----- Fin de calculateAreaMean
 
+double StatisticsService::calculateAreaMean(const User& user, double lat, double lon, double radius, const DateTime& moment) 
+// Algorithme :
+// 1. Surcharge de calculateAreaMean pour calculer l'indice d'une zone à un instant précis
+{
+    TimeRange instant(moment, moment);
+    return calculateAreaMean(user, lat, lon, radius, instant);
+} //----- Fin de calculateAreaMean (surcharge)
 
-vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, string targetSensor, TimeRange period){
+vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, string targetSensor, TimeRange period)
 // Algorithme :
 // 1. Extraire les mesures du capteur cible sur la période.
 // 2. Comparer chaque autre capteur fiable sur les mêmes horodatages et attributs.
 // 3. Calculer un écart moyen par capteur.
 // 4. Trier les capteurs par écart croissant pour obtenir les plus similaires.
-    auto tempsDebut = chrono::high_resolution_clock::now();
+{
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
     
     //Récupération de toutes les données
-    vector<Sensor*> tousCapteurs = DataService::getSensors(user);
-    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
+    vector<Sensor*> tousCapteurs = DataService::getAllSensors();
+    vector<Measurement*> toutesMesures = DataService::getAllMeasurements();
     
     // Extraction des données du capteur cible pour la période
     vector<Measurement*> donneesCible;
-    
-    for (const auto& mesure : toutesMesures) {
-        if (mesure != nullptr && mesure->getSensor()->getSensorID() == targetSensor && period.contains(mesure->getMeasureDate())) {
+    for (const vector<Measurement*>::value_type& mesure : toutesMesures) {
+        if (mesure != nullptr && 
+            mesure->getSensor() != nullptr &&
+            mesure->getSensor()->getSensorID() == targetSensor && 
+            period.contains(mesure->getMeasureDate())) {
+
             donneesCible.push_back(mesure);
         }
     }
     
     //Calcul des scores de similarité pour chaque capteur
     map<string, double> scoresSimilarite;  // {sensorID: écart moyen}
-    
-    for (const auto& capteur : tousCapteurs) {
+    for (const vector<Sensor*>::value_type& capteur : tousCapteurs) {
         if (capteur == nullptr) {
             continue;
         }
@@ -188,11 +216,13 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
         if (capteur->getSensorID() == targetSensor || capteur->getReliability() == false) {
             continue;
         }
-        
         //Extraction des données du capteur actuel pour la période
         vector<Measurement*> donneesAComparer;
-        for (const auto& mesure : toutesMesures) {
-            if (mesure != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID() && period.contains(mesure->getMeasureDate())) {
+        for (const vector<Measurement*>::value_type& mesure : toutesMesures) {
+            if (mesure != nullptr && 
+                mesure->getSensor() != nullptr &&
+                mesure->getSensor()->getSensorID() == capteur->getSensorID() && 
+                period.contains(mesure->getMeasureDate())) {
                 donneesAComparer.push_back(mesure);
             }
         }
@@ -201,11 +231,13 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
         double differenceTotale = 0.0;
         int pointsCommuns = 0;
         
-        for (const auto& mesureCible : donneesCible) {
+        for (const vector<Measurement*>::value_type& mesureCible : donneesCible) {
             // Chercher la mesure correspondante (même timestamp et attributeID)
-            for (const auto& mesureAComparer : donneesAComparer) {
+            for (const vector<Measurement*>::value_type& mesureAComparer : donneesAComparer) {
                 if (mesureAComparer != nullptr && mesureCible != nullptr &&
                     mesureAComparer->getMeasureDate() == mesureCible->getMeasureDate() && 
+                    mesureAComparer->getAttribute() != nullptr &&
+                    mesureCible->getAttribute() != nullptr &&
                     mesureAComparer->getAttribute()->getAttributeID() == mesureCible->getAttribute()->getAttributeID()) {
                     
                     // Calculer la différence absolue entre les deux valeurs
@@ -236,9 +268,9 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
     // Reconstruire la liste de capteurs triée
     vector<Sensor> listeTriee;
     
-    for (const auto& pair : scoresVecteur) {
+    for (const vector<pair<string, double>>::value_type& pair : scoresVecteur) {
         // Trouver le capteur correspondant dans la liste originale
-        for (const auto& capteur : tousCapteurs) {
+        for (const vector<Sensor*>::value_type& capteur : tousCapteurs) {
             if (capteur != nullptr && capteur->getSensorID() == pair.first) {
                 listeTriee.push_back(*capteur);
                 break;
@@ -246,13 +278,197 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(const User& user, s
         }
     }
     // Enregistrer le temps de fin et calculer la durée
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+    chrono::high_resolution_clock::time_point tempsFin = chrono::high_resolution_clock::now();
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
     cout << "Temps d'exécution compareSensorsBySimilarity : " << duree.count() << " ms" << endl;
     
     return listeTriee;
-}
+} //----- Fin de compareSensorsBySimilarity
+
+double StatisticsService::calculateAirQuality(double lat, double lon, const DateTime& time)
+// Algorithme :
+// 1. Récupérer tous les capteurs et toutes les mesures du système.
+// 2. Garder uniquement les capteurs fiables et les mesures à l'instant demandé.
+// 3. Pondérer chaque mesure par la distance du capteur au point étudié.
+// 4. Calculer une moyenne par polluant puis la convertir en indice ATMO global.
+{
+    // commencer a compter le temps
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
+    
+    // obtenir les listes de capteurs et mesures
+    vector<Sensor*> tousCapteurs = DataService::getAllSensors();
+    vector<Measurement*> toutesMesures = DataService::getAllMeasurements();
+    
+    map<string, double> sommesPonderees;  
+    map<string, double> sommePoids;      
+    for (const vector<Sensor*>::value_type& capteur : tousCapteurs){
+        if (capteur == nullptr) {
+            continue;
+        }
+        if (capteur->getReliability() == true){
+            double distance = capteur->calculateDistance(lat,lon);
+            double poids = (distance < 0.1) ? 100 : (1.0 / (distance * distance));
+            for(const vector<Measurement*>::value_type& mesure : toutesMesures){
+                if(mesure != nullptr && 
+                    mesure->getSensor() != nullptr &&
+                    mesure->getSensor()->getSensorID() == capteur->getSensorID() && 
+                    mesure->getIsValid() == true &&
+                    mesure->getMeasureDate() == time) {
+
+                    string attrID = mesure->getAttribute()->getAttributeID();
+                    sommesPonderees[attrID] += (mesure->getValue() * poids);
+                    sommePoids[attrID] += poids;
+                }
+            }
+        }
+    }
+    
+    map<string, double> moyennesEstimees;
+    for (const map<string, double>::value_type& pair : sommesPonderees) {
+        const string& attributeID = pair.first;
+        double sommePonderee = pair.second;
+        
+        if (sommePoids[attributeID] > 0) {
+            moyennesEstimees[attributeID] = sommePonderee / sommePoids[attributeID];
+        }
+    }
+
+    double indiceGlobal = StatisticsService::convertirVersIndiceATMO(moyennesEstimees);
+    
+    chrono::high_resolution_clock::time_point tempsFin = chrono::high_resolution_clock::now();
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+    
+    cout << "Temps d'exécution calculateAirQuality : " << duree.count() << " ms" << endl;
+    
+    return indiceGlobal;
+} //----- Fin de calculateAirQuality
+
+double StatisticsService::convertirVersIndiceATMO(map<string, double> moyennesEstimees) 
+// Algorithme :
+// 1. Convertir chaque polluant reconnu en indice ATMO élémentaire via ses seuils.
+// 2. Conserver le score le plus défavorable.
+// 3. Retourner l'indice global correspondant au pire polluant.
+{
+    double indiceMax = 0;
+
+    // Pour chaque polluant (O3, NO2, SO2, PM10)
+    for (pair<string, double> attr : moyennesEstimees) {
+        string attrID = attr.first;
+        double valeur = attr.second;
+        int indicePolluant = 0;
+        
+        if (attrID == "O3") {
+            if (valeur < 30) {
+                indicePolluant = 1;
+            } else if (valeur < 55) {
+                indicePolluant = 2;
+            } else if (valeur < 80) {
+                indicePolluant = 3;
+            } else if (valeur < 105) {
+                indicePolluant = 4;
+            } else if (valeur < 130) {
+                indicePolluant = 5;
+            } else if (valeur < 150) {
+                indicePolluant = 6;
+            } else if (valeur < 180) {
+                indicePolluant = 7;
+            } else if (valeur < 210) {
+                indicePolluant = 8;
+            } else if (valeur < 240) {
+                indicePolluant = 9;
+            }
+            else {
+                indicePolluant = 10;
+            }
+        }
+        else if (attrID == "PM10") {
+            if (valeur < 7) {
+                indicePolluant = 1;
+            } else if (valeur < 14) {
+                indicePolluant = 2;
+            } else if (valeur < 21) {
+                indicePolluant = 3;
+            } else if (valeur < 28) {
+                indicePolluant = 4;
+            } else if (valeur < 35) {
+                indicePolluant = 5;
+            } else if (valeur < 42) {
+                indicePolluant = 6;
+            } else if (valeur < 50) {
+                indicePolluant = 7;
+            } else if (valeur < 65) {
+                indicePolluant = 8;
+            } else if (valeur < 80) {
+                indicePolluant = 9;
+            }
+            else {
+                indicePolluant = 10;
+            }
+        }
+        else if (attrID == "SO2") {
+            if (valeur < 40) {
+                indicePolluant = 1;
+            } else if (valeur < 80) {
+                indicePolluant = 2;
+            } else if (valeur < 120) {
+                indicePolluant = 3;
+            } else if (valeur < 160) {
+                indicePolluant = 4;
+            } else if (valeur < 200) {
+                indicePolluant = 5;
+            } else if (valeur < 250) {
+                indicePolluant = 6;
+            } else if (valeur < 300) {
+                indicePolluant = 7;
+            } else if (valeur < 400) {
+                indicePolluant = 8;
+            } else if (valeur < 500) {
+                indicePolluant = 9;
+            }
+            else {
+                indicePolluant = 10;
+            }
+        }
+        else if (attrID == "NO2") {
+            if (valeur < 30) {
+                indicePolluant = 1;
+            } else if (valeur < 55) {
+                indicePolluant = 2;
+            } else if (valeur < 85) {
+                indicePolluant = 3;
+            } else if (valeur < 110) {
+                indicePolluant = 4;
+            } else if (valeur < 135) {
+                indicePolluant = 5;
+            } else if (valeur < 165) {
+                indicePolluant = 6;
+            } else if (valeur < 200) {
+                indicePolluant = 7;
+            } else if (valeur < 275) {
+                indicePolluant = 8;
+            } else if (valeur < 400) {
+                indicePolluant = 9;
+            }
+            else {
+                indicePolluant = 10;
+            }
+        }
+        else {
+            continue; // Ignorer les polluants non reconnus
+        }
+
+        // On garde le pire indice trouvé
+        if (indicePolluant > indiceMax) {
+            indiceMax = indicePolluant;
+        }
+    }
+
+    return indiceMax;
+} //----- Fin de convertirVersIndiceATMO
+
+
+
 
 
 double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerID){
@@ -260,7 +476,7 @@ double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerI
 // 1. Récupérer le purificateur et sa période de fonctionnement.
 // 2. Comparer la qualité de l'air avant et pendant l'activité pour des rayons croissants.
 // 3. Conserver le plus grand rayon dont l'amélioration reste supérieure au seuil choisi.
-    auto tempsDebut = chrono::high_resolution_clock::now();
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
     
     AirCleaner* cleaner = DataService::getCleanerById(cleanerID);
     if (cleaner == nullptr) {
@@ -300,8 +516,8 @@ double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerI
         }
     }
     
-    auto tempsFin = chrono::high_resolution_clock::now();
-    auto duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
+    chrono::high_resolution_clock::time_point tempsFin = chrono::high_resolution_clock::now();
+    chrono::milliseconds duree = chrono::duration_cast<chrono::milliseconds>(tempsFin - tempsDebut);
     
     cout << "Temps d'exécution analyzeCleanerRadius : " << duree.count() << " ms" << endl;
     cout << "Rayon d'impact : " << rayonImpact << " km | Meilleure amélioration : " << meilleureAmelioration << "%" << endl;
@@ -405,7 +621,7 @@ double StatisticsService::viewCleanerImpact(const User& user, string cleanerID, 
 // 2. Séparer la période en avant et après activation.
 // 3. Calculer la qualité moyenne de l'air sur chaque sous-période.
 // 4. Retourner la différence d'impact entre avant et après.
-    auto tempsDebut = chrono::high_resolution_clock::now();
+    chrono::high_resolution_clock::time_point tempsDebut = chrono::high_resolution_clock::now();
     
     AirCleaner* cleaner = DataService::getCleanerById(cleanerID);
     if (cleaner == nullptr) {
@@ -592,148 +808,24 @@ double StatisticsService::calculateLocalAQI(const User& user, double lat, double
     
 
 
-double StatisticsService::convertirVersIndiceATMO(map<string, double> moyennesEstimees) {
-// Algorithme :
-// 1. Convertir chaque polluant reconnu en indice ATMO élémentaire via ses seuils.
-// 2. Conserver le score le plus défavorable.
-// 3. Retourner l'indice global correspondant au pire polluant.
-    double indiceMax = 0;
 
-    // Pour chaque polluant (O3, NO2, SO2, PM10)
-    for (pair<string, double> attr : moyennesEstimees) {
-        string attrID = attr.first;
-        double valeur = attr.second;
-        int indicePolluant = 0;
-        
-        if (attrID == "O3") {
-            if (valeur < 30) {
-                indicePolluant = 1;
-            } else if (valeur < 55) {
-                indicePolluant = 2;
-            } else if (valeur < 80) {
-                indicePolluant = 3;
-            } else if (valeur < 105) {
-                indicePolluant = 4;
-            } else if (valeur < 130) {
-                indicePolluant = 5;
-            } else if (valeur < 150) {
-                indicePolluant = 6;
-            } else if (valeur < 180) {
-                indicePolluant = 7;
-            } else if (valeur < 210) {
-                indicePolluant = 8;
-            } else if (valeur < 240) {
-                indicePolluant = 9;
-            }
-            else {
-                indicePolluant = 10;
-            }
-        }
-        else if (attrID == "PM10") {
-            if (valeur < 7) {
-                indicePolluant = 1;
-            } else if (valeur < 14) {
-                indicePolluant = 2;
-            } else if (valeur < 21) {
-                indicePolluant = 3;
-            } else if (valeur < 28) {
-                indicePolluant = 4;
-            } else if (valeur < 35) {
-                indicePolluant = 5;
-            } else if (valeur < 42) {
-                indicePolluant = 6;
-            } else if (valeur < 50) {
-                indicePolluant = 7;
-            } else if (valeur < 65) {
-                indicePolluant = 8;
-            } else if (valeur < 80) {
-                indicePolluant = 9;
-            }
-            else {
-                indicePolluant = 10;
-            }
-        }
-        else if (attrID == "SO2") {
-            if (valeur < 40) {
-                indicePolluant = 1;
-            } else if (valeur < 80) {
-                indicePolluant = 2;
-            } else if (valeur < 120) {
-                indicePolluant = 3;
-            } else if (valeur < 160) {
-                indicePolluant = 4;
-            } else if (valeur < 200) {
-                indicePolluant = 5;
-            } else if (valeur < 250) {
-                indicePolluant = 6;
-            } else if (valeur < 300) {
-                indicePolluant = 7;
-            } else if (valeur < 400) {
-                indicePolluant = 8;
-            } else if (valeur < 500) {
-                indicePolluant = 9;
-            }
-            else {
-                indicePolluant = 10;
-            }
-        }
-        else if (attrID == "NO2") {
-            if (valeur < 30) {
-                indicePolluant = 1;
-            } else if (valeur < 55) {
-                indicePolluant = 2;
-            } else if (valeur < 85) {
-                indicePolluant = 3;
-            } else if (valeur < 110) {
-                indicePolluant = 4;
-            } else if (valeur < 135) {
-                indicePolluant = 5;
-            } else if (valeur < 165) {
-                indicePolluant = 6;
-            } else if (valeur < 200) {
-                indicePolluant = 7;
-            } else if (valeur < 275) {
-                indicePolluant = 8;
-            } else if (valeur < 400) {
-                indicePolluant = 9;
-            }
-            else {
-                indicePolluant = 10;
-            }
-        }
-        else {
-            continue; // Ignorer les polluants non reconnus
-        }
-
-        // On garde le pire indice trouvé
-        if (indicePolluant > indiceMax) {
-            indiceMax = indicePolluant;
-        }
-    }
-
-    return indiceMax;
-}
 
 
 //-------------------------------------------- Constructeurs - destructeur
 StatisticsService::StatisticsService ( )
-// Algorithme :
-// Constructeur sans état, aucune initialisation spécifique.
 {
-#ifdef MAP
-    cout << "Appel au constructeur de <Xxx>" << endl;
-#endif
-} //----- Fin de Xxx
+    #ifdef MAP
+        cout << "Appel au constructeur de <Xxx>" << endl;
+    #endif
+} //----- Fin de StatisticsService
 
 
 StatisticsService::~StatisticsService ( )
-// Algorithme :
-// Destruction sans libération particulière, la classe ne possède pas d'état.
 {
-#ifdef MAP
-    cout << "Appel au destructeur de <Xxx>" << endl;
-#endif
-} //----- Fin de ~Xxx
+    #ifdef MAP
+        cout << "Appel au destructeur de <Xxx>" << endl;
+    #endif
+} //----- Fin de ~StatisticsService
 
 
 //------------------------------------------------------------------ PRIVE
