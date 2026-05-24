@@ -65,18 +65,11 @@ void SecurityService::checkSensorReliability(const User& user, string targetSens
         cout << "ERREUR: Capteur " << targetSensorID << " non trouvé." << endl;
         return;
     }
-
-    if (capteurAAnalyser->getOwner() == nullptr || capteurAAnalyser->getOwner()->getRole() != PRIVATE_USER) {
-        cout << "ERREUR : Seuls les capteurs appartenant à un utilisateur privé peuvent être analysés." << endl;
-        return;
-    }
     
     if (capteurAAnalyser->getReliability() == false) {
         cout << "AVERTISSEMENT : Le capteur " << targetSensorID << " est déjà marqué comme non fiable." << endl;
         return;
     }
-
-
 
     vector<Measurement*> mesuresCible = DataService::getMeasurementsBySensor(targetSensorID);
     if (mesuresCible.empty()) {
@@ -85,8 +78,7 @@ void SecurityService::checkSensorReliability(const User& user, string targetSens
     }
     
     // 3. Récupérer les capteurs voisins fiables et les mesures fiables associées (moins de 10 km et marqués comme fiables)
-    vector<Sensor*> tousCapteurs = DataService::getSensors(user);
-    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
+    vector<Sensor*> tousCapteurs = DataService::getAllSensors();
 
     vector<Sensor*> capteursVoisinsFiables;
     for (const vector<Sensor*>::value_type& capteur : tousCapteurs) {
