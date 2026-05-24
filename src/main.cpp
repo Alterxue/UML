@@ -76,6 +76,8 @@ int main(){
             cout << "1. Utilisateur privé" << endl;
             cout << "2. Fournisseur" << endl;
             cout << "3. Agence gouvernementale" << endl;
+            cout << "4. Quitter" << endl;
+            cout << "Votre choix : ";
             cin >> roleChoice;
 
             string userID;
@@ -96,6 +98,12 @@ int main(){
                 if (!login){
                     cout << "ID invalide pour l'agence gouvernementale, veuillez réessayer." << endl;
                 }
+            } else if (roleChoice == 4) {
+                quitApplication = true;
+                break;
+            } else {
+                cout << "Choix invalide, veuillez réessayer."
+                     << endl;
             }
         } while(!login && !quitApplication);
 
