@@ -29,3 +29,6 @@ TestResults.xml
 # Build directories
 build/
 *.out
+
+
+main

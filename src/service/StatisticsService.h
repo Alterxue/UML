@@ -84,7 +84,7 @@ public:
     // Mode d'emploi :
     // Détermine le rayon d'influence utile d'un purificateur en testant plusieurs rayons.
     
-    static std::string getZoneStatistic(const User& user, double lat, double lon, double radius, TimeRange period);
+    static std::string getZoneStatistic(double lat, double lon, double radius, TimeRange period);
     // Mode d'emploi :
     // Produit un résumé textuel d'une zone: moyenne AQI, pics, minimum et polluant dominant.
 

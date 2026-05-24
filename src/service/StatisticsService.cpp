@@ -128,6 +128,11 @@ double StatisticsService::calculateAreaMean(double lat, double lon, double radiu
         // Vérifier si le capteur est dans le rayon ET est fiable
         if (distance <= radius && capteur->getReliability() == true) {
             capteursZone.push_back(capteur);
+            User* owner = capteur->getOwner(); 
+            PrivateUser* privateOwner = dynamic_cast<PrivateUser*>(owner);
+            if (privateOwner != nullptr) {
+                privateOwner->incrementPoints(1);
+            }
         }
     }
     
@@ -362,6 +367,11 @@ double StatisticsService::calculateAirQuality(double lat, double lon, const Date
             continue;
         }
         if (capteur->getReliability() == true){
+            User* owner = capteur->getOwner(); 
+            PrivateUser* privateOwner = dynamic_cast<PrivateUser*>(owner);
+            if (privateOwner != nullptr) {
+                privateOwner->incrementPoints(1);
+            }
             double distance = capteur->calculateDistance(lat,lon);
             double poids = (distance < 0.1) ? 100 : (1.0 / (distance * distance));
             for(const vector<Measurement*>::value_type& mesure : toutesMesures){
@@ -669,7 +679,7 @@ double StatisticsService::analyzeCleanerRadius(const User& user, string cleanerI
     return rayonImpact;
 } //----- Fin de analyzeCleanerRadius
 
-string StatisticsService::getZoneStatistic(const User& user, double lat, double lon, double radius, TimeRange period)
+string StatisticsService::getZoneStatistic(double lat, double lon, double radius, TimeRange period)
 // Algorithme :
 // 1. Récupérer les capteurs de la zone et les mesures de la période.
 // 2. Calculer une moyenne AQI globale et identifier les extrêmes.
@@ -680,14 +690,19 @@ string StatisticsService::getZoneStatistic(const User& user, double lat, double 
     
     // Get all sensors in the area
     vector<Sensor*> listeCapteurs = DataService::getSensorsInArea(lat, lon, radius);
-    vector<Measurement*> toutesMesures = DataService::getMeasurements(user);
-    
-    // Filter measurements by sensor and time period
     vector<Measurement*> mesuresZone;
-    for (const auto& mesure : toutesMesures) {
-        if (mesure == nullptr) continue;
-        for (const auto& capteur : listeCapteurs) {
-            if (capteur != nullptr && mesure->getSensor()->getSensorID() == capteur->getSensorID() && period.contains(mesure->getMeasureDate())) {
+
+    // Filter measurements by sensor and time period
+    for (auto* capteur : listeCapteurs) {
+        if (capteur == nullptr) continue;
+
+        vector<Measurement*> mesuresDuCapteur = DataService::getMeasurementsBySensor(capteur->getSensorID());
+        
+        for (auto* mesure : mesuresDuCapteur) {
+            if (mesure != nullptr && 
+                mesure->getIsValid() == true && 
+                period.contains(mesure->getMeasureDate())) {
+                
                 mesuresZone.push_back(mesure);
             }
         }

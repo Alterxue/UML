@@ -543,7 +543,7 @@ int main(){
                                 }
 
                                 TimeRange period(startTime, endTime);
-                                string statistics = StatisticsService::getZoneStatistic(*currentUser, lat, lon, radius, period);
+                                string statistics = StatisticsService::getZoneStatistic(lat, lon, radius, period);
                                 cout << statistics << endl;
                                 break;
                             }
