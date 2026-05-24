@@ -52,6 +52,7 @@ static string formatDateTime(const DateTime& value)
 int main(){
     AirWatcherSystem Application;
     DataContainer dataContainer;
+    bool quitApplication = false;
 
     // Charger toutes les données du CSV data manager avant tout test de connexion
     DataService::initializeDataContainer(&dataContainer);
@@ -64,51 +65,59 @@ int main(){
     cout << dataContainer.getAllProviders().size() << " fournisseurs chargés." << endl;
     cout << DataService::getAllMeasurements().size() << " mesures chargées." << endl;
 
-    cout << "" << endl;
-    bool login = false;
     cout << "Bienvenue dans AirWatcherSystem !" << endl;
-    int roleChoice;
-    do{
-        cout << "Veuillez vous connecter pour accéder au système." << endl;
-        cout << "1. Utilisateur privé" << endl;
-        cout << "2. Fournisseur" << endl;
-        cout << "3. Agence gouvernementale" << endl;
-        cin >> roleChoice;
-    
-        string userID;
-        cout << "Entrez votre ID : ";
-        cin >> userID;
-        if (roleChoice == 1) {
-            login = Application.setPrivateUser(dataContainer,userID);
-            if (!login) {
-                cout << "ID invalide, aucun utilisateur trouvé, veuillez réessayer." << endl;
-            }
-        } else if (roleChoice == 2) {
-            login = Application.setProvider(dataContainer,userID);
-            if (!login) {
-                cout << "ID invalide, aucun fournisseur trouvé, veuillez réessayer." << endl;
-            }
-        } else if (roleChoice == 3) {
-            login = Application.setGovernmentAgency(userID);
-            if (!login){
-                cout << "ID invalide pour l'agence gouvernementale, veuillez réessayer." << endl;
-            }
-        }
-    } while(!login);
+    cout << endl;
 
-    int choice;
-    do {
-        cout << "-- Menu principal AirWatcher --" << endl;
-        cout << "1. Analyser un capteur" << endl;
-        cout << "2. Calculer la qualité de l'air dans une zone à un instant donné" << endl;
-        cout << "3. Calculer la qualité de l'air dans une zone sur une période donnée" << endl;
-        cout << "4. Comparer des capteurs par similarité" << endl;
-        cout << "5. Calculer la qualité de l'air globale à une position et date données" << endl;
-        cout << "6. Consulter les purificateurs" << endl;
-        cout << "7. Menu spécial" << endl;
-        cout << "8. Quitter" << endl;
-        cout << "Votre choix : ";
-        cin >> choice;
+    while (!quitApplication) {
+        bool login = false;
+        int roleChoice;
+        do {
+            cout << "Veuillez vous connecter pour accéder au système." << endl;
+            cout << "1. Utilisateur privé" << endl;
+            cout << "2. Fournisseur" << endl;
+            cout << "3. Agence gouvernementale" << endl;
+            cin >> roleChoice;
+
+            string userID;
+            cout << "Entrez votre ID : ";
+            cin >> userID;
+            if (roleChoice == 1) {
+                login = Application.setPrivateUser(dataContainer,userID);
+                if (!login) {
+                    cout << "ID invalide, aucun utilisateur trouvé, veuillez réessayer." << endl;
+                }
+            } else if (roleChoice == 2) {
+                login = Application.setProvider(dataContainer,userID);
+                if (!login) {
+                    cout << "ID invalide, aucun fournisseur trouvé, veuillez réessayer." << endl;
+                }
+            } else if (roleChoice == 3) {
+                login = Application.setGovernmentAgency(userID);
+                if (!login){
+                    cout << "ID invalide pour l'agence gouvernementale, veuillez réessayer." << endl;
+                }
+            }
+        } while(!login && !quitApplication);
+
+        if (quitApplication) {
+            break;
+        }
+
+        bool logoutRequested = false;
+        int choice;
+        do {
+            cout << "-- Menu principal AirWatcher --" << endl;
+            cout << "1. Analyser un capteur" << endl;
+            cout << "2. Calculer la qualité de l'air dans une zone à un instant donné" << endl;
+            cout << "3. Calculer la qualité de l'air dans une zone sur une période donnée" << endl;
+            cout << "4. Comparer des capteurs par similarité" << endl;
+            cout << "5. Calculer la qualité de l'air globale à une position et date données" << endl;
+            cout << "6. Consulter les purificateurs" << endl;
+            cout << "7. Menu spécial" << endl;
+            cout << "8. Se déconnecter" << endl;
+            cout << "9. Quitter" << endl;
+            cout << "Votre choix : ";
+            cin >> choice;
 
         switch (choice) {
             case 1:
@@ -569,32 +578,22 @@ int main(){
 
                         switch (particularChoice) {
                             case 6:{
-                                vector<PrivateUser*> privateUsers = DataService::getAllPrivateUsers();
-                                cout << "Capteurs appartenant à des utilisateurs privés :" << endl;
-                                if (privateUsers.empty()) {
-                                    cout << "Aucun utilisateur privé trouvé." << endl;
+                                vector<Sensor*> allSensors = DataService::getAllSensors();
+                                cout << "Capteurs disponibles :" << endl;
+                                if (allSensors.empty()) {
+                                    cout << "Aucun capteur trouvé." << endl;
                                 } else {
-                                    for (const auto& privateUser : privateUsers) {
-                                        if (privateUser == nullptr) {
+                                    for (const auto& sensor : allSensors) {
+                                        if (sensor == nullptr) {
                                             continue;
                                         }
 
-                                        cout << "- " << privateUser->getUserID() << " : ";
-                                        const vector<Sensor*>& userSensors = privateUser->getSensorsList();
-                                        if (userSensors.empty()) {
-                                            cout << "aucun capteur";
+                                        cout << "- " << sensor->getSensorID();
+                                        PrivateUser* owner = sensor->getOwner();
+                                        if (owner != nullptr) {
+                                            cout << " (propriétaire : " << owner->getUserID() << ")";
                                         } else {
-                                            for (size_t index = 0; index < userSensors.size(); ++index) {
-                                                const Sensor* sensor = userSensors[index];
-                                                if (sensor == nullptr) {
-                                                    continue;
-                                                }
-
-                                                cout << sensor->getSensorID();
-                                                if (index + 1 < userSensors.size()) {
-                                                    cout << ", ";
-                                                }
-                                            }
+                                            cout << " (sans propriétaire)";
                                         }
                                         cout << endl;
                                     }
@@ -632,11 +631,17 @@ int main(){
                 break;
             }
             case 8:
+                Application.logout();
+                logoutRequested = true;
+                break;
+            case 9:
                 cout << "Merci d'avoir utilisé AirWatcherSystem !" << endl;
+                quitApplication = true;
                 break;
             default:
                 cout << "Choix invalide, veuillez réessayer."<<endl;}
-    } while (choice != 8);
+        } while (choice != 9 && !logoutRequested && !quitApplication);
+    }
 
     DataService::saveAllData();
     

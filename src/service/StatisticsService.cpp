@@ -25,6 +25,7 @@ using namespace std;
 #include <sstream>
 #include "../model/Sensor.h"
 #include "../model/TimeRange.h"
+#include "../model/PrivateUser.h"
 #include "DataService.h"
 #include "StatisticsService.h"
 
@@ -78,6 +79,13 @@ string StatisticsService::analyzeSensorData(const string& sensorID, const TimeRa
             string attributeID = measurement->getAttribute()->getAttributeID();
             sumsByAttribute[attributeID] += measurement->getValue();
             countsByAttribute[attributeID] += 1;
+        }
+    }
+
+    if (validMeasurements > 0 && sensor->getReliability() == true) {
+        PrivateUser* owner = sensor->getOwner();
+        if (owner != nullptr && owner->getIsFraudulent() == false) {
+            owner->incrementPoints(1);
         }
     }
 
@@ -141,6 +149,7 @@ double StatisticsService::calculateAreaMean(double lat, double lon, double radiu
     map<string, int> comptesAttributs;      
     
     for (const vector<Sensor*>::value_type& capteur : capteursZone) {
+        bool capteurUtilise = false;
         for (const vector<Measurement*>::value_type& mesure : toutesMesures) {
             if (capteur != nullptr && 
                 mesure != nullptr && 
@@ -152,6 +161,14 @@ double StatisticsService::calculateAreaMean(double lat, double lon, double radiu
                 string attrID = mesure->getAttribute()->getAttributeID();
                 sommesAttributs[attrID] += mesure->getValue();
                 comptesAttributs[attrID] += 1;
+                capteurUtilise = true;
+            }
+        }
+
+        if (capteurUtilise && capteur->getReliability() == true) {
+            PrivateUser* owner = capteur->getOwner();
+            if (owner != nullptr && owner->getIsFraudulent() == false) {
+                owner->incrementPoints(1);
             }
         }
     }
@@ -211,6 +228,18 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(string targetSensor
             donneesCible.push_back(mesure);
         }
     }
+
+    for (const vector<Sensor*>::value_type& capteur : tousCapteurs) {
+        if (capteur != nullptr && capteur->getSensorID() == targetSensor) {
+            if (!donneesCible.empty() && capteur->getReliability() == true) {
+                PrivateUser* owner = capteur->getOwner();
+                if (owner != nullptr && owner->getIsFraudulent() == false) {
+                    owner->incrementPoints(1);
+                }
+            }
+            break;
+        }
+    }
     
     //Calcul des scores de similarité pour chaque capteur
     map<string, double> scoresSimilarite;  // {sensorID: écart moyen}
@@ -232,6 +261,13 @@ vector<Sensor> StatisticsService::compareSensorsBySimilarity(string targetSensor
                 donneesAComparer.push_back(mesure);
             }
         }
+
+            if (!donneesAComparer.empty() && capteur->getReliability() == true) {
+                PrivateUser* owner = capteur->getOwner();
+                if (owner != nullptr && owner->getIsFraudulent() == false) {
+                    owner->incrementPoints(1);
+                }
+            }
         
         // Calcul de l'écart moyen entre le capteur cible et le capteur actuel
         double differenceTotale = 0.0;
@@ -374,6 +410,7 @@ double StatisticsService::calculateAirQuality(double lat, double lon, const Date
             }
             double distance = capteur->calculateDistance(lat,lon);
             double poids = (distance < 0.1) ? 100 : (1.0 / (distance * distance));
+            bool capteurUtilise = false;
             for(const vector<Measurement*>::value_type& mesure : toutesMesures){
                 if(mesure != nullptr && 
                     mesure->getSensor() != nullptr &&
@@ -384,6 +421,14 @@ double StatisticsService::calculateAirQuality(double lat, double lon, const Date
                     string attrID = mesure->getAttribute()->getAttributeID();
                     sommesPonderees[attrID] += (mesure->getValue() * poids);
                     sommePoids[attrID] += poids;
+                    capteurUtilise = true;
+                }
+            }
+
+            if (capteurUtilise) {
+                PrivateUser* owner = capteur->getOwner();
+                if (owner != nullptr && owner->getIsFraudulent() == false) {
+                    owner->incrementPoints(1);
                 }
             }
         }

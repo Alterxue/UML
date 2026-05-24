@@ -36,8 +36,8 @@ public:
     static void checkSensorReliability(const User& user, std::string sensorID);
     // Mode d'emploi :
     // - Seule une agence gouvernementale peut vérifier la fiabilité d'un capteur
-    // - Analyse les mesures du capteur sur une période donnée pour détecter des anomalies
-    // - Compare les mesures du capteur avec des les mesures de capteurs fiables voisins
+    // - Analyse les mesures du capteur sélectionné pour détecter des anomalies
+    // - Compare les mesures du capteur avec celles des capteurs fiables voisins
     // - Si trop de mesures sont considérées comme anormales, marque le capteur non fiable
     
     static std::vector<PrivateUser*> detectFraudulentUsers(const User& user);
