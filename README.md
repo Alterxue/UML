@@ -1,214 +1,426 @@
-# AirWatcher - Application de Surveillance de la Qualité de l'Air
+# AirWatcher
+
+AirWatcher est une application console C++17 de surveillance de la qualité de l'air. Elle charge ses données depuis des fichiers CSV, construit un modèle métier en mémoire, puis expose un ensemble de fonctions d'analyse et de sécurité selon le rôle de l'utilisateur connecté.
+
+L'application fonctionne comme une session interactive : on choisit un rôle, on s'authentifie avec un identifiant existant, puis on navigue dans un menu principal et dans un sous-menu spécifique au rôle.
+
+## Sommaire
+
+- Objectif fonctionnel
+- Architecture générale
+- Arborescence du projet
+- Modèle métier
+- Persistance CSV et cycle de vie des données
+- Couche service
+- Déroulé de l'exécution
+- Compilation et lancement
+- Points d'attention
+
+## Objectif fonctionnel
+
+Le système permet de :
+
+- consulter et analyser des mesures de capteurs ;
+- calculer des indicateurs de qualité de l'air, localement ou globalement ;
+- comparer des capteurs entre eux ;
+- évaluer l'impact de purificateurs d'air ;
+- gérer des capteurs privés et l'historique des contributions ;
+- vérifier la fiabilité des capteurs et détecter des comportements frauduleux côté agence gouvernementale.
+
+## Architecture générale
+
+Le code suit une séparation en trois couches principales :
+
+1. **Model** : objets métier et relations entre entités.
+2. **DAO** : chargement et sauvegarde des données CSV.
+3. **Service** : logique métier, filtres d'accès, calculs statistiques et sécurité.
+
+Le point d'entrée est [src/main.cpp](src/main.cpp). Il orchestre :
+
+- le chargement initial des données ;
+- l'authentification ;
+- l'affichage des menus ;
+- l'appel aux services ;
+- la sauvegarde finale des données.
+
+```mermaid
+flowchart LR
+    A[src/main.cpp] --> B[AirWatcherSystem]
+    A --> C[DataService]
+    A --> D[StatisticsService]
+    A --> E[SecurityService]
+    B --> F[AuthenticateService]
+    C --> G[DataContainer]
+    G --> H[Domain model]
+    F --> G
+    G --> I[CSVDataManager]
+    I --> J[(data/*.csv)]
+```
+
+### Relations métier principales
+
+```mermaid
+classDiagram
+    class User
+    class PrivateUser
+    class Provider
+    class GovernmentAgency
+    class Sensor
+    class Measurement
+    class Attribute
+    class AirCleaner
+    class TimeRange
+    class DataContainer
+
+    User <|-- PrivateUser
+    User <|-- Provider
+    User <|-- GovernmentAgency
+
+    PrivateUser "1" o-- "0..*" Sensor : owns
+    Provider "1" o-- "0..*" AirCleaner : manages
+    Sensor "1" o-- "0..*" Measurement : stores
+    Measurement --> Sensor
+    Measurement --> Attribute
+    AirCleaner --> Provider
+    AirCleaner --> TimeRange
+    DataContainer o-- User
+    DataContainer o-- Sensor
+    DataContainer o-- Measurement
+    DataContainer o-- Attribute
+    DataContainer o-- AirCleaner
+```
+
+## Arborescence du projet
+
+```text
+src/
+  main.cpp
+  dao/
+    CSVDataManager.cpp/.h
+  model/
+    Attribute.cpp/.h
+    AirCleaner.cpp/.h
+    DataContainer.cpp/.h
+    GovernmentAgency.cpp/.h
+    Measurement.cpp/.h
+    PrivateUser.cpp/.h
+    Provider.cpp/.h
+    Role.h
+    Sensor.cpp/.h
+    TimeRange.cpp/.h
+    User.cpp/.h
+  service/
+    AirWatcherSystem.cpp/.h
+    AuthenticateService.cpp/.h
+    DataService.cpp/.h
+    SecurityService.cpp/.h
+    StatisticsService.cpp/.h
+data/
+  attributes.csv
+  cleaners.csv
+  measurements.csv
+  providers.csv
+  sensors.csv
+  users.csv
+```
 
-## Vue d'ensemble
-Application de gestion et d'analyse des données de qualité de l'air collectées par des capteurs répartis sur un territoire. Cette application traite les données stockées en fichiers CSV et fournit des services statistiques et d'authentification.
+## Modèle métier
 
----
+### `User`
 
-## Architecture du projet
+Classe de base abstraite pour tous les profils connectables.
 
-L'application est organisée en trois couches principales :
+- attributs : `userID`, `role` ;
+- rôle : fourni par [src/model/Role.h](src/model/Role.h) ;
+- héritée par `PrivateUser`, `Provider` et `GovernmentAgency`.
 
-- **Model** : Classes représentant les entités métier
-- **DAO (Data Access Object)** : Classes responsables de la gestion des données (chargement CSV, etc.)
-- **Service** : Classes fournissant les fonctionnalités métier (statistiques, authentification, etc.)
+### `PrivateUser`
 
----
+Représente un citoyen qui consulte les données et possède potentiellement des capteurs.
 
-## 📦 COUCHE MODEL - Classes métier
+- stocke un compteur de points ;
+- conserve un indicateur de fraude ;
+- référence une liste de capteurs associés ;
+- peut ajouter ou retirer des capteurs sans en prendre la propriété mémoire.
 
-### `Attribute` - Description d'un type de mesure
+### `Provider`
 
-**Rôle** : Représente un type de mesure d'air (O3, NO2, PM10, CO, etc.) avec ses propriétés.
+Représente l'opérateur de purificateurs d'air.
 
-#### Attributs protégés :
-- `std::string attributeID` : Identifiant unique du type de mesure (ex: "O3", "NO2")
-- `std::string unit` : Unité de mesure (ex: "μg/m³", "mg/m³")
-- `std::string description` : Description textuelle (ex: "concentration d'ozone")
+- référence ses `AirCleaner` ;
+- permet de lister les purificateurs associés au compte.
 
-#### Méthodes publiques :
-- `Attribute(const std::string a_attributeID, const std::string a_unit, const std::string a_description)`
-  - Constructeur : initialise un nouvel attribut avec son ID, son unité et sa description
-  - Paramètres : ID de l'attribut, unité de mesure, description
-  - Utilisé lors du chargement des données depuis `attributes.csv`
+### `GovernmentAgency`
 
----
+Représente le rôle gouvernemental.
 
-### `Measurement` - Enregistrement d'une mesure
+- porte un identifiant d'agence ;
+- sert de profil autorisé à exécuter les opérations de sécurité et d'investigation.
 
-**Rôle** : Représente une mesure unique d'un capteur à une date/heure précise pour un type d'attribut donné.
+### `Sensor`
 
-#### Attributs protégés :
-- `std::chrono::system_clock::time_point measureDate` : Timestamp précis de la mesure (année, mois, jour, heure, minute, seconde)
-- `Sensor* sensor` : Pointeur brut vers le capteur ayant effectué la mesure
-- `Attribute* attribute` : Pointeur brut vers le type d'attribut mesuré (ex: O3)
-- `double value` : Valeur numérique de la mesure
+Capteur physique déployé sur le territoire.
 
-#### Méthodes publiques :
-- `Measurement(int annee, int mois, int jour, int heure, int minute, int seconde, Sensor* a_sensor, Attribute* an_attribute, double a_value)`
-  - Constructeur : crée une mesure avec date/heure décomposées et pointers vers Sensor et Attribute
-  - La date/heure sont converties en `system_clock::time_point` pour manipulation précise
-  - Les pointers passés doivent pointer vers des objets valides pendant toute la durée de vie de la Measurement
-  - Paramètres : composants de date (année, mois, jour, heure, minute, seconde), pointeur Sensor, pointeur Attribute, valeur
+- identifiant métier ;
+- latitude et longitude ;
+- état de fiabilité ;
+- propriétaire éventuel (`PrivateUser*`) ;
+- liste de mesures associées.
 
-#### Notes d'implémentation :
-- Utilise des **pointeurs bruts** plutôt que des références ou `shared_ptr` car :
-  - Les Sensor et Attribute ont une durée de vie supérieure (chargés une fois au démarrage)
-  - Plus léger en terme de performance
-  - Pas de gestion complexe de propriété
+Le capteur sait aussi calculer une distance géographique vers une position donnée.
 
----
+### `Measurement`
 
-### `Sensor` - Capteur de mesure (à implémenter)
+Une mesure relie :
 
-**Rôle** : Représente un capteur physique installé sur le territoire, identifié par ses coordonnées géographiques.
+- une date de mesure (`DateTime`) ;
+- un capteur ;
+- un attribut de pollution ;
+- une valeur numérique ;
+- un drapeau de validité.
 
-#### Attributs protégés (à définir) :
-- `std::string sensorID` : Identifiant unique du capteur
-- `double latitude` : Latitude de localisation du capteur
-- `double longitude` : Longitude de localisation du capteur
-- `bool reliability` : État de fiabilité du capteur
-- `std::vector<Measurement> measurements` : Mesures collectées par ce capteur
+Les mesures invalidées ne sont pas détruites : elles sont conservées mais exclues des traitements futurs.
 
-#### Méthodes publiques :
-- `Sensor()` : Constructeur (à implémenter)
-- `std::string getSensorID() const` : Retourne l'ID du capteur
-- `void setReliability(bool reliability)` : Modifie l'état de fiabilité du capteur
-- `int calculateDistance(double userLatitude, double userLongitude) const` : Calcule la distance entre le capteur et l'utilisateur
+### `Attribute`
 
----
+Décrit un polluant ou un type de mesure.
 
-### `TimeRange` - Plage horaire (à implémenter)
+- identifiant de l'attribut ;
+- unité ;
+- description.
 
-**Rôle** : Représente une plage de temps (intervalle start - end) pour les analyses temporelles.
+Exemples observés dans les données : `O3`, `SO2`, `NO2`, `PM10`.
 
-#### Attributs protégés (à définir) :
-- (À définir selon les besoins)
+### `AirCleaner`
 
----
+Représente un purificateur d'air exploité par un fournisseur.
 
-### `User` - Utilisateur (classe parent à implémenter)
+- identifiant ;
+- coordonnées géographiques ;
+- période de fonctionnement (`TimeRange`) ;
+- lien non possédant vers le `Provider` ;
+- méthode `isActive()` pour savoir si le purificateur est actif à un instant donné.
 
-**Rôle** : Classe de base abstraite représentant un utilisateur du système.
+### `TimeRange`
 
-#### Attributs protégés (à définir) :
-- `std::string userID` : Identifiant unique de l'utilisateur
-- `Role role` : Rôle de l'utilisateur (PRIVATE_USER, PROVIDER, GOVERNMENT_AGENCY)
+Petit objet de valeur pour manipuler un intervalle temporel.
 
-#### Méthodes publiques :
-- `User()` : Constructeur (à implémenter)
-- `User(const User& unUser)` : Constructeur de copie
-- `std::string getUserID() const` : Retourne l'ID utilisateur
-- `User& operator=(const User& unUser)` : Opérateur d'affectation
+- `start` ;
+- `end` ;
+- `contains()` pour tester l'appartenance d'un instant ;
+- `getDuration()` pour obtenir la durée en secondes.
 
----
+### `DataContainer`
 
-### `PrivateUser` - Utilisateur privé (hérité de User à implémenter)
+Le conteneur central en mémoire.
 
-**Rôle** : Représente un citoyen qui consulte les données de qualité de l'air et gère des capteurs personnels.
+- stocke tous les objets chargés depuis les CSV ;
+- expose des accès par identifiant ;
+- regroupe aussi les mesures par capteur ;
+- possède les objets qu'il contient et les détruit à la fin de vie.
 
-#### Attributs protégés (à définir) :
-- `int points` : Points de contribution/gamification du citoyen
-- `std::list<Sensor> mySensors` : Liste des capteurs personnels de l'utilisateur
+Les autres classes manipulent surtout des pointeurs non possédants vers les entités stockées dedans.
 
-#### Méthodes publiques :
-- `PrivateUser()` : Constructeur (à implémenter)
-- `PrivateUser(const PrivateUser& unPrivateUser)` : Constructeur de copie
-- `int getPoints() const` : Retourne le nombre de points
-- `void incrementPoints(int pointsToAdd)` : Ajoute des points
-- `void addSensor(const Sensor& sensor)` : Ajoute un capteur personnel
-- `PrivateUser& operator=(const PrivateUser& unPrivateUser)` : Opérateur d'affectation
+## Persistance CSV et cycle de vie des données
 
----
+Le chargement initial est assuré par `DataService::reloadAllData()`, qui s'appuie sur `CSVDataManager`.
 
-### `GovernmentAgency` - Agence gouvernementale (hérité de User à implémenter)
+L'ordre de chargement est important :
 
-**Rôle** : Représente l'agence gouvernementale responsable de la surveillance et de la gestion du système.
+1. attributs ;
+2. capteurs ;
+3. utilisateurs privés ;
+4. purificateurs ;
+5. fournisseurs ;
+6. mesures.
 
-#### Attributs protégés (à définir) :
-- (Hérités de User)
+Cet ordre permet de résoudre les références croisées par identifiant au fur et à mesure du chargement.
 
-#### Méthodes publiques :
-- `GovernmentAgency()` : Constructeur (à implémenter)
-- `GovernmentAgency(const GovernmentAgency& unGovernmentAgency)` : Constructeur de copie
-- `void manageSystem()` : Gère les fonctionnalités principales du système
-- `void flagSensors(Sensor& sensor)` : Signale un capteur comme défaillant ou peu fiable
-- `GovernmentAgency& operator=(const GovernmentAgency& unGovernmentAgency)` : Opérateur d'affectation
+### Fichiers CSV
 
----
+| Fichier | Rôle |
+| --- | --- |
+| `data/attributes.csv` | Catalogue des attributs de mesure |
+| `data/sensors.csv` | Capteurs et coordonnées |
+| `data/users.csv` | Utilisateurs privés et association à leurs capteurs |
+| `data/providers.csv` | Fournisseurs et association à leurs purificateurs |
+| `data/cleaners.csv` | Purificateurs d'air et périodes de fonctionnement |
+| `data/measurements.csv` | Mesures horodatées par capteur |
 
-### `Provider` - Fournisseur (à implémenter)
+### Sauvegarde
 
-**Rôle** : Représente une entreprise ou organisation qui opère des purificateurs d'air (AirCleaner).
+Les méthodes de sauvegarde existent dans `CSVDataManager` et sont exposées via `DataService::saveAllData()`. Le programme appelle cette sauvegarde en fin d'exécution, après la boucle principale.
 
-#### Attributs protégés (à définir) :
-- `std::string providerID` : Identifiant unique du fournisseur
-- `std::list<AirCleaner> myCleaners` : Liste des purificateurs gérés par ce fournisseur
+## Couche service
 
-#### Méthodes publiques :
-- `Provider(std::string providerID)` : Constructeur avec ID du fournisseur
-- `Provider(const Provider& unProvider)` : Constructeur de copie
-- `std::list<AirCleaner> getMyCleaners(std::list<AirCleaner> cleaners) const` : Récupère les purificateurs gérés par ce provider
-- `Provider& operator=(const Provider& unProvider)` : Opérateur d'affectation
+### `AuthenticateService`
 
----
+Fabrique l'objet métier correspondant à l'identifiant saisi.
 
-### `AirCleaner` - Purificateur d'air (à implémenter)
+- `loginPrivate()` retourne un `PrivateUser*` s'il existe ;
+- `loginProvider()` retourne un `Provider*` s'il existe ;
+- `loginGovernmentAgency()` crée une instance d'agence gouvernementale.
 
-**Rôle** : Représente un dispositif de purification d'air opéré par un fournisseur à une localisation spécifique.
+### `AirWatcherSystem`
 
-#### Attributs protégés (à définir) :
-- `std::string airCleanerID` : Identifiant unique du purificateur
-- `std::string providerID` : ID du fournisseur propriétaire
-- `double latitude` : Latitude de localisation
-- `double longitude` : Longitude de localisation
-- `DateTime startTime` : Date/heure d'activation
-- `DateTime endTime` : Date/heure de désactivation (optionnel)
-- `bool isOperational` : État opérationnel
+Gère l'état de session de l'application.
 
-#### Méthodes publiques :
-- `AirCleaner()` : Constructeur (à implémenter)
-- `AirCleaner(const AirCleaner& unAirCleaner)` : Constructeur de copie
-- `bool isActive(DateTime time) const` : Vérifie si le purificateur est actif à un moment donné
-- `std::string getProviderID() const` : Retourne l'ID du fournisseur
-- `AirCleaner& operator=(const AirCleaner& unAirCleaner)` : Opérateur d'affectation
+- conserve l'utilisateur courant typé et générique ;
+- expose `setPrivateUser()`, `setProvider()`, `setGovernmentAgency()` ;
+- propose `logout()` pour revenir à l'écran de connexion sans quitter l'application.
 
----
+### `DataService`
 
-### `Role` - Énumération des rôles
+Couche d'accès aux données au-dessus du `DataContainer`.
 
-**Rôle** : Énumération définissant les différents rôles d'utilisateur dans le système.
+Elle sert à :
 
-#### Valeurs :
-- `PRIVATE_USER` : Citoyen consulant les données et gérant des capteurs personnels
-- `PROVIDER` : Entreprise opérant des purificateurs d'air
-- `GOVERNMENT_AGENCY` : Agence gouvernementale gérant le système
+- récupérer les capteurs visibles pour un utilisateur donné ;
+- récupérer les mesures visibles ;
+- retrouver l'historique d'un `PrivateUser` ;
+- récupérer les capteurs dans une zone géographique ;
+- ajouter une mesure ;
+- mettre à jour la fiabilité d'un capteur ;
+- recharger ou sauvegarder toutes les données ;
+- réinitialiser les drapeaux de corruption temporaires.
 
----
+Le rôle agit comme un filtre : les requêtes ne renvoient pas les mêmes données selon le profil connecté.
 
-## 🗄️ COUCHE DAO - Accès aux données
+### `StatisticsService`
 
-### `CSVDataManager` (à implémenter)
-Responsable du chargement et de la gestion des données CSV :
-- Charge les fichiers : `attributes.csv`, `sensors.csv`, `measurements.csv`
-- Stocke les `Attribute` dans un `std::map<std::string, Attribute>`
-- Fournit des accesseurs pour récupérer les entités par ID
+Service de calcul des indicateurs de qualité de l'air.
 
----
+Principales responsabilités :
 
-## ⚙️ COUCHE SERVICE - Logique métier
+- analyser un capteur sur une période donnée ;
+- calculer une moyenne de zone sur un instant ou sur une période ;
+- convertir des moyennes de polluants en indice ATMO ;
+- comparer des capteurs par similarité ;
+- comparer un capteur avec son voisinage ;
+- calculer la qualité de l'air autour d'un utilisateur ;
+- estimer l'impact d'un purificateur ;
+- estimer le rayon utile d'un purificateur ;
+- produire un résumé textuel de zone.
 
-### `AuthenticateService` (à implémenter)
-Service d'authentification des utilisateurs
+### `SecurityService`
 
-### `SecurityService` (à implémenter)
-Service de gestion des droits d'accès
+Service de sécurité et d'intégrité des données.
 
-### `DataService` (à implémenter)
-Service de gestion des données
+Fonctions principales :
 
-### `StatisticsService` (à implémenter)
-Service de calcul de statistiques sur les mesures
+- vérifier la fiabilité d'un capteur ;
+- détecter les utilisateurs frauduleux ;
+- afficher les données corrompues ;
+- initialiser ou remettre à zéro la base de sécurité.
 
-### `AirWatcherSystem` (à implémenter)
-Orchestrateur principal du système
+Ces opérations sont pensées pour le rôle gouvernemental.
+
+## Déroulé de l'exécution
+
+Le flux réel d'exécution dans [src/main.cpp](src/main.cpp) est le suivant :
+
+1. création d'un `AirWatcherSystem` et d'un `DataContainer` ;
+2. initialisation du `DataContainer` dans `DataService` ;
+3. chargement des données CSV ;
+4. affichage du menu de connexion ;
+5. authentification selon le rôle choisi ;
+6. affichage du menu principal ;
+7. navigation vers le sous-menu spécifique au rôle ;
+8. sauvegarde finale des données avant sortie.
+
+Le programme utilise des fonctions utilitaires locales pour gérer les dates :
+
+- `parseDateTime()` ;
+- `readDateTime()` ;
+- `formatDateTime()`.
+
+Le format attendu pour la saisie est : `YYYY-MM-DD HH:MM:SS`.
+
+## Menus disponibles
+
+### Menu principal
+
+Le menu principal donne accès à :
+
+1. analyser un capteur sur une période ;
+2. calculer la qualité de l'air dans une zone à un instant donné ;
+3. calculer la qualité de l'air dans une zone sur une période ;
+4. comparer des capteurs par similarité ;
+5. calculer la qualité de l'air globale à une position et une date ;
+6. consulter les purificateurs ;
+7. ouvrir le menu spécial selon le rôle ;
+8. se déconnecter ;
+9. quitter l'application.
+
+### Menu particulier `PRIVATE_USER`
+
+Le sous-menu privé permet de :
+
+- consulter le solde de points ;
+- calculer l'AQI de la zone autour de l'utilisateur ;
+- comparer les capteurs du voisinage ;
+- saisir une nouvelle mesure sur un capteur qui lui appartient ;
+- afficher l'historique de ses contributions.
+
+Avant toute saisie de mesure, le code vérifie explicitement que le capteur appartient bien au compte courant.
+
+### Menu particulier `PROVIDER`
+
+Le sous-menu fournisseur permet de :
+
+- voir l'impact d'un purificateur sur une période ;
+- comparer un capteur à d'autres capteurs ;
+- analyser le rayon de purification utile ;
+- consulter les statistiques de zone.
+
+### Menu particulier `GOVERNMENT_AGENCY`
+
+Le sous-menu gouvernemental permet de :
+
+- vérifier si un capteur est défectueux ;
+- identifier les comportements frauduleux ;
+- recenser les capteurs et les données corrompues ;
+- supprimer les données corrompues au sens métier.
+
+## Compilation et lancement
+
+Le projet se compile avec le `Makefile` à la racine.
+
+```bash
+make
+./main
+```
+
+Commandes utiles :
+
+```bash
+make clean
+make SKIP_CSV=1
+```
+
+### Détails du build
+
+- compilateur : `g++` ;
+- standard : `C++17` ;
+- options : `-Wall -Wextra -Wpedantic` ;
+- include path : `-I./src` ;
+- cible produite : `main`.
+
+L'option `SKIP_CSV=1` retire `CSVDataManager.cpp` de la compilation. Elle peut être utile dans un environnement où l'on veut tester une partie du code sans la couche CSV.
+
+## Points d'attention
+
+- `DataContainer` centralise la propriété mémoire des objets chargés ; le reste du code manipule surtout des pointeurs non possédants.
+- Les opérations de sécurité et de statistiques s'appuient sur des règles métier fortes, mais l'enforcement principal du rôle est fait dans le menu et dans le service d'authentification.
+- Les données modifiées en mémoire ne sont persistées que via la sauvegarde finale ou par les méthodes de sauvegarde du `CSVDataManager`.
+- Les mesures ou capteurs invalidés ne sont pas supprimés immédiatement ; la logique privilégie une suppression douce.
+
+## Résumé
+
+AirWatcher est donc une application console organisée autour d'un triptyque clair :
+
+- un **modèle métier** riche, centré sur les capteurs, les mesures et les utilisateurs ;
+- une **persistance CSV** qui charge et reconstruit l'état applicatif ;
+- des **services métier** qui encapsulent les calculs, les filtres d'accès et les contrôles de sécurité.
+
+Cette structure permet de comprendre l'application à partir de trois axes : les données, les droits d'accès et les analyses de qualité de l'air.
