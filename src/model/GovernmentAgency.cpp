@@ -23,10 +23,6 @@ using namespace std;
 //----------------------------------------------------------------- PUBLIC
 
 //----------------------------------------------------- Méthodes publiques
-string GovernmentAgency::getAgencyID() const
-{
-    return agencyID;
-} //----- Fin de getAgencyID
 
 //------------------------------------------------- Surcharge d'opérateurs
 

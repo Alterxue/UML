@@ -28,18 +28,6 @@ using namespace std;
 
 //----------------------------------------------------- Methodes publiques
 
-PrivateUser * AirWatcherSystem::getCurrentPrivateUser() {
-    return currentPrivateUser;
-}
-
-Provider * AirWatcherSystem::getCurrentProvider() {
-    return currentProvider;
-}
-
-GovernmentAgency * AirWatcherSystem::getCurrentGovernmentAgency() {
-    return currentGovernmentAgency;
-}
-
 User * AirWatcherSystem::getCurrentUser() {
     return currentUser;
 }

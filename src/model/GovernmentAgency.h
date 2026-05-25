@@ -31,9 +31,6 @@ class GovernmentAgency : public User
 
 public:
 //----------------------------------------------------- Méthodes publiques
-    std::string getAgencyID() const;
-    // Mode d'emploi :
-    // Retourne l'ID de l'agence gouvernementale
     
 //------------------------------------------------- Surcharge d'opérateurs
 

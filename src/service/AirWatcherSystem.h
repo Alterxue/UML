@@ -41,9 +41,6 @@ public:
     //
     // Contrat :
     User * getCurrentUser();
-    PrivateUser * getCurrentPrivateUser();
-    Provider * getCurrentProvider();
-    GovernmentAgency * getCurrentGovernmentAgency();
 
     bool setPrivateUser(DataContainer& dc, const std::string& id);
     // Mode d'emploi :
